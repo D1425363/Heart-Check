@@ -1,0 +1,12 @@
+# Flask runtime / local database
+instance/
+
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS specific files
+.DS_Store
+Thumbs.db
