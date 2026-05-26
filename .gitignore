@@ -1,8 +1,12 @@
-__pycache__/
-*.py[cod]
-*$py.class
-.agents/
+# Flask runtime / local database
 instance/
-.vscode/
-.idea/
-*.docx
+
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS specific files
+.DS_Store
+Thumbs.db
