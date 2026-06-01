@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}編輯失物招領公告 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-lg-8">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="mb-4">
+                    <h2 class="header-title mb-1"><i class="fa-solid fa-pen-to-square me-2"></i>修改失物招領公告</h2>
+                    <p class="text-muted">編輯您的物品公告內容與狀態</p>
+                </div>
+
+                <form action="{{ url_for('item.update_item', item_id=item.id) }}" method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="item_type" class="form-label font-semibold">公告類型 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-list"></i></span>
+                                <select class="form-select" id="item_type" name="item_type" required>
+                                    <option value="lost" {% if item.item_type == 'lost' %}selected{% endif %}>尋物啟事（我有東西掉了）</option>
+                                    <option value="found" {% if item.item_type == 'found' %}selected{% endif %}>拾獲公告（我撿到了東西）</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label font-semibold">認領狀態 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-circle-info"></i></span>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="unclaimed" {% if item.status == 'unclaimed' %}selected{% endif %}>協尋中 / 未認領</option>
+                                    <option value="claimed" {% if item.status == 'claimed' %}selected{% endif %}>已認領 / 已尋回</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label font-semibold">物品標題 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-heading"></i></span>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ item.title }}" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label font-semibold">遺失 / 拾獲地點 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-location-dot text-danger"></i></span>
+                            <input type="text" class="form-control" id="location" name="location" value="{{ item.location }}" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label font-semibold">物品詳細描述 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-comment-medical text-primary"></i></span>
+                            <textarea class="form-control" id="description" name="description" rows="4" required>{{ item.description }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="image" class="form-label font-semibold">更換物品照片</label>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="fa-solid fa-image"></i></span>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            </div>
+                            {% if item.image_url %}
+                                <div class="mt-2 small text-muted">
+                                    <span>目前照片：</span>
+                                    <div class="mt-1">
+                                        <img src="{{ url_for('static', filename=item.image_url) }}" alt="Current image" class="img-thumbnail" style="max-height: 80px;">
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="form-text small">若不更換照片，請留空即可。</div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="contact_info" class="form-label font-semibold">聯絡資訊</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-address-book"></i></span>
+                                <input type="text" class="form-control" id="contact_info" name="contact_info" value="{{ item.contact_info or '' }}" placeholder="手機、社群軟體等" autocomplete="off">
+                            </div>
+                            <div class="form-text small">不填則預設以系統內建管道聯繫。</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="btn btn-light flex-grow-1 py-2 rounded-3 border">
+                            <i class="fa-solid fa-xmark me-2"></i>取消
+                        </a>
+                        <button type="submit" class="btn btn-premium flex-grow-2 py-2">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>儲存變更
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}人氣排行榜 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-lg-8">
+        <div class="text-center mb-5">
+            <span class="fs-1 text-warning"><i class="fa-solid fa-ranking-star"></i></span>
+            <h2 class="header-title mt-2 mb-1">愛心人氣排行榜</h2>
+            <p class="text-muted">感恩互助，見證校園溫馨榜樣</p>
+        </div>
+
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="text-center" style="width: 10%;">排名</th>
+                                <th scope="col" style="width: 50%;">使用者</th>
+                                <th scope="col" style="width: 25%;">科系</th>
+                                <th scope="col" class="text-center" style="width: 15%;">累積人氣</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in top_users %}
+                                <tr {% if loop.index == 1 %}class="table-warning-subtle"{% endif %}>
+                                    <td class="text-center font-bold">
+                                        {% if loop.index == 1 %}
+                                            <span class="fs-4 text-warning"><i class="fa-solid fa-crown"></i></span>
+                                        {% elif loop.index == 2 %}
+                                            <span class="fs-5 text-secondary" style="color: #c0c0c0 !important;"><i class="fa-solid fa-medal"></i></span>
+                                        {% elif loop.index == 3 %}
+                                            <span class="fs-6 text-danger" style="color: #cd7f32 !important;"><i class="fa-solid fa-medal"></i></span>
+                                        {% else %}
+                                            <span class="text-muted font-monospace">{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fa-solid fa-user text-secondary"></i>
+                                            </div>
+                                            <div>
+                                                <span class="font-bold d-block">{{ u.name }}</span>
+                                                <span class="text-muted small">學號: {{ u.student_id[:4] }}*****</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-secondary">{{ u.department or '未公開科系' }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="popularity-badge">
+                                            <i class="fa-solid fa-star"></i>{{ u.popularity }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

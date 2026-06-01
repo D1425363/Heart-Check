@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}校園與宿舍公告 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center animate-fade-in">
+    <div class="col-md-8">
+        <h2 class="header-title mb-1"><i class="fa-solid fa-bullhorn me-2"></i>校園與宿舍公告看板</h2>
+        <p class="text-muted">追蹤宿舍及學校的最新動態、重要通知與宣導事項</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        {% if session.get('user_id') %}
+            <a href="{{ url_for('board.new_announcement') }}" class="btn btn-premium">
+                <i class="fa-solid fa-pen me-1"></i>發布公告
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Category Filters -->
+<div class="d-flex gap-2 mb-4 animate-fade-in">
+    <a href="{{ url_for('board.announcements') }}" class="btn btn-sm {% if category == '' %}btn-premium{% else %}btn-light border{% endif %} px-4 rounded-pill">
+        全部公告
+    </a>
+    <a href="{{ url_for('board.announcements') }}?category=dorm" class="btn btn-sm {% if category == 'dorm' %}btn-premium{% else %}btn-light border{% endif %} px-4 rounded-pill">
+        宿舍公告
+    </a>
+    <a href="{{ url_for('board.announcements') }}?category=campus" class="btn btn-sm {% if category == 'campus' %}btn-premium{% else %}btn-light border{% endif %} px-4 rounded-pill">
+        校園公告
+    </a>
+</div>
+
+<!-- Announcements List -->
+<div class="row g-4 animate-fade-in">
+    {% if not announcements %}
+        <div class="col-12 text-center py-5">
+            <span class="fs-1 text-muted"><i class="fa-solid fa-note-sticky"></i></span>
+            <p class="text-muted mt-3">目前沒有發布任何公告。</p>
+        </div>
+    {% else %}
+        {% for ann in announcements %}
+            <div class="col-12">
+                <div class="card premium-card p-4">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {% if ann.category == 'dorm' %}bg-primary-subtle text-primary{% else %}bg-info-subtle text-info-emphasis{% endif %} px-3 py-2 rounded-pill font-bold">
+                                    {% if ann.category == 'dorm' %}
+                                        <i class="fa-solid fa-hotel me-1"></i>宿舍公告
+                                    {% else %}
+                                        <i class="fa-solid fa-graduation-cap me-1"></i>校園公告
+                                    {% endif %}
+                                </span>
+                                <h4 class="card-title font-bold text-dark mb-0">{{ ann.title }}</h4>
+                            </div>
+                            <div class="text-end text-muted small">
+                                <span class="me-3"><i class="fa-solid fa-user me-1"></i>發布人: {{ ann.author_name }}</span>
+                                <span class="font-monospace"><i class="fa-solid fa-calendar me-1"></i>{{ ann.created_at[:16].replace('T', ' ') }}</span>
+                            </div>
+                        </div>
+
+                        <hr class="border-light-subtle my-3">
+                        
+                        <p class="card-text text-secondary mb-4" style="white-space: pre-line; line-height: 1.6;">
+                            {{ ann.content }}
+                        </p>
+
+                        <!-- Author Actions -->
+                        {% if session.get('user_id') and ann.author_id == session['user_id'] %}
+                            <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                                <a href="{{ url_for('board.edit_announcement', announcement_id=ann.id) }}" class="btn btn-outline-premium btn-sm">
+                                    <i class="fa-solid fa-pen-to-square me-1"></i>編輯
+                                </a>
+                                <form action="{{ url_for('board.delete_announcement', announcement_id=ann.id) }}" method="POST" onsubmit="return confirm('確定要永久刪除此公告嗎？');" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm rounded-3 px-3">
+                                        <i class="fa-solid fa-trash-can me-1"></i>刪除
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

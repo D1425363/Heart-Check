@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}餐廳評價 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-lg-10">
+        <div class="text-center mb-5">
+            <span class="fs-1 text-primary"><i class="fa-solid fa-utensils text-danger"></i></span>
+            <h2 class="header-title mt-2 mb-1">學區與校園餐廳評價</h2>
+            <p class="text-muted">提供學生餐廳與學校周邊美食評價及人氣餐點推薦</p>
+        </div>
+
+        <!-- Cafeteria Cards Grid -->
+        <div class="row g-4">
+            
+            <!-- Restaurant 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card premium-card h-100 d-flex flex-column">
+                    <div class="p-3 text-center bg-light border-bottom">
+                        <i class="fa-solid fa-bowl-food fa-4x text-danger-emphasis py-3"></i>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="font-bold text-dark mb-0">第一學生餐廳</h5>
+                            <span class="badge bg-danger-subtle text-danger">學餐 1F</span>
+                        </div>
+                        <div class="text-warning mb-3">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                            <span class="text-muted small ms-1">(4.5/5)</span>
+                        </div>
+                        <p class="text-muted small flex-grow-1">
+                            校內最大的自助餐及麵食街，包含各式炒飯、排骨飯、水餃等。便宜大碗，是學生解決午晚餐的首選。
+                        </p>
+                        <hr class="border-light-subtle my-3">
+                        <div class="small">
+                            <strong class="text-dark">人氣推薦：</strong>
+                            <span class="text-secondary d-block">肉絲炒飯、大排骨便當</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restaurant 2 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card premium-card h-100 d-flex flex-column">
+                    <div class="p-3 text-center bg-light border-bottom">
+                        <i class="fa-solid fa-mug-hot fa-4x text-primary-emphasis py-3"></i>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="font-bold text-dark mb-0">圖書館湖畔咖啡</h5>
+                            <span class="badge bg-primary-subtle text-primary">圖書新館</span>
+                        </div>
+                        <div class="text-warning mb-3">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-regular fa-star"></i>
+                            <span class="text-muted small ms-1">(4.0/5)</span>
+                        </div>
+                        <p class="text-muted small flex-grow-1">
+                            環境清幽，面向人工湖，提供各式單品咖啡、拿鐵、輕食貝果及鬆餅。適合讀書小憩或小組討論。
+                        </p>
+                        <hr class="border-light-subtle my-3">
+                        <div class="small">
+                            <strong class="text-dark">人氣推薦：</strong>
+                            <span class="text-secondary d-block">榛果拿鐵、原味鬆餅</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Restaurant 3 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card premium-card h-100 d-flex flex-column">
+                    <div class="p-3 text-center bg-light border-bottom">
+                        <i class="fa-solid fa-egg fa-4x text-success-emphasis py-3"></i>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="font-bold text-dark mb-0">晨間美味早午餐</h5>
+                            <span class="badge bg-success-subtle text-success">後門出口</span>
+                        </div>
+                        <div class="text-warning mb-3">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <span class="text-muted small ms-1">(5.0/5)</span>
+                        </div>
+                        <p class="text-muted small flex-grow-1">
+                            後門人氣最高的西式早午餐店，吐司與蛋餅外皮酥脆。阿姨人很熱情親切，早八上課的活力來源！
+                        </p>
+                        <hr class="border-light-subtle my-3">
+                        <div class="small">
+                            <strong class="text-dark">人氣推薦：</strong>
+                            <span class="text-secondary d-block">起司薯餅蛋餅、焦糖奶茶</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

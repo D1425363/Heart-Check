@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - 詳情 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-lg-10">
+        <div class="card premium-card overflow-hidden">
+            <div class="row g-0">
+                <!-- Left: Image Display -->
+                <div class="col-md-5 bg-light d-flex align-items-center justify-content-center p-4 border-end" style="min-height: 350px;">
+                    {% if item.image_url %}
+                        <img src="{{ url_for('static', filename=item.image_url) }}" alt="{{ item.title }}" class="img-fluid rounded-4 shadow-sm" style="max-height: 400px; object-fit: contain;">
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="fa-solid fa-image fa-5x text-light-emphasis"></i>
+                            <span class="d-block mt-3 small">此公告未上傳照片</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Right: Details Area -->
+                <div class="col-md-7 p-4 p-lg-5 d-flex flex-column justify-content-between">
+                    <div>
+                        <!-- Badges -->
+                        <div class="mb-3 d-flex gap-2">
+                            <span class="badge {% if item.item_type == 'lost' %}bg-danger{% else %}bg-success{% endif %} px-3 py-2 rounded-pill font-bold shadow-sm">
+                                {% if item.item_type == 'lost' %}
+                                    <i class="fa-solid fa-circle-question me-1"></i>尋物啟事
+                                {% else %}
+                                    <i class="fa-solid fa-circle-check me-1"></i>拾獲公告
+                                {% endif %}
+                            </span>
+                            <span class="badge {% if item.status == 'unclaimed' %}bg-info text-dark{% else %}bg-secondary{% endif %} px-3 py-2 rounded-pill font-bold shadow-sm">
+                                {% if item.status == 'unclaimed' %}
+                                    協尋中 / 未認領
+                                {% else %}
+                                    已認領 / 已尋回
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <h2 class="font-bold mb-3">{{ item.title }}</h2>
+                        
+                        <div class="mb-4">
+                            <h6 class="font-semibold text-secondary mb-2"><i class="fa-solid fa-file-lines me-2"></i>物品描述：</h6>
+                            <p class="text-secondary bg-light p-3 rounded-3" style="white-space: pre-line;">{{ item.description }}</p>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <h6 class="font-semibold text-secondary mb-1"><i class="fa-solid fa-location-dot me-2 text-danger"></i>地點：</h6>
+                                <span class="text-dark">{{ item.location }}</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6 class="font-semibold text-secondary mb-1"><i class="fa-solid fa-user me-2"></i>發布人：</h6>
+                                <span class="text-dark">{{ item.user_name }}</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6 class="font-semibold text-secondary mb-1"><i class="fa-solid fa-calendar-days me-2"></i>發布日期：</h6>
+                                <span class="text-dark font-monospace">{{ item.created_at[:16].replace('T', ' ') }}</span>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6 class="font-semibold text-secondary mb-1"><i class="fa-solid fa-address-book me-2"></i>聯絡資訊：</h6>
+                                <span class="text-dark">{{ item.contact_info or '需透過系統內建管道聯繫' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions Panel -->
+                    <div class="border-top pt-4 mt-3">
+                        <div class="d-flex flex-wrap gap-2">
+                            <!-- Back Button always visible -->
+                            <a href="{{ url_for('item.list_items') }}" class="btn btn-light border px-4 rounded-3">
+                                <i class="fa-solid fa-arrow-left me-2"></i>返回清單
+                            </a>
+
+                            <!-- Owner Controls -->
+                            {% if session.get('user_id') and item.user_id == session['user_id'] %}
+                                <a href="{{ url_for('item.edit_item', item_id=item.id) }}" class="btn btn-outline-premium rounded-3">
+                                    <i class="fa-solid fa-pen-to-square me-1"></i>編輯公告
+                                </a>
+
+                                {% if item.status == 'unclaimed' %}
+                                    <form action="{{ url_for('item.claim_item', item_id=item.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-success rounded-3 px-3">
+                                            <i class="fa-solid fa-circle-check me-1"></i>標記為已認領 / 尋回
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                <form action="{{ url_for('item.delete_item', item_id=item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('確定要永久刪除此公告嗎？此動作無法復原。');">
+                                    <button type="submit" class="btn btn-danger rounded-3 px-3">
+                                        <i class="fa-solid fa-trash-can me-1"></i>刪除公告
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}發布失物招領公告 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-lg-8">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="mb-4">
+                    <h2 class="header-title mb-1"><i class="fa-solid fa-file-circle-plus me-2"></i>發布失物招領公告</h2>
+                    <p class="text-muted">請填寫物品資訊，方便他人協助尋找或認領</p>
+                </div>
+
+                <form action="{{ url_for('item.new_item') }}" method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="item_type" class="form-label font-semibold">公告類型 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-list"></i></span>
+                                <select class="form-select" id="item_type" name="item_type" required>
+                                    <option value="" disabled selected>請選擇公告類型</option>
+                                    <option value="lost" {% if item_type == 'lost' %}selected{% endif %}>尋物啟事（我有東西掉了）</option>
+                                    <option value="found" {% if item_type == 'found' %}selected{% endif %}>拾獲公告（我撿到了東西）</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label font-semibold">物品標題 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-heading"></i></span>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="例如：在學餐二樓撿到藍色皮夾" value="{{ title or '' }}" required autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label font-semibold">遺失 / 拾獲地點 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-location-dot text-danger"></i></span>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="例如：大禮堂門口、學生餐廳、第二宿舍..." value="{{ location or '' }}" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label font-semibold">物品詳細描述 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-comment-medical text-primary"></i></span>
+                            <textarea class="form-control" id="description" name="description" rows="4" placeholder="請描述物品外觀、特徵、顏色，或是是否有特別物件...等細節" required>{{ description or '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="image" class="form-label font-semibold">上傳物品照片</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-image"></i></span>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                            </div>
+                            <div class="form-text small">僅支援 PNG、JPG、JPEG、GIF 格式。</div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <label for="contact_info" class="form-label font-semibold">聯絡資訊</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-address-book"></i></span>
+                                <input type="text" class="form-control" id="contact_info" name="contact_info" placeholder="例如：手機 0912-345678 / IG @example (選填)" value="{{ contact_info or '' }}" autocomplete="off">
+                            </div>
+                            <div class="form-text small">不填則預設以系統內建管道聯繫。</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('item.list_items') }}" class="btn btn-light flex-grow-1 py-2 rounded-3 border">
+                            <i class="fa-solid fa-arrow-left me-2"></i>返回列表
+                        </a>
+                        <button type="submit" class="btn btn-premium flex-grow-2 py-2">
+                            <i class="fa-solid fa-circle-plus me-2"></i>確認發布
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

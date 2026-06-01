@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}註冊帳號 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center my-4 animate-fade-in">
+    <div class="col-md-6 col-lg-5">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <span class="fs-1 text-primary"><i class="fa-solid fa-user-plus text-danger"></i></span>
+                    <h2 class="header-title mt-2 mb-1">註冊新帳號</h2>
+                    <p class="text-muted">加入 Heart Check，開啟校園互助之旅</p>
+                </div>
+                <form action="{{ url_for('auth.register') }}" method="POST">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label font-semibold">登入帳號 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="請輸入學號或自訂帳號" value="{{ username or '' }}" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label font-semibold">登入密碼 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="請設定安全性密碼" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label font-semibold">真實姓名 / 暱稱 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-signature"></i></span>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="用於感謝明細顯示" value="{{ name or '' }}" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="student_id" class="form-label font-semibold">學號 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-id-card"></i></span>
+                            <input type="text" class="form-control" id="student_id" name="student_id" placeholder="例如：110XXXXXX" value="{{ student_id or '' }}" required autocomplete="off">
+                        </div>
+                        <div class="form-text small">僅用於身份核實，保證資料不外流。</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="department" class="form-label font-semibold">就讀科系</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-graduation-cap"></i></span>
+                            <input type="text" class="form-control" id="department" name="department" placeholder="例如：資訊工程學系 (選填)" value="{{ department or '' }}" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-premium w-100 py-2">
+                        <i class="fa-solid fa-user-check me-2"></i>註冊帳號
+                    </button>
+                </form>
+                <div class="text-center mt-4 text-muted small">
+                    已有帳號？<a href="{{ url_for('auth.login') }}" class="text-decoration-none font-bold text-danger">前往登入</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

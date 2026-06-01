@@ -1,0 +1,179 @@
+/* Heart Check Web Application - Custom Design System */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --primary-gradient: linear-gradient(135deg, #ff4b72 0%, #7033ff 100%);
+    --bg-gradient: linear-gradient(180deg, #f8f9fc 0%, #f1f3f9 100%);
+    --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 5px 15px -8px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 20px 40px -5px rgba(112, 51, 255, 0.12), 0 8px 24px -10px rgba(255, 75, 114, 0.12);
+    --text-primary: #1e1e24;
+    --text-secondary: #5c6270;
+    --bg-glass: rgba(255, 255, 255, 0.85);
+    --border-glass: rgba(255, 255, 255, 0.4);
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Base Layout & Elements */
+.navbar {
+    background: var(--bg-glass) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-glass);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.nav-link {
+    font-weight: 500;
+    color: var(--text-secondary) !important;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: #ff4b72 !important;
+    transform: translateY(-1px);
+}
+
+/* Premium Card Design */
+.premium-card {
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-glass);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    overflow: hidden;
+}
+
+.premium-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+    border-color: rgba(112, 51, 255, 0.2);
+}
+
+/* Beautiful Buttons */
+.btn-premium {
+    background: var(--primary-gradient);
+    color: white !important;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 10px 24px;
+    box-shadow: 0 4px 15px rgba(255, 75, 114, 0.25);
+    transition: all 0.3s ease;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 75, 114, 0.35);
+    opacity: 0.95;
+}
+
+.btn-outline-premium {
+    background: transparent;
+    color: #ff4b72 !important;
+    border: 2px solid #ff4b72;
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 8px 22px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-premium:hover {
+    background: var(--primary-gradient);
+    color: white !important;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(112, 51, 255, 0.2);
+}
+
+/* Heart & Popularity Pill UI */
+.heart-badge {
+    background: linear-gradient(135deg, #ffe3e8 0%, #ffd0da 100%);
+    color: #ff4b72;
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.popularity-badge {
+    background: linear-gradient(135deg, #eae3ff 0%, #dcd0ff 100%);
+    color: #7033ff;
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Page Headers & Gradients */
+.header-title {
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+/* Micro-interactions & animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+/* Form Styling */
+.form-control, .form-select {
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #e1e3ea;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #ff4b72;
+    box-shadow: 0 0 0 3px rgba(255, 75, 114, 0.15);
+}
+
+/* List Items Details */
+.list-group-item {
+    border-radius: 12px !important;
+    border: 1px solid #f1f3f9;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #fcfcff;
+    transform: translateX(3px);
+}
+
+/* Footer styling */
+footer {
+    background: #1e1e24;
+    color: #a0a5b5;
+    font-weight: 400;
+    margin-top: auto;
+}

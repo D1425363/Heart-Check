@@ -2,6 +2,19 @@ import datetime
 import secrets
 from app.models.db import get_db_connection
 
+def get_local_db_connection():
+    """
+    建立並回傳 SQLite 資料庫連線，啟用外鍵約束，並設定 Row Factory。
+    
+    Returns:
+        sqlite3.Connection: 資料庫連線物件。
+    """
+    try:
+        return get_db_connection()
+    except Exception as e:
+        print(f"Error establishing database connection: {e}")
+        raise e
+
 class User:
     def __init__(self, id, username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at):
         self.id = id
@@ -35,122 +48,262 @@ class User:
         )
 
     @classmethod
-    def create(cls, username, password_hash, name, student_id, department=None, heart_balance=100, popularity=0, qr_code_token=None):
+    def create(cls, data=None, **kwargs):
         """
-        Creates a new user in the database.
+        新增一筆使用者記錄。
+        
+        參數:
+            data (dict, optional): 包含使用者欄位的字典。
+            **kwargs: 可選的關鍵字引數。
+        
+        傳回值:
+            User: 新增的使用者物件。
         """
-        now = datetime.datetime.now().isoformat()
-        if not qr_code_token:
-            qr_code_token = secrets.token_hex(16)
-            
-        conn = get_db_connection()
-        cursor = conn.cursor()
         try:
-            cursor.execute(
-                """
-                INSERT INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-                """,
-                (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, now, now)
-            )
-            conn.commit()
-            new_id = cursor.lastrowid
-            return cls.get_by_id(new_id)
+            if isinstance(data, dict):
+                username = data.get('username')
+                password_hash = data.get('password_hash')
+                name = data.get('name')
+                student_id = data.get('student_id')
+                department = data.get('department')
+                heart_balance = data.get('heart_balance', 100)
+                popularity = data.get('popularity', 0)
+                qr_code_token = data.get('qr_code_token')
+            else:
+                username = data if data is not None else kwargs.get('username')
+                password_hash = kwargs.get('password_hash')
+                name = kwargs.get('name')
+                student_id = kwargs.get('student_id')
+                department = kwargs.get('department')
+                heart_balance = kwargs.get('heart_balance', 100)
+                popularity = kwargs.get('popularity', 0)
+                qr_code_token = kwargs.get('qr_code_token')
+
+            now = datetime.datetime.now().isoformat()
+            if not qr_code_token:
+                qr_code_token = secrets.token_hex(16)
+
+            conn = get_local_db_connection()
+            cursor = conn.cursor()
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    """,
+                    (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, now, now)
+                )
+                conn.commit()
+                new_id = cursor.lastrowid
+                return cls.get_by_id(new_id)
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
         except Exception as e:
-            conn.rollback()
+            print(f"Error in User.create: {e}")
             raise e
-        finally:
-            conn.close()
 
     @classmethod
     def get_by_id(cls, user_id):
         """
-        Retrieves a user by their ID.
+        取得單筆使用者記錄（依 ID）。
+        
+        參數:
+            user_id (int): 使用者 ID。
+            
+        傳回值:
+            User: 使用者物件，若不存在則傳回 None。
         """
-        conn = get_db_connection()
-        row = conn.execute("SELECT * FROM users WHERE id = ?;", (user_id,)).fetchone()
-        conn.close()
-        return cls.from_row(row)
+        try:
+            conn = get_local_db_connection()
+            try:
+                row = conn.execute("SELECT * FROM users WHERE id = ?;", (user_id,)).fetchone()
+                return cls.from_row(row)
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in User.get_by_id: {e}")
+            raise e
 
     @classmethod
     def get_by_username(cls, username):
         """
-        Retrieves a user by their username.
+        取得單筆使用者記錄（依使用者帳號）。
+        
+        參數:
+            username (str): 使用者帳號。
+            
+        傳回值:
+            User: 使用者物件，若不存在則傳回 None。
         """
-        conn = get_db_connection()
-        row = conn.execute("SELECT * FROM users WHERE username = ?;", (username,)).fetchone()
-        conn.close()
-        return cls.from_row(row)
+        try:
+            conn = get_local_db_connection()
+            try:
+                row = conn.execute("SELECT * FROM users WHERE username = ?;", (username,)).fetchone()
+                return cls.from_row(row)
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in User.get_by_username: {e}")
+            raise e
 
     @classmethod
     def get_by_qr_code_token(cls, qr_code_token):
         """
-        Retrieves a user by their unique QR code token.
+        取得單筆使用者記錄（依 QR Code Token）。
+        
+        參數:
+            qr_code_token (str): QR Code 憑證。
+            
+        傳回值:
+            User: 使用者物件，若不存在則傳回 None。
         """
-        conn = get_db_connection()
-        row = conn.execute("SELECT * FROM users WHERE qr_code_token = ?;", (qr_code_token,)).fetchone()
-        conn.close()
-        return cls.from_row(row)
+        try:
+            conn = get_local_db_connection()
+            try:
+                row = conn.execute("SELECT * FROM users WHERE qr_code_token = ?;", (qr_code_token,)).fetchone()
+                return cls.from_row(row)
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in User.get_by_qr_code_token: {e}")
+            raise e
 
     @classmethod
     def get_all(cls):
         """
-        Retrieves all users.
+        取得所有使用者記錄。
+        
+        傳回值:
+            list: 包含所有 User 物件的列表。
         """
-        conn = get_db_connection()
-        rows = conn.execute("SELECT * FROM users ORDER BY id ASC;").fetchall()
-        conn.close()
-        return [cls.from_row(row) for row in rows]
+        try:
+            conn = get_local_db_connection()
+            try:
+                rows = conn.execute("SELECT * FROM users ORDER BY id ASC;").fetchall()
+                return [cls.from_row(row) for row in rows]
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in User.get_all: {e}")
+            raise e
 
     @classmethod
     def get_top_by_popularity(cls, limit=10):
         """
-        Retrieves top users sorted by popularity (leaderboard).
+        取得人氣排行榜前幾名使用者。
+        
+        參數:
+            limit (int): 取得數量限制。
+            
+        傳回值:
+            list: 包含 User 物件的列表。
         """
-        conn = get_db_connection()
-        rows = conn.execute("SELECT * FROM users ORDER BY popularity DESC, name ASC LIMIT ?;", (limit,)).fetchall()
-        conn.close()
-        return [cls.from_row(row) for row in rows]
-
-    def update(self):
-        """
-        Updates the current user's profile and dynamic attributes in the database.
-        """
-        self.updated_at = datetime.datetime.now().isoformat()
-        conn = get_db_connection()
         try:
-            conn.execute(
-                """
-                UPDATE users 
-                SET username = ?, password_hash = ?, name = ?, student_id = ?, department = ?, 
-                    heart_balance = ?, popularity = ?, qr_code_token = ?, updated_at = ?
-                WHERE id = ?;
-                """,
-                (self.username, self.password_hash, self.name, self.student_id, self.department,
-                 self.heart_balance, self.popularity, self.qr_code_token, self.updated_at, self.id)
-            )
-            conn.commit()
-            return True
+            conn = get_local_db_connection()
+            try:
+                rows = conn.execute("SELECT * FROM users ORDER BY popularity DESC, name ASC LIMIT ?;", (limit,)).fetchall()
+                return [cls.from_row(row) for row in rows]
+            finally:
+                conn.close()
         except Exception as e:
-            conn.rollback()
+            print(f"Error in User.get_top_by_popularity: {e}")
             raise e
-        finally:
-            conn.close()
 
-    def delete(self):
+    @classmethod
+    def update(cls, id_or_self, data=None):
         """
-        Deletes the user from the database.
+        更新使用者記錄。支援物件導向式更新與類別層級更新。
+        
+        參數:
+            id_or_self (int/User): 使用者 ID 或 User 物件。
+            data (dict, optional): 欲更新的欄位與值字典。
+            
+        傳回值:
+            bool: 更新成功傳回 True，否則傳回 False。
         """
-        conn = get_db_connection()
         try:
-            conn.execute("DELETE FROM users WHERE id = ?;", (self.id,))
-            conn.commit()
-            return True
+            now = datetime.datetime.now().isoformat()
+            conn = get_local_db_connection()
+            try:
+                if isinstance(id_or_self, cls):
+                    # 物件導向式更新
+                    self = id_or_self
+                    self.updated_at = now
+                    conn.execute(
+                        """
+                        UPDATE users 
+                        SET username = ?, password_hash = ?, name = ?, student_id = ?, department = ?, 
+                            heart_balance = ?, popularity = ?, qr_code_token = ?, updated_at = ?
+                        WHERE id = ?;
+                        """,
+                        (self.username, self.password_hash, self.name, self.student_id, self.department,
+                         self.heart_balance, self.popularity, self.qr_code_token, self.updated_at, self.id)
+                    )
+                    conn.commit()
+                    return True
+                else:
+                    # 類別層級更新
+                    user_id = id_or_self
+                    if not data:
+                        return False
+                    
+                    # 動態生成 SQL 以支援局部更新
+                    fields = []
+                    params = []
+                    for key, val in data.items():
+                        if key in ('username', 'password_hash', 'name', 'student_id', 'department', 'heart_balance', 'popularity', 'qr_code_token'):
+                            fields.append(f"{key} = ?")
+                            params.append(val)
+                    
+                    if not fields:
+                        return False
+                    
+                    fields.append("updated_at = ?")
+                    params.append(now)
+                    params.append(user_id)
+                    
+                    sql = f"UPDATE users SET {', '.join(fields)} WHERE id = ?;"
+                    conn.execute(sql, tuple(params))
+                    conn.commit()
+                    return True
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
         except Exception as e:
-            conn.rollback()
+            print(f"Error in User.update: {e}")
             raise e
-        finally:
-            conn.close()
+
+    @classmethod
+    def delete(cls, id_or_self):
+        """
+        刪除使用者記錄。支援物件導向式刪除與類別層級刪除。
+        
+        參數:
+            id_or_self (int/User): 使用者 ID 或 User 物件。
+            
+        傳回值:
+            bool: 刪除成功傳回 True，否則傳回 False。
+        """
+        try:
+            user_id = id_or_self.id if isinstance(id_or_self, cls) else id_or_self
+            conn = get_local_db_connection()
+            try:
+                conn.execute("DELETE FROM users WHERE id = ?;", (user_id,))
+                conn.commit()
+                return True
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in User.delete: {e}")
+            raise e
 
 
 class HeartTransaction:
@@ -170,7 +323,6 @@ class HeartTransaction:
     def from_row(cls, row):
         if not row:
             return None
-        # Handle optional joined columns if they exist in the row
         sender_name = row['sender_name'] if 'sender_name' in row.keys() else None
         receiver_name = row['receiver_name'] if 'receiver_name' in row.keys() else None
         
@@ -186,156 +338,290 @@ class HeartTransaction:
         )
 
     @classmethod
-    def create(cls, sender_id, receiver_id, heart_amount, thank_you_message=None):
+    def create(cls, data=None, **kwargs):
         """
-        Records a transaction without transferring balance. 
-        Use transfer_hearts() for transferring hearts and recording transaction atomically.
+        新增一筆交易紀錄。
+        
+        參數:
+            data (dict, optional): 包含交易欄位的字典。
+            **kwargs: 可選的關鍵字引數。
+        
+        傳回值:
+            HeartTransaction: 新增的交易紀錄物件。
         """
-        now = datetime.datetime.now().isoformat()
-        conn = get_db_connection()
-        cursor = conn.cursor()
         try:
-            cursor.execute(
-                """
-                INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
-                VALUES (?, ?, ?, ?, ?);
-                """,
-                (sender_id, receiver_id, heart_amount, thank_you_message, now)
-            )
-            conn.commit()
-            new_id = cursor.lastrowid
-            return cls.get_by_id(new_id)
+            if isinstance(data, dict):
+                sender_id = data.get('sender_id')
+                receiver_id = data.get('receiver_id')
+                heart_amount = data.get('heart_amount')
+                thank_you_message = data.get('thank_you_message')
+            else:
+                sender_id = data if data is not None else kwargs.get('sender_id')
+                receiver_id = kwargs.get('receiver_id')
+                heart_amount = kwargs.get('heart_amount')
+                thank_you_message = kwargs.get('thank_you_message')
+
+            now = datetime.datetime.now().isoformat()
+            conn = get_local_db_connection()
+            cursor = conn.cursor()
+            try:
+                cursor.execute(
+                    """
+                    INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
+                    VALUES (?, ?, ?, ?, ?);
+                    """,
+                    (sender_id, receiver_id, heart_amount, thank_you_message, now)
+                )
+                conn.commit()
+                new_id = cursor.lastrowid
+                return cls.get_by_id(new_id)
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
         except Exception as e:
-            conn.rollback()
+            print(f"Error in HeartTransaction.create: {e}")
             raise e
-        finally:
-            conn.close()
 
     @classmethod
     def transfer_hearts(cls, sender_id, receiver_id, amount, message=None):
         """
-        Atomically transfers hearts from sender to receiver, increasing receiver popularity,
-        and logs the transaction.
+        原子性地扣除發送者愛心值、增加接收者人氣值，並新增一筆交易紀錄。
+        
+        參數:
+            sender_id (int): 發送者 ID。
+            receiver_id (int): 接收者 ID。
+            amount (int): 轉移的愛心值。
+            message (str, optional): 感謝留言。
+            
+        傳回值:
+            bool: 交易成功傳回 True，否則 raise 異常。
         """
-        if sender_id == receiver_id:
-            raise ValueError("Cannot transfer heart values to yourself.")
-        if amount <= 0:
-            raise ValueError("Transfer amount must be positive.")
-
-        now = datetime.datetime.now().isoformat()
-        conn = get_db_connection()
-        cursor = conn.cursor()
         try:
-            # 1. Fetch sender and check balance
-            sender_row = cursor.execute("SELECT heart_balance FROM users WHERE id = ?;", (sender_id,)).fetchone()
-            if not sender_row:
-                raise ValueError("Sender user not found.")
-            
-            if sender_row['heart_balance'] < amount:
-                raise ValueError("Insufficient heart balance.")
+            if sender_id == receiver_id:
+                raise ValueError("Cannot transfer heart values to yourself.")
+            if amount <= 0:
+                raise ValueError("Transfer amount must be positive.")
 
-            # 2. Verify receiver exists
-            receiver_exists = cursor.execute("SELECT 1 FROM users WHERE id = ?;", (receiver_id,)).fetchone()
-            if not receiver_exists:
-                raise ValueError("Receiver user not found.")
+            now = datetime.datetime.now().isoformat()
+            conn = get_local_db_connection()
+            cursor = conn.cursor()
+            try:
+                # 1. Fetch sender and check balance
+                sender_row = cursor.execute("SELECT heart_balance FROM users WHERE id = ?;", (sender_id,)).fetchone()
+                if not sender_row:
+                    raise ValueError("Sender user not found.")
+                
+                if sender_row['heart_balance'] < amount:
+                    raise ValueError("Insufficient heart balance.")
 
-            # 3. Deduct from sender
-            cursor.execute(
-                "UPDATE users SET heart_balance = heart_balance - ?, updated_at = ? WHERE id = ?;",
-                (amount, now, sender_id)
-            )
+                # 2. Verify receiver exists
+                receiver_exists = cursor.execute("SELECT 1 FROM users WHERE id = ?;", (receiver_id,)).fetchone()
+                if not receiver_exists:
+                    raise ValueError("Receiver user not found.")
 
-            # 4. Add to receiver popularity
-            cursor.execute(
-                "UPDATE users SET popularity = popularity + ?, updated_at = ? WHERE id = ?;",
-                (amount, now, receiver_id)
-            )
+                # 3. Deduct from sender
+                cursor.execute(
+                    "UPDATE users SET heart_balance = heart_balance - ?, updated_at = ? WHERE id = ?;",
+                    (amount, now, sender_id)
+                )
 
-            # 5. Insert transaction log
-            cursor.execute(
-                """
-                INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
-                VALUES (?, ?, ?, ?, ?);
-                """,
-                (sender_id, receiver_id, amount, message, now)
-            )
-            
-            conn.commit()
-            return True
+                # 4. Add to receiver popularity
+                cursor.execute(
+                    "UPDATE users SET popularity = popularity + ?, updated_at = ? WHERE id = ?;",
+                    (amount, now, receiver_id)
+                )
+
+                # 5. Insert transaction log
+                cursor.execute(
+                    """
+                    INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
+                    VALUES (?, ?, ?, ?, ?);
+                    """,
+                    (sender_id, receiver_id, amount, message, now)
+                )
+                
+                conn.commit()
+                return True
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
         except Exception as e:
-            conn.rollback()
+            print(f"Error in HeartTransaction.transfer_hearts: {e}")
             raise e
-        finally:
-            conn.close()
 
     @classmethod
     def get_by_id(cls, transaction_id):
         """
-        Retrieves a single transaction by ID.
+        取得單筆交易記錄（依 ID）。
+        
+        參數:
+            transaction_id (int): 交易 ID。
+            
+        傳回值:
+            HeartTransaction: 交易物件，若不存在則傳回 None。
         """
-        conn = get_db_connection()
-        row = conn.execute(
-            """
-            SELECT t.*, u1.name AS sender_name, u2.name AS receiver_name
-            FROM heart_transactions t
-            JOIN users u1 ON t.sender_id = u1.id
-            JOIN users u2 ON t.receiver_id = u2.id
-            WHERE t.id = ?;
-            """,
-            (transaction_id,)
-        ).fetchone()
-        conn.close()
-        return cls.from_row(row)
+        try:
+            conn = get_local_db_connection()
+            try:
+                row = conn.execute(
+                    """
+                    SELECT t.*, u1.name AS sender_name, u2.name AS receiver_name
+                    FROM heart_transactions t
+                    JOIN users u1 ON t.sender_id = u1.id
+                    JOIN users u2 ON t.receiver_id = u2.id
+                    WHERE t.id = ?;
+                    """,
+                    (transaction_id,)
+                ).fetchone()
+                return cls.from_row(row)
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in HeartTransaction.get_by_id: {e}")
+            raise e
 
     @classmethod
     def get_all(cls):
         """
-        Retrieves all transactions.
+        取得所有交易記錄。
+        
+        傳回值:
+            list: 包含所有 HeartTransaction 物件的列表。
         """
-        conn = get_db_connection()
-        rows = conn.execute(
-            """
-            SELECT t.*, u1.name AS sender_name, u2.name AS receiver_name
-            FROM heart_transactions t
-            JOIN users u1 ON t.sender_id = u1.id
-            JOIN users u2 ON t.receiver_id = u2.id
-            ORDER BY t.created_at DESC;
-            """
-        ).fetchall()
-        conn.close()
-        return [cls.from_row(row) for row in rows]
+        try:
+            conn = get_local_db_connection()
+            try:
+                rows = conn.execute(
+                    """
+                    SELECT t.*, u1.name AS sender_name, u2.name AS receiver_name
+                    FROM heart_transactions t
+                    JOIN users u1 ON t.sender_id = u1.id
+                    JOIN users u2 ON t.receiver_id = u2.id
+                    ORDER BY t.created_at DESC;
+                    """
+                ).fetchall()
+                return [cls.from_row(row) for row in rows]
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in HeartTransaction.get_all: {e}")
+            raise e
 
     @classmethod
     def get_by_user_id(cls, user_id):
         """
-        Retrieves all transactions where user_id is sender or receiver.
+        取得特定使用者的所有交易記錄。
+        
+        參數:
+            user_id (int): 使用者 ID。
+            
+        傳回值:
+            list: 包含 HeartTransaction 物件的列表。
         """
-        conn = get_db_connection()
-        rows = conn.execute(
-            """
-            SELECT t.*, u1.name AS sender_name, u2.name AS receiver_name
-            FROM heart_transactions t
-            JOIN users u1 ON t.sender_id = u1.id
-            JOIN users u2 ON t.receiver_id = u2.id
-            WHERE t.sender_id = ? OR t.receiver_id = ?
-            ORDER BY t.created_at DESC;
-            """,
-            (user_id, user_id)
-        ).fetchall()
-        conn.close()
-        return [cls.from_row(row) for row in rows]
-
-    def delete(self):
-        """
-        Deletes a transaction.
-        """
-        conn = get_db_connection()
         try:
-            conn.execute("DELETE FROM heart_transactions WHERE id = ?;", (self.id,))
-            conn.commit()
-            return True
+            conn = get_local_db_connection()
+            try:
+                rows = conn.execute(
+                    """
+                    SELECT t.*, u1.name AS sender_name, u2.name AS receiver_name
+                    FROM heart_transactions t
+                    JOIN users u1 ON t.sender_id = u1.id
+                    JOIN users u2 ON t.receiver_id = u2.id
+                    WHERE t.sender_id = ? OR t.receiver_id = ?
+                    ORDER BY t.created_at DESC;
+                    """,
+                    (user_id, user_id)
+                ).fetchall()
+                return [cls.from_row(row) for row in rows]
+            finally:
+                conn.close()
         except Exception as e:
-            conn.rollback()
+            print(f"Error in HeartTransaction.get_by_user_id: {e}")
             raise e
-        finally:
-            conn.close()
+
+    @classmethod
+    def update(cls, id_or_self, data=None):
+        """
+        更新交易記錄。支援物件導向式與類別層級。
+        
+        參數:
+            id_or_self (int/HeartTransaction): 交易 ID 或物件。
+            data (dict, optional): 欲更新欄位的字典。
+            
+        傳回值:
+            bool: 更新成功傳回 True，否則傳回 False。
+        """
+        try:
+            conn = get_local_db_connection()
+            try:
+                if isinstance(id_or_self, cls):
+                    self = id_or_self
+                    conn.execute(
+                        """
+                        UPDATE heart_transactions
+                        SET sender_id = ?, receiver_id = ?, heart_amount = ?, thank_you_message = ?
+                        WHERE id = ?;
+                        """,
+                        (self.sender_id, self.receiver_id, self.heart_amount, self.thank_you_message, self.id)
+                    )
+                    conn.commit()
+                    return True
+                else:
+                    transaction_id = id_or_self
+                    if not data:
+                        return False
+                    
+                    fields = []
+                    params = []
+                    for key, val in data.items():
+                        if key in ('sender_id', 'receiver_id', 'heart_amount', 'thank_you_message'):
+                            fields.append(f"{key} = ?")
+                            params.append(val)
+                    
+                    if not fields:
+                        return False
+                    
+                    params.append(transaction_id)
+                    sql = f"UPDATE heart_transactions SET {', '.join(fields)} WHERE id = ?;"
+                    conn.execute(sql, tuple(params))
+                    conn.commit()
+                    return True
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in HeartTransaction.update: {e}")
+            raise e
+
+    @classmethod
+    def delete(cls, id_or_self):
+        """
+        刪除交易記錄。
+        
+        參數:
+            id_or_self (int/HeartTransaction): 交易 ID 或物件。
+            
+        傳回值:
+            bool: 刪除成功傳回 True，否則傳回 False。
+        """
+        try:
+            transaction_id = id_or_self.id if isinstance(id_or_self, cls) else id_or_self
+            conn = get_local_db_connection()
+            try:
+                conn.execute("DELETE FROM heart_transactions WHERE id = ?;", (transaction_id,))
+                conn.commit()
+                return True
+            except Exception as e:
+                conn.rollback()
+                raise e
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in HeartTransaction.delete: {e}")
+            raise e

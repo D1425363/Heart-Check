@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}發布新公告 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-lg-8">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="mb-4">
+                    <h2 class="header-title mb-1"><i class="fa-solid fa-square-plus me-2"></i>建立新公告通知</h2>
+                    <p class="text-muted">發布最新宿舍或校園生活通知</p>
+                </div>
+
+                <form action="{{ url_for('board.new_announcement') }}" method="POST">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label font-semibold">公告分類 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-list"></i></span>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="" disabled selected>請選擇公告分類</option>
+                                    <option value="dorm" {% if category == 'dorm' %}selected{% endif %}>宿舍公告（限宿舍重要資訊）</option>
+                                    <option value="campus" {% if category == 'campus' %}selected{% endif %}>校園公告（限校園大眾通知）</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label font-semibold">公告標題 <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-heading"></i></span>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="例如：第二宿舍停水公告通知" value="{{ title or '' }}" required autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="content" class="form-label font-semibold">公告詳細內容 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-paragraph text-primary"></i></span>
+                            <textarea class="form-control" id="content" name="content" rows="6" placeholder="請詳細填寫公告具體通知事項..." required>{{ content or '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('board.announcements') }}" class="btn btn-light flex-grow-1 py-2 rounded-3 border">
+                            <i class="fa-solid fa-arrow-left me-2"></i>返回列表
+                        </a>
+                        <button type="submit" class="btn btn-premium flex-grow-2 py-2">
+                            <i class="fa-solid fa-paper-plane me-2"></i>確認發布
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
