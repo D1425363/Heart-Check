@@ -45,7 +45,7 @@
                     
                     <div class="bg-white p-3 rounded-4 shadow-sm border d-inline-block">
                         <!-- We generate the QR Code pointing directly to the transfer page on-the-fly -->
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ url_for('user.qr_transfer', token=user.qr_code_token, _external=True) }}" 
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ qr_transfer_url }}" 
                              alt="QR Code" 
                              class="img-fluid" 
                              style="max-width: 180px;">
@@ -53,6 +53,16 @@
                     <div class="mt-2 text-muted small">
                         Token: <span class="font-monospace">{{ user.qr_code_token[:8] }}...</span>
                     </div>
+                    
+                    {% if is_local_warning %}
+                    <div class="alert alert-warning small mt-3 text-start rounded-3 shadow-sm" role="alert" style="border-left: 4px solid #ffc107;">
+                        <i class="fa-solid fa-triangle-exclamation text-warning me-1"></i>
+                        <strong>手機掃描提示：</strong><br>
+                        1. 手機與電腦需連接<strong>同一個 Wi-Fi</strong>。<br>
+                        2. 電腦的區域 IP 為 <code>{{ qr_transfer_url.split('/qr/')[0] }}</code>。<br>
+                        3. 如手機打不開網頁，請確認防火牆是否阻擋了 Port 5000 連線。
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
