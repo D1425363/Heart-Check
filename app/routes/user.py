@@ -34,7 +34,35 @@ def profile():
             return redirect(url_for('auth.login'))
 
         transactions = HeartTransaction.get_by_user_id(user_id)
-        return render_template("user/profile.html", user=user, transactions=transactions)
+        
+        # Calculate external QR Code URL targeting the local Wi-Fi IP if loopback/localhost is used
+        import socket
+        def get_local_ip():
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                s.connect(('10.255.255.255', 1))
+                IP = s.getsockname()[0]
+            except Exception:
+                IP = '127.0.0.1'
+            finally:
+                s.close()
+            return IP
+
+        qr_transfer_url = url_for('user.qr_transfer', token=user.qr_code_token, _external=True)
+        is_local_warning = False
+        if "localhost" in qr_transfer_url or "127.0.0.1" in qr_transfer_url:
+            local_ip = get_local_ip()
+            if local_ip != '127.0.0.1':
+                qr_transfer_url = qr_transfer_url.replace("localhost", local_ip).replace("127.0.0.1", local_ip)
+                is_local_warning = True
+
+        return render_template(
+            "user/profile.html", 
+            user=user, 
+            transactions=transactions,
+            qr_transfer_url=qr_transfer_url,
+            is_local_warning=is_local_warning
+        )
     except Exception as e:
         flash(f"載入個人檔案失敗：{str(e)}", "danger")
         return redirect(url_for('board.home'))
