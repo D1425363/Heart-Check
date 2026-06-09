@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     heart_balance INTEGER NOT NULL DEFAULT 100,
     popularity INTEGER NOT NULL DEFAULT 0,
     qr_code_token TEXT NOT NULL UNIQUE,
+    avatar TEXT DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );

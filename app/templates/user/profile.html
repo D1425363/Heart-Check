@@ -2,53 +2,197 @@
 
 {% block title %}個人檔案 - Heart Check{% endblock %}
 
+{% block styles %}
+<style>
+    /* Badge styling */
+    .badge-card {
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid #e1e3ea;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .badge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+    
+    .locked-badge {
+        filter: grayscale(0.9);
+        opacity: 0.65;
+    }
+    
+    .locked-badge::before {
+        content: "\f023";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        color: #a0a5b5;
+        font-size: 0.85rem;
+    }
+    
+    .unlocked-badge {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
+    
+    .style-desc {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        min-height: 34px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Avatar radio options style */
+    .avatar-option-label input:checked + .avatar-option-card {
+        border-color: #ff4b72 !important;
+        box-shadow: 0 0 0 3px rgba(255, 75, 114, 0.25) !important;
+        transform: scale(1.1);
+        background-color: #ffe3e8;
+    }
+    
+    .avatar-option-card {
+        cursor: pointer;
+        background-color: #fff;
+        border: 2px solid #e1e3ea !important;
+    }
+    
+    .avatar-option-card:hover {
+        border-color: #7033ff !important;
+        transform: scale(1.05);
+    }
+    
+    /* Medal colors */
+    .text-silver {
+        color: #b0c4de !important;
+    }
+    .text-bronze {
+        color: #cd7f32 !important;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    .animate-bounce {
+        animation: bounce 2s infinite ease-in-out;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row g-4 animate-fade-in">
     <!-- Left Column: User Profile & QR Code -->
     <div class="col-lg-5">
         <div class="card premium-card text-center p-4 h-100">
-            <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                <!-- Avatar Placeholder -->
-                <div class="bg-gradient p-1 rounded-circle mb-3" style="background: var(--primary-gradient);">
-                    <div class="bg-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="fa-solid fa-user-tie fa-3x text-secondary"></i>
+            <div class="card-body d-flex flex-column align-items-center justify-content-center position-relative">
+                <!-- Edit Button on Card -->
+                <button class="btn btn-outline-premium btn-sm position-absolute top-0 end-0 mt-2 me-2 rounded-3" 
+                        data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="fa-solid fa-user-gear me-1"></i>編輯資料
+                </button>
+
+                <!-- User Avatar -->
+                <div class="position-relative mb-3 mt-3">
+                    <div class="bg-gradient p-1 rounded-circle shadow-sm" style="background: var(--primary-gradient);">
+                        <img src="{{ user.avatar_url }}" alt="Avatar" class="rounded-circle bg-white" style="width: 100px; height: 100px; object-fit: cover;">
                     </div>
+                    <button class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle border border-white p-0 d-flex align-items-center justify-content-center shadow" 
+                            style="width: 32px; height: 32px; transform: translate(3px, 3px);"
+                            data-bs-toggle="modal" data-bs-target="#editProfileModal" title="編輯頭像">
+                        <i class="fa-solid fa-camera fa-xs text-white"></i>
+                    </button>
                 </div>
                 
                 <h3 class="font-bold mb-1">{{ user.name }}</h3>
-                <p class="text-muted mb-3">{{ user.department or '未填寫科系' }} · 學號: {{ user.student_id }}</p>
+                <div class="text-muted small mb-2">
+                    <span class="badge bg-light text-secondary border px-2 py-1 rounded-3">
+                        <i class="fa-solid fa-graduation-cap me-1"></i>{{ user.department or '未填寫系級' }}
+                    </span>
+                    <span class="badge bg-light text-secondary border px-2 py-1 rounded-3 ms-1">
+                        <i class="fa-solid fa-id-card me-1"></i>學號: {{ user.student_id }}
+                    </span>
+                </div>
 
-                <!-- Balance Pills -->
-                <div class="d-flex justify-content-center gap-3 mb-4 w-100">
-                    <div class="heart-badge flex-grow-1 justify-content-center py-3">
-                        <i class="fa-solid fa-heart fa-lg"></i>
-                        <div>
-                            <span class="d-block small text-muted font-normal text-start">愛心餘額</span>
-                            <span class="fs-4 d-block text-start font-bold">{{ user.heart_balance }}</span>
+                <!-- Rank Badge -->
+                {% if rank %}
+                <div class="mb-3">
+                    {% if rank == 1 %}
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-7 rounded-pill border border-warning shadow-sm font-bold animate-bounce" style="background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%) !important;">
+                            <i class="fa-solid fa-crown me-1 text-danger"></i>人氣榜第 1 名
+                        </span>
+                    {% elif rank == 2 %}
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis px-3 py-2 fs-7 rounded-pill border border-secondary shadow-sm font-bold">
+                            <i class="fa-solid fa-medal me-1 text-silver"></i>人氣榜第 2 名
+                        </span>
+                    {% elif rank == 3 %}
+                        <span class="badge bg-danger-subtle text-danger-emphasis px-3 py-2 fs-7 rounded-pill border border-danger shadow-sm font-bold">
+                            <i class="fa-solid fa-medal me-1 text-bronze"></i>人氣榜第 3 名
+                        </span>
+                    {% else %}
+                        <span class="badge bg-info-subtle text-info-emphasis px-3 py-2 fs-7 rounded-pill border border-info shadow-sm font-bold">
+                            <i class="fa-solid fa-ranking-star me-1 text-info"></i>目前排名：第 {{ rank }} 名
+                        </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Balance & Heart Stats Pills -->
+                <div class="w-100 mb-4 px-2">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="heart-badge justify-content-center py-3 w-100 h-100 shadow-sm border border-danger-subtle d-flex flex-column align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-heart fa-lg"></i>
+                                    <span class="small font-normal">愛心餘額</span>
+                                </div>
+                                <span class="fs-4 font-bold mt-1">{{ user.heart_balance }}</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="popularity-badge justify-content-center py-3 w-100 h-100 shadow-sm border border-primary-subtle d-flex flex-column align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-star fa-lg"></i>
+                                    <span class="small font-normal">累積人氣</span>
+                                </div>
+                                <span class="fs-4 font-bold mt-1">{{ user.popularity }}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="popularity-badge flex-grow-1 justify-content-center py-3">
-                        <i class="fa-solid fa-star fa-lg"></i>
-                        <div>
-                            <span class="d-block small text-muted font-normal text-start">累積人氣</span>
-                            <span class="fs-4 d-block text-start font-bold">{{ user.popularity }}</span>
+                    
+                    <!-- Stats Sub-row -->
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                            <div class="bg-light p-2 rounded-3 border text-center shadow-sm">
+                                <span class="d-block text-muted small"><i class="fa-solid fa-paper-plane text-danger me-1"></i>累計送出</span>
+                                <span class="font-bold text-dark fs-6">{{ total_sent }} <i class="fa-solid fa-heart fa-xs text-danger"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="bg-light p-2 rounded-3 border text-center shadow-sm">
+                                <span class="d-block text-muted small"><i class="fa-solid fa-hand-holding-heart text-success me-1"></i>累計獲得</span>
+                                <span class="font-bold text-dark fs-6">{{ total_received }} <i class="fa-solid fa-star fa-xs text-warning"></i></span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <hr class="w-100 border-light-subtle my-3">
+                <hr class="w-100 border-light-subtle my-2">
 
                 <!-- QR Code Generation -->
-                <div class="my-3">
+                <div class="my-2">
                     <h5 class="font-bold mb-2"><i class="fa-solid fa-qrcode me-2 text-danger"></i>您的專屬互助 QR Code</h5>
                     <p class="text-muted small px-3 mb-3">當他人給予您幫助後，展示此條碼讓對方掃描，即可接收對方轉移的人氣回饋！</p>
                     
                     <div class="bg-white p-3 rounded-4 shadow-sm border d-inline-block">
-                        <!-- We generate the QR Code pointing directly to the transfer page on-the-fly -->
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ qr_transfer_url }}" 
                              alt="QR Code" 
                              class="img-fluid" 
-                             style="max-width: 180px;">
+                             style="max-width: 160px;">
                     </div>
                     <div class="mt-2 text-muted small">
                         Token: <span class="font-monospace">{{ user.qr_code_token[:8] }}...</span>
@@ -123,4 +267,122 @@
         </div>
     </div>
 </div>
+
+<!-- Bottom Row: Achievements Badges Section -->
+<div class="row g-4 mt-2 animate-fade-in">
+    <div class="col-12">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <h4 class="font-bold mb-4">
+                    <i class="fa-solid fa-award text-warning me-2"></i>我的互助成就徽章
+                </h4>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+                    {% for badge in badges %}
+                    <div class="col">
+                        <div class="card h-100 text-center border-0 rounded-4 p-3 shadow-sm badge-card {% if badge.unlocked %}unlocked-badge{% else %}locked-badge{% endif %}"
+                             style="background: {% if badge.unlocked %}rgba(255, 255, 255, 0.9){% else %}rgba(240, 242, 245, 0.5){% endif %}; border: 1px solid {% if badge.unlocked %}{{ badge.color }}33{% else %}#e1e3ea{% endif %} !important;">
+                            <div class="badge-icon-wrapper mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                 style="width: 55px; height: 55px; background: {% if badge.unlocked %}{{ badge.color }}1a{% else %}#f1f3f9{% endif %}; color: {% if badge.unlocked %}{{ badge.color }}{% else %}#a0a5b5{% endif %};">
+                                <i class="{{ badge.icon }} fa-2x"></i>
+                            </div>
+                            <h6 class="font-bold mb-1 {% if not badge.unlocked %}text-muted{% endif %}">{{ badge.name }}</h6>
+                            <p class="text-muted mb-2 style-desc">{{ badge.description }}</p>
+                            <div class="mt-auto">
+                                {% if badge.unlocked %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>已解鎖</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted border rounded-pill small px-2 py-1">{{ badge.progress }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 bg-light rounded-top-4 p-3 px-4">
+                <h5 class="modal-title font-bold text-dark" id="editProfileModalLabel">
+                    <i class="fa-solid fa-user-pen me-2 text-primary"></i>編輯個人資料
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('user.update_profile') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <!-- Real name / Nickname -->
+                    <div class="mb-3">
+                        <label for="name" class="form-label font-semibold">真實姓名 / 暱稱 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control animate-fade-in" id="name" name="name" value="{{ user.name }}" required autocomplete="off">
+                    </div>
+                    
+                    <!-- Department / Year -->
+                    <div class="mb-3">
+                        <label for="department" class="form-label font-semibold">系級 (科系與年級)</label>
+                        <input type="text" class="form-control" id="department" name="department" value="{{ user.department or '' }}" placeholder="例如：資訊工程系三年級" autocomplete="off">
+                    </div>
+                    
+                    <!-- Avatar Selection Choice -->
+                    <div class="mb-3">
+                        <label class="form-label font-semibold d-block">修改頭像方式</label>
+                        <div class="form-check form-check-inline mb-2">
+                            <input class="form-check-input" type="radio" name="avatar_choice" id="choice_predefined" value="predefined" checked onclick="toggleAvatarInput('predefined')">
+                            <label class="form-check-label" for="choice_predefined">選擇推薦頭像</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-2">
+                            <input class="form-check-input" type="radio" name="avatar_choice" id="choice_upload" value="upload" onclick="toggleAvatarInput('upload')">
+                            <label class="form-check-label" for="choice_upload">上傳自訂頭像</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Predefined Avatars Option Grid -->
+                    <div id="predefined_avatars_section" class="mb-3">
+                        <label class="form-label font-semibold text-muted small">選擇一個可愛的 Emoji 表情頭像：</label>
+                        <div class="row row-cols-6 g-2 text-center">
+                            {% set seeds = ['Coco', 'Milo', 'Zoe', 'Bubba', 'Daisy', 'Peanut', 'Lucky', 'Cookie', 'Pippin', 'Sparky', 'Gismo', 'Oliver'] %}
+                            {% for seed in seeds %}
+                            <div class="col">
+                                <label class="avatar-option-label d-block cursor-pointer">
+                                    <input type="radio" name="predefined_seed" value="{{ seed }}" class="btn-check" {% if loop.first %}checked{% endif %}>
+                                    <div class="avatar-option-card rounded-circle p-1 border shadow-sm transition-all" style="width: 50px; height: 50px;">
+                                        <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed={{ seed }}" alt="{{ seed }}" class="img-fluid rounded-circle">
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Avatar Upload File Selector -->
+                    <div id="custom_avatar_section" class="mb-3 d-none">
+                        <label for="avatar_file" class="form-label font-semibold text-muted small">選擇要上傳的圖片檔案：</label>
+                        <input class="form-control" type="file" id="avatar_file" name="avatar_file" accept="image/*">
+                        <div class="form-text small">支援 PNG, JPG, JPEG, GIF 或 SVG 格式圖片。</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3 bg-light rounded-bottom-4 px-4">
+                    <button type="button" class="btn btn-secondary rounded-3 px-3" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-premium px-4"><i class="fa-solid fa-save me-1"></i>儲存變更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAvatarInput(choice) {
+        if (choice === 'predefined') {
+            document.getElementById('predefined_avatars_section').classList.remove('d-none');
+            document.getElementById('custom_avatar_section').classList.add('d-none');
+        } else {
+            document.getElementById('predefined_avatars_section').classList.add('d-none');
+            document.getElementById('custom_avatar_section').classList.remove('d-none');
+        }
+    }
+</script>
 {% endblock %}

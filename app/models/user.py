@@ -16,7 +16,7 @@ def get_local_db_connection():
         raise e
 
 class User:
-    def __init__(self, id, username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at):
+    def __init__(self, id, username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, avatar, created_at, updated_at):
         self.id = id
         self.username = username
         self.password_hash = password_hash
@@ -26,13 +26,28 @@ class User:
         self.heart_balance = heart_balance
         self.popularity = popularity
         self.qr_code_token = qr_code_token
+        self.avatar = avatar
         self.created_at = created_at
         self.updated_at = updated_at
+
+    @property
+    def avatar_url(self):
+        if self.avatar:
+            if self.avatar.startswith('http') or self.avatar.startswith('/'):
+                return self.avatar
+            from flask import url_for
+            try:
+                return url_for('static', filename='images/avatars/' + self.avatar)
+            except Exception:
+                return '/static/images/avatars/' + self.avatar
+        return f"https://api.dicebear.com/7.x/fun-emoji/svg?seed={self.username}"
 
     @classmethod
     def from_row(cls, row):
         if not row:
             return None
+        # Support row access that might not contain avatar (pre-migration or dynamic checks)
+        avatar = row['avatar'] if 'avatar' in row.keys() else ''
         return cls(
             id=row['id'],
             username=row['username'],
@@ -43,6 +58,7 @@ class User:
             heart_balance=row['heart_balance'],
             popularity=row['popularity'],
             qr_code_token=row['qr_code_token'],
+            avatar=avatar,
             created_at=row['created_at'],
             updated_at=row['updated_at']
         )
@@ -69,6 +85,7 @@ class User:
                 heart_balance = data.get('heart_balance', 100)
                 popularity = data.get('popularity', 0)
                 qr_code_token = data.get('qr_code_token')
+                avatar = data.get('avatar', '')
             else:
                 username = data if data is not None else kwargs.get('username')
                 password_hash = kwargs.get('password_hash')
@@ -78,6 +95,7 @@ class User:
                 heart_balance = kwargs.get('heart_balance', 100)
                 popularity = kwargs.get('popularity', 0)
                 qr_code_token = kwargs.get('qr_code_token')
+                avatar = kwargs.get('avatar', '')
 
             now = datetime.datetime.now().isoformat()
             if not qr_code_token:
@@ -88,10 +106,10 @@ class User:
             try:
                 cursor.execute(
                     """
-                    INSERT INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    INSERT INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, avatar, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                     """,
-                    (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, now, now)
+                    (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, avatar, now, now)
                 )
                 conn.commit()
                 new_id = cursor.lastrowid
@@ -213,6 +231,133 @@ class User:
             raise e
 
     @classmethod
+    def get_rank_by_id(cls, user_id):
+        """
+        取得使用者的排行（依人氣值從高到低排序，人氣值相同則依姓名、ID 排序）。
+        """
+        try:
+            conn = get_local_db_connection()
+            try:
+                row = conn.execute("SELECT popularity, name, id FROM users WHERE id = ?;", (user_id,)).fetchone()
+                if not row:
+                    return None
+                pop = row['popularity']
+                name = row['name']
+                uid = row['id']
+                
+                # 計算排行：有多少人的人氣值比他大，或者人氣相同但名字字典序較小，或者人氣與名字相同但 ID 較小
+                rank_row = conn.execute(
+                    """
+                    SELECT COUNT(*) + 1 AS rank
+                    FROM users
+                    WHERE popularity > ? 
+                       OR (popularity = ? AND name < ?) 
+                       OR (popularity = ? AND name = ? AND id < ?);
+                    """,
+                    (pop, pop, name, pop, name, uid)
+                ).fetchone()
+                return rank_row['rank'] if rank_row else None
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in User.get_rank_by_id: {e}")
+            return None
+
+    def get_badges(self):
+        """
+        取得使用者的徽章成就列表（動態統計計算）。
+        """
+        badges = []
+        try:
+            conn = get_local_db_connection()
+            cursor = conn.cursor()
+            
+            # 1. 宿舍之光 (Newbie) - Always Unlocked
+            badges.append({
+                'id': 'newbie',
+                'name': '校園新星',
+                'description': '成功加入 Heart Check 互助平台',
+                'icon': 'fa-solid fa-seedling',
+                'color': '#2ec4b6',
+                'unlocked': True,
+                'progress': '1/1'
+            })
+            
+            # 2. 慷慨大使 (Generous Giver) - sent transactions >= 3
+            cursor.execute("SELECT COUNT(*) AS count FROM heart_transactions WHERE sender_id = ?;", (self.id,))
+            sent_count = cursor.fetchone()['count']
+            badges.append({
+                'id': 'generous',
+                'name': '慷慨大使',
+                'description': '累計送出愛心次數達到 3 次',
+                'icon': 'fa-solid fa-hand-holding-heart',
+                'color': '#ff4b72',
+                'unlocked': sent_count >= 3,
+                'progress': f"{sent_count}/3"
+            })
+            
+            # 3. 人氣焦點 (Popularity Star) - received popularity >= 50
+            badges.append({
+                'id': 'star',
+                'name': '人氣焦點',
+                'description': '累積人氣值達到 50 以上',
+                'icon': 'fa-solid fa-fire',
+                'color': '#ff9f1c',
+                'unlocked': self.popularity >= 50,
+                'progress': f"{self.popularity}/50"
+            })
+            
+            # 4. 熱心助人 (Helping Hand) - items reported >= 2
+            cursor.execute("SELECT COUNT(*) AS count FROM items WHERE user_id = ?;", (self.id,))
+            items_count = cursor.fetchone()['count']
+            badges.append({
+                'id': 'helper',
+                'name': '熱心助人',
+                'description': '累計發布失物招領達 2 次',
+                'icon': 'fa-solid fa-handshake-angle',
+                'color': '#4ea8de',
+                'unlocked': items_count >= 2,
+                'progress': f"{items_count}/2"
+            })
+            
+            # 5. 愛心富豪 (Heart Tycoon) - current heart balance >= 200
+            badges.append({
+                'id': 'tycoon',
+                'name': '愛心富豪',
+                'description': '持有愛心餘額達到 200 以上',
+                'icon': 'fa-solid fa-gem',
+                'color': '#7209b7',
+                'unlocked': self.heart_balance >= 200,
+                'progress': f"{self.heart_balance}/200"
+            })
+            
+            # 6. 宿舍之光 (Light of Dorm) - sent/received transactions with message containing 宿舍/寢室
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS count 
+                FROM heart_transactions 
+                WHERE (sender_id = ? OR receiver_id = ?) 
+                  AND (thank_you_message LIKE '%宿舍%' OR thank_you_message LIKE '%寢室%');
+                """, 
+                (self.id, self.id)
+            )
+            dorm_count = cursor.fetchone()['count']
+            badges.append({
+                'id': 'dorm',
+                'name': '宿舍之光',
+                'description': '在宿舍互助中獲得或發送愛心回饋',
+                'icon': 'fa-solid fa-house-chimney-window',
+                'color': '#f72585',
+                'unlocked': dorm_count >= 1,
+                'progress': f"{dorm_count}/1"
+            })
+            
+            conn.close()
+        except Exception as e:
+            print(f"Error in User.get_badges: {e}")
+        return badges
+
+    @classmethod
     def update(cls, id_or_self, data=None):
         """
         更新使用者記錄。支援物件導向式更新與類別層級更新。
@@ -236,11 +381,11 @@ class User:
                         """
                         UPDATE users 
                         SET username = ?, password_hash = ?, name = ?, student_id = ?, department = ?, 
-                            heart_balance = ?, popularity = ?, qr_code_token = ?, updated_at = ?
+                            heart_balance = ?, popularity = ?, qr_code_token = ?, avatar = ?, updated_at = ?
                         WHERE id = ?;
                         """,
                         (self.username, self.password_hash, self.name, self.student_id, self.department,
-                         self.heart_balance, self.popularity, self.qr_code_token, self.updated_at, self.id)
+                         self.heart_balance, self.popularity, self.qr_code_token, self.avatar, self.updated_at, self.id)
                     )
                     conn.commit()
                     return True
@@ -254,7 +399,7 @@ class User:
                     fields = []
                     params = []
                     for key, val in data.items():
-                        if key in ('username', 'password_hash', 'name', 'student_id', 'department', 'heart_balance', 'popularity', 'qr_code_token'):
+                        if key in ('username', 'password_hash', 'name', 'student_id', 'department', 'heart_balance', 'popularity', 'qr_code_token', 'avatar'):
                             fields.append(f"{key} = ?")
                             params.append(val)
                     
