@@ -6,7 +6,8 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort
 from app.models.announcement import Announcement
 from app.models.item import Item
-from app.models.user import User
+from app.models.user import User, HeartTransaction
+
 
 # 建立公告板與資訊 Blueprint
 board_bp = Blueprint("board", __name__)
@@ -32,7 +33,11 @@ def home():
         unclaimed_items = [i for i in all_items if i.status == 'unclaimed']
         latest_items = unclaimed_items[:3]
 
-        # 3. 若已登入，讀取目前使用者資訊
+        # 3. 查詢最新 5 筆善行紀錄
+        all_transactions = HeartTransaction.get_all()
+        latest_thanks = [t for t in all_transactions if t.thank_you_message and len(t.thank_you_message.strip()) >= 5][:5]
+
+        # 4. 若已登入，讀取目前使用者資訊
         current_user = None
         if 'user_id' in session:
             current_user = User.get_by_id(session['user_id'])
@@ -41,8 +46,10 @@ def home():
             "board/home.html",
             announcements=latest_announcements,
             items=latest_items,
-            current_user=current_user
+            current_user=current_user,
+            latest_thanks=latest_thanks
         )
+
     except Exception as e:
         # 出現例外時，仍嘗試渲染基本頁面，避免網頁完全掛掉
         flash(f"加載首頁部分資料失敗：{str(e)}", "warning")

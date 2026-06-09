@@ -68,11 +68,109 @@
         </div>
     </div>
 
-    <!-- Right Column: Transaction History -->
+    <!-- Right Column: Missions, Badges, and History -->
     <div class="col-lg-7">
-        <div class="card premium-card p-4 h-100">
+        <!-- 1. Weekly Missions Card -->
+        <div class="card premium-card p-4 mb-4">
             <div class="card-body">
-                <h4 class="font-bold mb-4">
+                <h4 class="font-bold mb-3 d-flex align-items-center justify-content-between">
+                    <span><i class="fa-solid fa-circle-check me-2 text-danger"></i>🎯 本週互助任務</span>
+                    {% if received_this_week >= 1 and posted_this_week >= 2 and hearts_this_week >= 3 %}
+                        <span class="badge bg-warning text-dark font-bold small"><i class="fa-solid fa-trophy me-1"></i>任務已達成！</span>
+                    {% else %}
+                        <span class="badge bg-secondary font-normal small">進行中</span>
+                    {% endif %}
+                </h4>
+                <p class="text-muted small mb-4">每週日午夜重置任務。完成本週所有互助目標，即可自動獲得 🎖️「熱心小幫手」榮譽勳章！</p>
+                
+                <!-- Mission List -->
+                <div class="d-flex flex-column gap-3">
+                    <!-- Task 1: Help Classmate Once -->
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="font-medium small">
+                                <i class="fa-solid {% if received_this_week >= 1 %}fa-circle-check text-success{% else %}fa-circle text-muted{% endif %} me-2"></i>
+                                幫助同學一次 (收到感謝回饋)
+                            </span>
+                            <span class="small font-monospace {% if received_this_week >= 1 %}text-success font-bold{% else %}text-muted{% endif %}">
+                                {{ received_this_week }} / 1
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {% if received_this_week >= 1 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {% if received_this_week >= 1 %}100%{% else %}{{ (received_this_week / 1 * 100)|int }}%{% endif %};"></div>
+                        </div>
+                    </div>
+
+                    <!-- Task 2: Post Campus Info Twice -->
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="font-medium small">
+                                <i class="fa-solid {% if posted_this_week >= 2 %}fa-circle-check text-success{% else %}fa-circle text-muted{% endif %} me-2"></i>
+                                分享校園資訊兩篇 (發布失物招領)
+                            </span>
+                            <span class="small font-monospace {% if posted_this_week >= 2 %}text-success font-bold{% else %}text-muted{% endif %}">
+                                {{ posted_this_week }} / 2
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {% if posted_this_week >= 2 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {% if posted_this_week >= 2 %}100%{% else %}{{ (posted_this_week / 2 * 100)|int }}%{% endif %};"></div>
+                        </div>
+                    </div>
+
+                    <!-- Task 3: Receive 3 Hearts -->
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="font-medium small">
+                                <i class="fa-solid {% if hearts_this_week >= 3 %}fa-circle-check text-success{% else %}fa-circle text-muted{% endif %} me-2"></i>
+                                收到三顆愛心 (當週累計收到愛心數)
+                            </span>
+                            <span class="small font-monospace {% if hearts_this_week >= 3 %}text-success font-bold{% else %}text-muted{% endif %}">
+                                {{ hearts_this_week }} / 3
+                            </span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar {% if hearts_this_week >= 3 %}bg-success{% else %}bg-primary{% endif %}" role="progressbar" style="width: {% if hearts_this_week >= 3 %}100%{% else %}{{ (hearts_this_week / 3 * 100)|int }}%{% endif %};"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Badges Card -->
+        <div class="card premium-card p-4 mb-4">
+            <div class="card-body">
+                <h4 class="font-bold mb-3"><i class="fa-solid fa-award me-2 text-warning"></i>🏅 已解鎖榮譽勳章</h4>
+                
+                {% if not badges %}
+                    <div class="text-center py-4 bg-light rounded-4 border border-dashed">
+                        <p class="text-muted mb-0 small">您目前尚未獲得任何榮譽勳章。</p>
+                        <p class="text-muted small mb-0" style="font-size: 0.8rem;">快去完成本週任務，或透過獲取愛心、發布公告來解鎖徽章吧！✨</p>
+                    </div>
+                {% else %}
+                    <div class="row row-cols-1 row-cols-md-2 g-3">
+                        {% for b in badges %}
+                            <div class="col">
+                                <div class="d-flex align-items-center p-3 bg-light rounded-4 border h-100 transition-all hover-shadow">
+                                    <div class="fs-2 me-3 d-flex align-items-center justify-content-center bg-white rounded-circle border" style="width: 50px; height: 50px;">
+                                        <i class="fa-solid {{ b.badge_icon }}"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="font-bold mb-1" style="font-size: 0.95rem;">{{ b.badge_name }}</h6>
+                                        <p class="text-muted small mb-1" style="font-size: 0.75rem; line-height: 1.3;">{{ b.badge_description }}</p>
+                                        <small class="text-muted font-monospace" style="font-size: 0.7rem;">解鎖於: {{ b.unlocked_at[:10] }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 3. Transaction History Card -->
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <h4 class="font-bold mb-3">
                     <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>愛心互動歷史紀錄
                 </h4>
                 
@@ -83,7 +181,7 @@
                         <p class="text-muted small">多幫助他人，或者在獲得幫助時給予他人愛心人氣吧！</p>
                     </div>
                 {% else %}
-                    <div class="list-group list-group-flush" style="max-height: 500px; overflow-y: auto;">
+                    <div class="list-group list-group-flush" style="max-height: 350px; overflow-y: auto;">
                         {% for t in transactions %}
                             <div class="list-group-item py-3 px-2 border-bottom">
                                 <div class="d-flex justify-content-between align-items-start">

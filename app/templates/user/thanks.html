@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}校園互助感謝牆 - Heart Check{% endblock %}
+
+{% block styles %}
+<style>
+    .thanks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+    }
+    .thanks-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(255, 75, 114, 0.15);
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        transition: all 0.3s ease-in-out;
+        position: relative;
+        overflow: hidden;
+    }
+    .thanks-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, #ff4b72, #7033ff);
+    }
+    .thanks-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1);
+        border-color: rgba(255, 75, 114, 0.3);
+    }
+    .heart-count-badge {
+        background: linear-gradient(135deg, #ff4b72 0%, #ff7e9d 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 5px 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .quote-icon {
+        color: rgba(255, 75, 114, 0.15);
+        font-size: 2.5rem;
+        position: absolute;
+        right: 15px;
+        bottom: 10px;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Section -->
+    <div class="text-center mb-5 animate-fade-in">
+        <span class="fs-1 text-danger"><i class="fa-solid fa-heart-circle-check"></i></span>
+        <h1 class="font-extrabold mt-2 mb-1" style="font-weight: 850; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            校園互助感謝牆
+        </h1>
+        <p class="text-muted col-lg-7 mx-auto">
+            在這裡記錄著校園中發生的每一件溫馨小事。每一顆愛心，都是一次溫暖的善行；每一句謝謝，都讓我們的校園更美好！✨
+        </p>
+    </div>
+
+    <!-- Wall Content -->
+    {% if not thanks_list %}
+        <div class="text-center py-5 my-5 card premium-card animate-fade-in">
+            <div class="card-body">
+                <span class="fs-1 text-muted"><i class="fa-solid fa-heart-crack fa-2x"></i></span>
+                <h4 class="text-muted mt-3 font-bold">感謝牆上目前空空如也</h4>
+                <p class="text-muted">快去幫助身邊的同學，或者掃描對方的 QR Code 表達您的謝意吧！</p>
+                <a href="{{ url_for('board.home') }}" class="btn btn-premium mt-3">
+                    <i class="fa-solid fa-house me-1"></i>回首頁看看
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="thanks-grid animate-fade-in">
+            {% for t in thanks_list %}
+                <div class="thanks-card p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <!-- Header of card -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="heart-count-badge">
+                                <i class="fa-solid fa-heart me-1"></i>愛心 +{{ t.heart_amount }}
+                            </span>
+                            <small class="text-muted font-monospace">{{ t.created_at[:10] }}</small>
+                        </div>
+                        
+                        <!-- Gratitude message -->
+                        <div class="mb-4 position-relative" style="min-height: 70px;">
+                            <p class="text-dark font-medium mb-0" style="font-size: 1.05rem; line-height: 1.6; font-style: italic;">
+                                「{{ t.thank_you_message }}」
+                            </p>
+                            <i class="fa-solid fa-quote-right quote-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Footer of card -->
+                    <div class="border-top pt-3 mt-auto">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="small">
+                                <span class="text-muted">受助者:</span> <strong class="text-dark">{{ t.sender_name }}</strong>
+                            </div>
+                            <div class="text-end">
+                                <i class="fa-solid fa-arrow-right-long text-muted mx-2" style="font-size: 0.8rem;"></i>
+                            </div>
+                            <div class="small text-end">
+                                <span class="text-muted">幫助者:</span> <strong class="text-primary">{{ t.receiver_name }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

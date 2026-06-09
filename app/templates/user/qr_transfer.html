@@ -34,11 +34,12 @@
                     </div>
 
                     <div class="mb-4">
-                        <label for="thank_you_message" class="form-label font-semibold">留言感謝對方</label>
+                        <label for="thank_you_message" class="form-label font-semibold">留言感謝對方 <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fa-solid fa-comment-dots text-primary"></i></span>
-                            <textarea class="form-control" id="thank_you_message" name="thank_you_message" rows="3" placeholder="打些感謝的話吧，例如：謝謝你幫我撿到皮夾！(選填)"></textarea>
+                            <textarea class="form-control" id="thank_you_message" name="thank_you_message" rows="3" placeholder="請填寫感謝原因（至少 5 個字），例如：謝謝你今天借我計算機！" minlength="5" required></textarea>
                         </div>
+                        <div class="form-text small">根據平台規範，發送愛心必須填寫具體的感謝原因喔！</div>
                     </div>
 
                     <div class="d-flex gap-2">

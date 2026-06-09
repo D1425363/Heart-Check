@@ -403,6 +403,8 @@ class HeartTransaction:
                 raise ValueError("Cannot transfer heart values to yourself.")
             if amount <= 0:
                 raise ValueError("Transfer amount must be positive.")
+            if not message or len(message.strip()) < 5:
+                raise ValueError("感謝原因為必填，且長度至少需要 5 個字！")
 
             now = datetime.datetime.now().isoformat()
             conn = get_local_db_connection()
@@ -599,29 +601,154 @@ class HeartTransaction:
             print(f"Error in HeartTransaction.update: {e}")
             raise e
 
-    @classmethod
-    def delete(cls, id_or_self):
+    def delete(self):
         """
-        刪除交易記錄。
-        
-        參數:
-            id_or_self (int/HeartTransaction): 交易 ID 或物件。
-            
-        傳回值:
-            bool: 刪除成功傳回 True，否則傳回 False。
+        Deletes a transaction.
         """
+        conn = get_db_connection()
         try:
-            transaction_id = id_or_self.id if isinstance(id_or_self, cls) else id_or_self
-            conn = get_local_db_connection()
-            try:
-                conn.execute("DELETE FROM heart_transactions WHERE id = ?;", (transaction_id,))
-                conn.commit()
-                return True
-            except Exception as e:
-                conn.rollback()
-                raise e
-            finally:
-                conn.close()
+            conn.execute("DELETE FROM heart_transactions WHERE id = ?;", (self.id,))
+            conn.commit()
+            return True
         except Exception as e:
-            print(f"Error in HeartTransaction.delete: {e}")
+            conn.rollback()
             raise e
+        finally:
+            conn.close()
+
+
+class UserBadge:
+    def __init__(self, id, user_id, badge_name, badge_icon, badge_description, unlocked_at):
+        self.id = id
+        self.user_id = user_id
+        self.badge_name = badge_name
+        self.badge_icon = badge_icon
+        self.badge_description = badge_description
+        self.unlocked_at = unlocked_at
+
+    @classmethod
+    def from_row(cls, row):
+        if not row:
+            return None
+        return cls(
+            id=row['id'],
+            user_id=row['user_id'],
+            badge_name=row['badge_name'],
+            badge_icon=row['badge_icon'],
+            badge_description=row['badge_description'],
+            unlocked_at=row['unlocked_at']
+        )
+
+    @classmethod
+    def create(cls, user_id, badge_name, badge_icon, badge_description):
+        """
+        Creates a new badge for a user if it doesn't already exist.
+        """
+        now = datetime.datetime.now().isoformat()
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO user_badges (user_id, badge_name, badge_icon, badge_description, unlocked_at)
+                VALUES (?, ?, ?, ?, ?);
+                """,
+                (user_id, badge_name, badge_icon, badge_description, now)
+            )
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    @classmethod
+    def get_by_user_id(cls, user_id):
+        """
+        Retrieves all badges unlocked by a user.
+        """
+        conn = get_db_connection()
+        rows = conn.execute("SELECT * FROM user_badges WHERE user_id = ? ORDER BY unlocked_at DESC;", (user_id,)).fetchall()
+        conn.close()
+        return [cls.from_row(row) for row in rows]
+
+    @classmethod
+    def check_and_award_badges(cls, user_id):
+        """
+        Checks if a user meets the criteria for any badges and awards them.
+        """
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            # Get start of the current week (Monday 00:00:00)
+            now = datetime.datetime.now()
+            start_of_week = (now - datetime.timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+            start_of_week_iso = start_of_week.isoformat()
+
+            # 1. Novice Helper (新手互助者) - Received at least 1 heart transaction
+            received_count = cursor.execute(
+                "SELECT COUNT(*) as count FROM heart_transactions WHERE receiver_id = ?;", (user_id,)
+            ).fetchone()['count']
+            if received_count >= 1:
+                cls.create(
+                    user_id=user_id,
+                    badge_name="新手互助者",
+                    badge_icon="fa-handshake text-success",
+                    badge_description="成功收到同學發送的第 1 顆愛心！"
+                )
+
+            # 2. Campus Good Samaritan (校園好人好事) - Popularity >= 10
+            user_row = cursor.execute("SELECT popularity FROM users WHERE id = ?;", (user_id,)).fetchone()
+            if user_row and user_row['popularity'] >= 10:
+                cls.create(
+                    user_id=user_id,
+                    badge_name="校園好人好事",
+                    badge_icon="fa-heart text-danger",
+                    badge_description="累積人氣值（收到愛心數）達到 10 顆以上！"
+                )
+
+            # 3. Info Sharing Master (資訊分享達人) - Posted >= 5 lost/found items
+            posted_count = cursor.execute(
+                "SELECT COUNT(*) as count FROM items WHERE user_id = ?;", (user_id,)
+            ).fetchone()['count']
+            if posted_count >= 5:
+                cls.create(
+                    user_id=user_id,
+                    badge_name="資訊分享達人",
+                    badge_icon="fa-share-nodes text-primary",
+                    badge_description="累計發布失物招領公告達 5 篇以上！"
+                )
+
+            # 4. Enthusiastic Helper (熱心小幫手) - This Week's Mission
+            # - Help classmate once this week (receive 1 transaction)
+            received_this_week = cursor.execute(
+                "SELECT COUNT(*) as count FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;",
+                (user_id, start_of_week_iso)
+            ).fetchone()['count']
+            
+            # - Share campus info twice this week (post 2 lost/found items)
+            posted_this_week = cursor.execute(
+                "SELECT COUNT(*) as count FROM items WHERE user_id = ? AND created_at >= ?;",
+                (user_id, start_of_week_iso)
+            ).fetchone()['count']
+            
+            # - Receive 3 hearts this week (sum of heart_amount >= 3)
+            hearts_this_week = cursor.execute(
+                "SELECT SUM(heart_amount) as total FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;",
+                (user_id, start_of_week_iso)
+            ).fetchone()['total'] or 0
+
+            if received_this_week >= 1 and posted_this_week >= 2 and hearts_this_week >= 3:
+                cls.create(
+                    user_id=user_id,
+                    badge_name="熱心小幫手",
+                    badge_icon="fa-medal text-warning",
+                    badge_description="完成本週任務（幫助同學 1 次、分享校園資訊 2 篇、收到 3 顆愛心）。"
+                )
+            return True
+        except Exception as e:
+            print(f"Error checking badges for user {user_id}: {e}")
+            return False
+        finally:
+            conn.close()

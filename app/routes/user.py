@@ -4,7 +4,8 @@
 """
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort
-from app.models.user import User, HeartTransaction
+from app.models.user import User, HeartTransaction, UserBadge
+
 
 # 建立使用者與愛心 Blueprint
 user_bp = Blueprint("user", __name__)
@@ -35,6 +36,37 @@ def profile():
 
         transactions = HeartTransaction.get_by_user_id(user_id)
         
+        # 1. 取得當週時間並計算本週互助任務進度
+        import datetime
+        from app.models.db import get_db_connection
+        
+        now = datetime.datetime.now()
+        start_of_week = (now - datetime.timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_week_iso = start_of_week.isoformat()
+        
+        conn = get_db_connection()
+        try:
+            received_this_week = conn.execute(
+                "SELECT COUNT(*) as count FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;",
+                (user_id, start_of_week_iso)
+            ).fetchone()['count']
+            
+            posted_this_week = conn.execute(
+                "SELECT COUNT(*) as count FROM items WHERE user_id = ? AND created_at >= ?;",
+                (user_id, start_of_week_iso)
+            ).fetchone()['count']
+            
+            hearts_this_week = conn.execute(
+                "SELECT SUM(heart_amount) as total FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;",
+                (user_id, start_of_week_iso)
+            ).fetchone()['total'] or 0
+        finally:
+            conn.close()
+
+        # 2. 自動檢查與解鎖勳章
+        UserBadge.check_and_award_badges(user_id)
+        badges = UserBadge.get_by_user_id(user_id)
+
         # Calculate external QR Code URL targeting the local Wi-Fi IP if loopback/localhost is used
         import socket
         def get_local_ip():
@@ -61,8 +93,13 @@ def profile():
             user=user, 
             transactions=transactions,
             qr_transfer_url=qr_transfer_url,
-            is_local_warning=is_local_warning
+            is_local_warning=is_local_warning,
+            received_this_week=received_this_week,
+            posted_this_week=posted_this_week,
+            hearts_this_week=hearts_this_week,
+            badges=badges
         )
+
     except Exception as e:
         flash(f"載入個人檔案失敗：{str(e)}", "danger")
         return redirect(url_for('board.home'))
@@ -119,12 +156,18 @@ def transfer(token):
 
     sender_id = session['user_id']
     heart_amount_str = request.form.get("heart_amount", "").strip()
-    thank_you_message = request.form.get("thank_you_message", "").strip() or None
+    thank_you_message = request.form.get("thank_you_message", "").strip()
 
     # 1. 驗證愛心數量欄位
     if not heart_amount_str:
         flash("請輸入要轉移的愛心值數量。", "danger")
         return redirect(url_for('user.qr_transfer', token=token))
+
+    # 2. 驗證感謝留言欄位 (升級需求：給愛心時必須附上原因且大於等於 5 個字)
+    if not thank_you_message or len(thank_you_message) < 5:
+        flash("發送愛心必須附上至少 5 個字的感謝原因！讓善行被記錄下來吧 💖", "danger")
+        return redirect(url_for('user.qr_transfer', token=token))
+
 
     try:
         heart_amount = int(heart_amount_str)
@@ -177,3 +220,23 @@ def leaderboard():
     except Exception as e:
         flash(f"載入排行榜失敗：{str(e)}", "danger")
         return redirect(url_for('board.home'))
+
+
+@user_bp.route("/thanks", methods=["GET"])
+def thanks():
+    """
+    公開感謝牆。
+    
+    GET:
+        - 查詢所有的愛心互動歷史紀錄（僅展示有感謝原因的善行紀錄）。
+        - 渲染 `templates/user/thanks.html`。
+    """
+    try:
+        all_transactions = HeartTransaction.get_all()
+        # 篩選出有感謝留言且字數大於等於 5 的紀錄
+        thanks_list = [t for t in all_transactions if t.thank_you_message and len(t.thank_you_message.strip()) >= 5]
+        return render_template("user/thanks.html", thanks_list=thanks_list)
+    except Exception as e:
+        flash(f"載入感謝牆失敗：{str(e)}", "danger")
+        return redirect(url_for('board.home'))
+
