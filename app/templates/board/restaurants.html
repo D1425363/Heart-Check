@@ -1,108 +1,123 @@
 {% extends "base.html" %}
 
-{% block title %}餐廳評價 - Heart Check{% endblock %}
+{% block title %}校園美食與餐廳評價 - Heart Check{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center animate-fade-in">
     <div class="col-lg-10">
-        <div class="text-center mb-5">
-            <span class="fs-1 text-primary"><i class="fa-solid fa-utensils text-danger"></i></span>
-            <h2 class="header-title mt-2 mb-1">學區與校園餐廳評價</h2>
-            <p class="text-muted">提供學生餐廳與學校周邊美食評價及人氣餐點推薦</p>
+        
+        <div class="mb-4">
+            <h1 class="display-6 fw-bold" style="font-family: var(--font-heading);">🍔 學餐與校區美食評價</h1>
+            <p class="text-secondary">查詢校園內部餐廳與周邊熱門美食的推薦指數、營業資訊與主打菜單。</p>
         </div>
 
-        <!-- Cafeteria Cards Grid -->
+        <!-- Restaurants Cards Grid -->
         <div class="row g-4">
             
-            <!-- Restaurant 1 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card premium-card h-100 d-flex flex-column">
-                    <div class="p-3 text-center bg-light border-bottom">
-                        <i class="fa-solid fa-bowl-food fa-4x text-danger-emphasis py-3"></i>
-                    </div>
-                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="font-bold text-dark mb-0">第一學生餐廳</h5>
-                            <span class="badge bg-danger-subtle text-danger">學餐 1F</span>
+            <!-- Cafe 1 -->
+            <div class="col-md-6">
+                <div class="glass-panel h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="fs-5 text-white mb-0">🍱 第一學生餐廳 (學本館 B1)</h3>
+                            <span class="badge bg-success-subtle text-success" style="background: rgba(16, 185, 129, 0.15) !important;">4.2 ⭐</span>
                         </div>
-                        <div class="text-warning mb-3">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star-half-stroke"></i>
-                            <span class="text-muted small ms-1">(4.5/5)</span>
-                        </div>
-                        <p class="text-muted small flex-grow-1">
-                            校內最大的自助餐及麵食街，包含各式炒飯、排骨飯、水餃等。便宜大碗，是學生解決午晚餐的首選。
+                        <p class="text-secondary small mb-3">
+                            校內最大自助餐聽，包含中式便當、鍋燒意麵、現包水餃與素食專區。價格實惠，學生首選！
                         </p>
-                        <hr class="border-light-subtle my-3">
-                        <div class="small">
-                            <strong class="text-dark">人氣推薦：</strong>
-                            <span class="text-secondary d-block">肉絲炒飯、大排骨便當</span>
+                        
+                        <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03);">
+                            <div class="text-secondary small mb-1">🔥 推薦主打：</div>
+                            <ul class="text-white-50 small mb-0 ps-3">
+                                <li>招牌排骨飯 — $75 元</li>
+                                <li>酸辣湯餃 (10顆) — $65 元</li>
+                                <li>沙茶鍋燒烏龍麵 — $60 元</li>
+                            </ul>
                         </div>
+                    </div>
+                    <div class="text-muted small border-top border-secondary pt-2" style="border-top-color: rgba(255,255,255,0.04) !important;">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> 校本部行政大樓地下一樓 B1
                     </div>
                 </div>
             </div>
 
-            <!-- Restaurant 2 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card premium-card h-100 d-flex flex-column">
-                    <div class="p-3 text-center bg-light border-bottom">
-                        <i class="fa-solid fa-mug-hot fa-4x text-primary-emphasis py-3"></i>
-                    </div>
-                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="font-bold text-dark mb-0">圖書館湖畔咖啡</h5>
-                            <span class="badge bg-primary-subtle text-primary">圖書新館</span>
+            <!-- Cafe 2 -->
+            <div class="col-md-6">
+                <div class="glass-panel h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="fs-5 text-white mb-0">🥪 第二學生餐廳 (綠能館 1F)</h3>
+                            <span class="badge bg-warning-subtle text-warning" style="background: rgba(245, 158, 11, 0.15) !important;">3.8 ⭐</span>
                         </div>
-                        <div class="text-warning mb-3">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-regular fa-star"></i>
-                            <span class="text-muted small ms-1">(4.0/5)</span>
-                        </div>
-                        <p class="text-muted small flex-grow-1">
-                            環境清幽，面向人工湖，提供各式單品咖啡、拿鐵、輕食貝果及鬆餅。適合讀書小憩或小組討論。
+                        <p class="text-secondary small mb-3">
+                            主打複合式早餐、西式漢堡吐司、手搖飲料與 24 小時便利商店。適合早八或下課後快速抓個點心。
                         </p>
-                        <hr class="border-light-subtle my-3">
-                        <div class="small">
-                            <strong class="text-dark">人氣推薦：</strong>
-                            <span class="text-secondary d-block">榛果拿鐵、原味鬆餅</span>
+                        
+                        <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03);">
+                            <div class="text-secondary small mb-1">🔥 推薦主打：</div>
+                            <ul class="text-white-50 small mb-0 ps-3">
+                                <li>起司豬排蛋吐司 — $45 元</li>
+                                <li>特製炸雞腿便當 — $85 元</li>
+                                <li>大杯鮮奶茶 — $35 元</li>
+                            </ul>
                         </div>
+                    </div>
+                    <div class="text-muted small border-top border-secondary pt-2" style="border-top-color: rgba(255,255,255,0.04) !important;">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> 綜合教學大樓一樓東側
                     </div>
                 </div>
             </div>
 
-            <!-- Restaurant 3 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card premium-card h-100 d-flex flex-column">
-                    <div class="p-3 text-center bg-light border-bottom">
-                        <i class="fa-solid fa-egg fa-4x text-success-emphasis py-3"></i>
-                    </div>
-                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="font-bold text-dark mb-0">晨間美味早午餐</h5>
-                            <span class="badge bg-success-subtle text-success">後門出口</span>
+            <!-- Cafe 3 -->
+            <div class="col-md-6">
+                <div class="glass-panel h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="fs-5 text-white mb-0">☕ 綠茵咖啡館 (圖書館旁)</h3>
+                            <span class="badge bg-info-subtle text-info" style="background: rgba(6, 182, 212, 0.15) !important;">4.6 ⭐</span>
                         </div>
-                        <div class="text-warning mb-3">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <span class="text-muted small ms-1">(5.0/5)</span>
-                        </div>
-                        <p class="text-muted small flex-grow-1">
-                            後門人氣最高的西式早午餐店，吐司與蛋餅外皮酥脆。阿姨人很熱情親切，早八上課的活力來源！
+                        <p class="text-secondary small mb-3">
+                            提供現磨精品咖啡、手作帕里尼與精緻甜點。安靜舒適的採光空間，備有插座，適合讀書、討論報告或下午茶。
                         </p>
-                        <hr class="border-light-subtle my-3">
-                        <div class="small">
-                            <strong class="text-dark">人氣推薦：</strong>
-                            <span class="text-secondary d-block">起司薯餅蛋餅、焦糖奶茶</span>
+                        
+                        <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03);">
+                            <div class="text-secondary small mb-1">🔥 推薦主打：</div>
+                            <ul class="text-white-50 small mb-0 ps-3">
+                                <li>手沖經典美式 — $60 元</li>
+                                <li>羅勒燻雞帕里尼 — $75 元</li>
+                                <li>手作宇治抹茶磅蛋糕 — $70 元</li>
+                            </ul>
                         </div>
+                    </div>
+                    <div class="text-muted small border-top border-secondary pt-2" style="border-top-color: rgba(255,255,255,0.04) !important;">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> 圖書館二樓側門露台旁
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cafe 4 -->
+            <div class="col-md-6">
+                <div class="glass-panel h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="fs-5 text-white mb-0">🍛 松野丼飯 (校門對街)</h3>
+                            <span class="badge bg-success-subtle text-success" style="background: rgba(16, 185, 129, 0.15) !important;">4.5 ⭐</span>
+                        </div>
+                        <p class="text-secondary small mb-3">
+                            校區正門口正對面之日式丼飯專賣店。出餐速度極快，份量充足，牛肉醬汁濃郁，是很多大一、大二新生的最愛。
+                        </p>
+                        
+                        <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03);">
+                            <div class="text-secondary small mb-1">🔥 推薦主打：</div>
+                            <ul class="text-white-50 small mb-0 ps-3">
+                                <li>經典牛丼 (大盛) — $99 元</li>
+                                <li>唐揚炸雞咖哩飯 — $120 元</li>
+                                <li>豚骨味噌拉麵 — $110 元</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="text-muted small border-top border-secondary pt-2" style="border-top-color: rgba(255,255,255,0.04) !important;">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i> 學校本部正門對面街角二樓
                     </div>
                 </div>
             </div>

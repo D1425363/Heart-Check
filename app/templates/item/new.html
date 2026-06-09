@@ -4,83 +4,68 @@
 
 {% block content %}
 <div class="row justify-content-center animate-fade-in">
-    <div class="col-lg-8">
-        <div class="card premium-card p-4">
-            <div class="card-body">
-                <div class="mb-4">
-                    <h2 class="header-title mb-1"><i class="fa-solid fa-file-circle-plus me-2"></i>發布失物招領公告</h2>
-                    <p class="text-muted">請填寫物品資訊，方便他人協助尋找或認領</p>
+    <div class="col-md-9 col-lg-8">
+        <div class="glass-panel">
+            <h2 class="mb-1" style="font-family: var(--font-heading);">📢 發布失物招領公告</h2>
+            <p class="text-secondary small mb-4">填寫詳細資訊，讓失物可以更快被尋回！</p>
+            
+            <form action="{{ url_for('item.new_item') }}" method="POST" enctype="multipart/form-data">
+                
+                <div class="row">
+                    <!-- Title -->
+                    <div class="col-md-8 form-group-custom">
+                        <label for="title" class="form-label-custom">物品名稱 <span class="text-danger">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control-custom" placeholder="請輸入簡短物品標題（例如：在學餐撿到藍色皮夾）" required>
+                    </div>
+
+                    <!-- Type -->
+                    <div class="col-md-4 form-group-custom">
+                        <label for="item_type" class="form-label-custom">公告類型 <span class="text-danger">*</span></label>
+                        <select id="item_type" name="item_type" class="form-select form-control-custom" required>
+                            <option value="lost">遺失尋物 (Lost)</option>
+                            <option value="found">撿到拾獲 (Found)</option>
+                        </select>
+                    </div>
                 </div>
 
-                <form action="{{ url_for('item.new_item') }}" method="POST" enctype="multipart/form-data">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="item_type" class="form-label font-semibold">公告類型 <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-list"></i></span>
-                                <select class="form-select" id="item_type" name="item_type" required>
-                                    <option value="" disabled selected>請選擇公告類型</option>
-                                    <option value="lost" {% if item_type == 'lost' %}selected{% endif %}>尋物啟事（我有東西掉了）</option>
-                                    <option value="found" {% if item_type == 'found' %}selected{% endif %}>拾獲公告（我撿到了東西）</option>
-                                </select>
-                            </div>
-                        </div>
+                <!-- Location -->
+                <div class="form-group-custom">
+                    <label for="location" class="form-label-custom">遺失或拾獲地點 <span class="text-danger">*</span></label>
+                    <input type="text" id="location" name="location" class="form-control-custom" placeholder="例如：行政大樓二樓、綜合體育館重訓室、第二女生宿舍大門口" required>
+                </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="title" class="form-label font-semibold">物品標題 <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-heading"></i></span>
-                                <input type="text" class="form-control" id="title" name="title" placeholder="例如：在學餐二樓撿到藍色皮夾" value="{{ title or '' }}" required autocomplete="off">
-                            </div>
-                        </div>
+                <!-- Description -->
+                <div class="form-group-custom">
+                    <label for="description" class="form-label-custom">詳細特徵描述 <span class="text-danger">*</span></label>
+                    <textarea id="description" name="description" class="form-control-custom" rows="6" placeholder="請詳細說明物品特徵（如：顏色、廠牌、內容物、刮痕或特殊吊飾），以利物主認領辨識..." required></textarea>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="form-group-custom">
+                    <label for="contact_info" class="form-label-custom">聯絡方式 (選填)</label>
+                    <input type="text" id="contact_info" name="contact_info" class="form-control-custom" placeholder="例如：Line ID: user123、手機: 0912-345-678 (不留則以系統個人檔案為主)">
+                </div>
+
+                <!-- File upload -->
+                <div class="form-group-custom">
+                    <label for="image" class="form-label-custom">上傳物品相片 (選填)</label>
+                    <input type="file" id="image" name="image" class="form-control form-control-custom" accept="image/*">
+                    <div class="form-text text-secondary mt-1">支援 PNG, JPG, JPEG, GIF, WEBP，大小限制 16MB 內</div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="row g-3 mt-4">
+                    <div class="col-6 col-md-3">
+                        <a href="{{ url_for('item.list_items') }}" class="btn-secondary-custom w-100 py-2.5 text-center">取消</a>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="location" class="form-label font-semibold">遺失 / 拾獲地點 <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fa-solid fa-location-dot text-danger"></i></span>
-                            <input type="text" class="form-control" id="location" name="location" placeholder="例如：大禮堂門口、學生餐廳、第二宿舍..." value="{{ location or '' }}" required autocomplete="off">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="description" class="form-label font-semibold">物品詳細描述 <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fa-solid fa-comment-medical text-primary"></i></span>
-                            <textarea class="form-control" id="description" name="description" rows="4" placeholder="請描述物品外觀、特徵、顏色，或是是否有特別物件...等細節" required>{{ description or '' }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="image" class="form-label font-semibold">上傳物品照片</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-image"></i></span>
-                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                            </div>
-                            <div class="form-text small">僅支援 PNG、JPG、JPEG、GIF 格式。</div>
-                        </div>
-
-                        <div class="col-md-6 mb-4">
-                            <label for="contact_info" class="form-label font-semibold">聯絡資訊</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-address-book"></i></span>
-                                <input type="text" class="form-control" id="contact_info" name="contact_info" placeholder="例如：手機 0912-345678 / IG @example (選填)" value="{{ contact_info or '' }}" autocomplete="off">
-                            </div>
-                            <div class="form-text small">不填則預設以系統內建管道聯繫。</div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <a href="{{ url_for('item.list_items') }}" class="btn btn-light flex-grow-1 py-2 rounded-3 border">
-                            <i class="fa-solid fa-arrow-left me-2"></i>返回列表
-                        </a>
-                        <button type="submit" class="btn btn-premium flex-grow-2 py-2">
-                            <i class="fa-solid fa-circle-plus me-2"></i>確認發布
+                    <div class="col-6 col-md-4 ms-auto">
+                        <button type="submit" class="btn-premium w-100 py-2.5">
+                            <i class="bi bi-send-fill"></i> 發布公告
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
+            
         </div>
     </div>
 </div>
