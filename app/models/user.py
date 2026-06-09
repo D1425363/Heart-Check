@@ -339,3 +339,151 @@ class HeartTransaction:
             raise e
         finally:
             conn.close()
+
+
+# Badge metadata for the 7 available badges
+BADGE_METADATA = {
+    'helper': {'name': '熱心人士', 'desc': '幫助 5 位不同同學（即收到來自 5 位不同同學的愛心值轉移）', 'icon': '🤝'},
+    'poster': {'name': '校園情報員', 'desc': '發布 10 篇資訊（即累計發布 10 篇失物招領公告）', 'icon': '📢'},
+    'heart_helper': {'name': '校園暖心小幫手', 'desc': '累計獲得 10 顆愛心（即累積人氣值達到 10 或以上）', 'icon': '💖'},
+    'ambassador': {'name': '愛心大使', 'desc': '累計送出 50 顆愛心給其他同學', 'icon': '🌟'},
+    'expert': {'name': '尋物達人', 'desc': '發布的失物招領公告中，有 3 篇成功標記為「已尋回/已認領」', 'icon': '🔍'},
+    'grateful': {'name': '感恩的心', 'desc': '送出愛心時，累計填寫了 5 次感謝留言', 'icon': '✉️'},
+    'rookie': {'name': '初試身手', 'desc': '完成第一次愛心傳遞（不論是送出還是收到）', 'icon': '🌱'}
+}
+
+
+class Badge:
+    def __init__(self, id, user_id, badge_type, is_pinned, created_at):
+        self.id = id
+        self.user_id = user_id
+        self.badge_type = badge_type
+        self.is_pinned = is_pinned
+        self.created_at = created_at
+        
+        # Meta info
+        meta = BADGE_METADATA.get(badge_type, {'name': '未知徽章', 'desc': '', 'icon': '❓'})
+        self.name = meta['name']
+        self.desc = meta['desc']
+        self.icon = meta['icon']
+
+    @classmethod
+    def get_by_user_id(cls, user_id):
+        conn = get_db_connection()
+        rows = conn.execute("SELECT * FROM user_badges WHERE user_id = ? ORDER BY created_at ASC;", (user_id,)).fetchall()
+        conn.close()
+        return [cls(row['id'], row['user_id'], row['badge_type'], row['is_pinned'], row['created_at']) for row in rows]
+
+    @classmethod
+    def get_pinned_by_user_id(cls, user_id):
+        conn = get_db_connection()
+        rows = conn.execute("SELECT * FROM user_badges WHERE user_id = ? AND is_pinned = 1 ORDER BY created_at ASC;", (user_id,)).fetchall()
+        conn.close()
+        return [cls(row['id'], row['user_id'], row['badge_type'], row['is_pinned'], row['created_at']) for row in rows]
+
+    @classmethod
+    def pin_badges(cls, user_id, badge_types):
+        if len(badge_types) > 3:
+            badge_types = badge_types[:3]
+        
+        conn = get_db_connection()
+        try:
+            # First reset all pins for this user
+            conn.execute("UPDATE user_badges SET is_pinned = 0 WHERE user_id = ?;", (user_id,))
+            if badge_types:
+                # Placeholders for IN clause
+                placeholders = ",".join("?" for _ in badge_types)
+                conn.execute(
+                    f"UPDATE user_badges SET is_pinned = 1 WHERE user_id = ? AND badge_type IN ({placeholders});",
+                    [user_id] + list(badge_types)
+                )
+            conn.commit()
+            return True
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+    @classmethod
+    def check_and_award(cls, user_id):
+        """
+        Checks requirements for all 7 badges and awards any that are earned but not yet recorded.
+        Returns a list of newly awarded Badge objects.
+        """
+        conn = get_db_connection()
+        new_awards = []
+        try:
+            # Fetch existing badge types
+            existing_rows = conn.execute("SELECT badge_type FROM user_badges WHERE user_id = ?;", (user_id,)).fetchall()
+            existing_badges = {row['badge_type'] for row in existing_rows}
+
+            # Helper functions to query data
+            helped_count = conn.execute(
+                "SELECT COUNT(DISTINCT sender_id) FROM heart_transactions WHERE receiver_id = ?;",
+                (user_id,)
+            ).fetchone()[0] or 0
+
+            posted_count = conn.execute(
+                "SELECT COUNT(*) FROM items WHERE user_id = ?;",
+                (user_id,)
+            ).fetchone()[0] or 0
+
+            user_row = conn.execute("SELECT popularity FROM users WHERE id = ?;", (user_id,)).fetchone()
+            popularity = user_row['popularity'] if user_row else 0
+
+            hearts_sent = conn.execute(
+                "SELECT SUM(heart_amount) FROM heart_transactions WHERE sender_id = ?;",
+                (user_id,)
+            ).fetchone()[0] or 0
+
+            resolved_count = conn.execute(
+                "SELECT COUNT(*) FROM items WHERE user_id = ? AND status = 'claimed';",
+                (user_id,)
+            ).fetchone()[0] or 0
+
+            grateful_count = conn.execute(
+                """
+                SELECT COUNT(*) FROM heart_transactions 
+                WHERE sender_id = ? AND thank_you_message IS NOT NULL AND thank_you_message != '';
+                """,
+                (user_id,)
+            ).fetchone()[0] or 0
+
+            total_trans = conn.execute(
+                "SELECT COUNT(*) FROM heart_transactions WHERE sender_id = ? OR receiver_id = ?;",
+                (user_id, user_id)
+            ).fetchone()[0] or 0
+
+            # Map check logic
+            checks = {
+                'helper': helped_count >= 5,
+                'poster': posted_count >= 10,
+                'heart_helper': popularity >= 10,
+                'ambassador': hearts_sent >= 50,
+                'expert': resolved_count >= 3,
+                'grateful': grateful_count >= 5,
+                'rookie': total_trans >= 1
+            }
+
+            now = datetime.datetime.now().isoformat()
+            for badge_type, earned in checks.items():
+                if earned and badge_type not in existing_badges:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "INSERT INTO user_badges (user_id, badge_type, is_pinned, created_at) VALUES (?, ?, 0, ?);",
+                        (user_id, badge_type, now)
+                    )
+                    new_id = cursor.lastrowid
+                    new_awards.append(cls(new_id, user_id, badge_type, 0, now))
+
+            if new_awards:
+                conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+
+        return new_awards
+

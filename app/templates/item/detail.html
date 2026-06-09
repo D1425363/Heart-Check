@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - 詳情 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row animate-fade-in">
+    <!-- Left Column: Item Image & Action Tags -->
+    <div class="col-lg-5 mb-4 mb-lg-0">
+        <div class="glass-panel text-center">
+            <!-- Image Display -->
+            {% if item.image_url %}
+                <img src="{{ url_for('static', filename=item.image_url) }}" alt="{{ item.title }}" class="img-fluid rounded-3 mb-3 shadow-sm" style="max-height: 350px; object-fit: cover; width: 100%;">
+            {% else %}
+                <div class="rounded-3 d-flex flex-column align-items-center justify-content-center mb-3 shadow-sm" style="height: 300px; background: linear-gradient(135deg, #13152c 0%, #1e2247 100%); color: var(--text-secondary); width: 100%;">
+                    <i class="bi bi-image fs-1 opacity-25"></i>
+                    <span class="small mt-2 opacity-50">未提供相片</span>
+                </div>
+            {% endif %}
+
+            <!-- Badge Row -->
+            <div class="d-flex justify-content-center gap-2 mb-3">
+                {% if item.item_type == 'lost' %}
+                    <span class="tag-badge tag-badge-lost fs-6 px-3">遺失尋物</span>
+                {% else %}
+                    <span class="tag-badge tag-badge-found fs-6 px-3">撿到拾獲</span>
+                {% endif %}
+                
+                {% if item.status == 'unclaimed' %}
+                    <span class="tag-badge tag-badge-unclaimed fs-6 px-3">協尋中</span>
+                {% else %}
+                    <span class="tag-badge tag-badge-claimed fs-6 px-3">已完成 (尋回/認領)</span>
+                {% endif %}
+            </div>
+            
+            <p class="text-muted small">發布時間：{{ item.created_at.split('T')[0] }} {{ item.created_at.split('T')[1][:5] if 'T' in item.created_at else '' }}</p>
+        </div>
+    </div>
+
+    <!-- Right Column: Details & Creator Details -->
+    <div class="col-lg-7">
+        <div class="glass-panel">
+            <h2 class="mb-3" style="font-family: var(--font-heading); color: #fff;">{{ item.title }}</h2>
+            
+            <!-- Details Grid -->
+            <div class="p-3 rounded-3 mb-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="text-secondary small">📍 遺失/拾獲地點</div>
+                        <div class="fw-semibold text-white mt-0.5">{{ item.location }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-secondary small">👤 發布人</div>
+                        <div class="fw-semibold text-white mt-0.5 d-flex align-items-center gap-2">
+                            <span>{{ item.user_name }}</span>
+                            <!-- Show Publisher's Pinned Badges -->
+                            {% if owner_pinned_badges %}
+                                <span class="d-inline-flex gap-1">
+                                    {% for b in owner_pinned_badges %}
+                                        <span data-bs-toggle="tooltip" title="{{ b.name }}: {{ b.desc }}">{{ b.icon }}</span>
+                                    {% endfor %}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-12 border-top border-secondary pt-3" style="border-top-color: rgba(255,255,255,0.05) !important;">
+                        <div class="text-secondary small">📞 聯絡方式</div>
+                        <div class="fw-semibold text-white mt-0.5">
+                            {{ item.contact_info if item.contact_info else '發布者未留聯絡資訊，可點擊上方發布人頭像/透過留言聯繫。' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h5 class="fs-6 text-secondary" style="font-family: var(--font-heading);">📝 詳細描述</h5>
+                <div class="p-3 rounded-3 text-white-50" style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.02); white-space: pre-wrap;">{{ item.description }}</div>
+            </div>
+
+            <!-- Creator Action Buttons -->
+            {% if current_user and current_user.id == item.user_id %}
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+                <div class="d-flex flex-wrap gap-2 justify-content-end">
+                    
+                    <!-- Edit Button -->
+                    <a href="{{ url_for('item.edit_item', item_id=item.id) }}" class="btn-secondary-custom">
+                        <i class="bi bi-pencil-square"></i> 編輯公告
+                    </a>
+
+                    <!-- Mark as Claimed/Found -->
+                    {% if item.status == 'unclaimed' %}
+                        <form action="{{ url_for('item.claim_item', item_id=item.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn-premium">
+                                <i class="bi bi-check-circle-fill"></i> 標記為已尋回 / 認領
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <!-- Delete Button -->
+                    <form action="{{ url_for('item.delete_item', item_id=item.id) }}" method="POST" onsubmit="return confirm('確定要永久刪除此失物招領公告嗎？（此動作無法復原，相片也將被刪除）');" style="display:inline;">
+                        <button type="submit" class="btn-secondary-custom text-danger" style="border-color: rgba(239, 68, 68, 0.25);">
+                            <i class="bi bi-trash-fill"></i> 刪除公告
+                        </button>
+                    </form>
+                    
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section: Comment Board -->
+<div class="row mt-4 animate-fade-in">
+    <div class="col-12">
+        <div class="glass-panel">
+            <h4 class="mb-4" style="font-family: var(--font-heading); color: #fff;">💬 留言與線索回報區</h4>
+
+            <!-- Comment Input Form -->
+            {% if current_user %}
+                <form action="{{ url_for('item.add_comment', item_id=item.id) }}" method="POST" class="mb-4">
+                    <div class="form-group-custom mb-3">
+                        <label for="comment-content" class="form-label-custom">提供尋物線索或詢問事宜</label>
+                        <textarea id="comment-content" name="content" class="form-control-custom" rows="3" placeholder="例如：我有在二舍大廳看到類似的鑰匙，可以去值班室問問看！、請問皮夾大概是在學餐的哪一個位置撿到的呢？" required></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn-premium">
+                            <i class="bi bi-chat-left-text-fill"></i> 發布留言
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-secondary py-3 text-center mb-4" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.05);">
+                    <span class="text-secondary">您需要 <a href="{{ url_for('auth.login') }}" class="fw-semibold">登入</a> 才能在此公告進行留言討論。</span>
+                </div>
+            {% endif %}
+
+            <!-- Comments Feed List -->
+            <div class="comment-list">
+                {% if comments %}
+                    {% for c in comments %}
+                        <div class="comment-card animate-fade-in">
+                            <div class="comment-header">
+                                <span class="comment-author">{{ c.user_name }}</span>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="comment-time">{{ c.created_at.split('T')[0] }} {{ c.created_at.split('T')[1][:5] if 'T' in c.created_at else '' }}</span>
+                                    
+                                    <!-- Delete Comment Option (Commenter OR Item Owner OR Admin) -->
+                                    {% if current_user and (current_user.id == c.user_id or current_user.id == item.user_id) %}
+                                        <form action="{{ url_for('item.delete_comment', comment_id=c.id) }}" method="POST" onsubmit="return confirm('確定要刪除此留言嗎？');" style="display:inline;">
+                                            <button type="submit" class="comment-delete-btn">刪除</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="comment-body mt-1">
+                                {{ c.content }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4 text-secondary">
+                        <i class="bi bi-chat-dots fs-1 mb-2 d-block text-muted"></i>
+                        目前尚無留言討論。如果您有任何線索或問題，歡迎在上方留下資訊！
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+{% endblock %}

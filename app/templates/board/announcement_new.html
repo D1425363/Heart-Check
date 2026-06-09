@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}發布新公告 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-md-9 col-lg-8">
+        <div class="glass-panel">
+            <h2 class="mb-1" style="font-family: var(--font-heading);">📢 發布新公告</h2>
+            <p class="text-secondary small mb-4">此處發布的公告將顯示在公告欄，並同步在首頁公告區。</p>
+            
+            <form action="{{ url_for('board.new_announcement') }}" method="POST">
+                
+                <div class="row">
+                    <!-- Title -->
+                    <div class="col-md-8 form-group-custom">
+                        <label for="title" class="form-label-custom">公告標題 <span class="text-danger">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control-custom" placeholder="請輸入公告標題" required>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-4 form-group-custom">
+                        <label for="category" class="form-label-custom">公告分類 <span class="text-danger">*</span></label>
+                        <select id="category" name="category" class="form-select form-control-custom" required>
+                            <option value="campus">🏫 校園公告 (Campus)</option>
+                            <option value="dorm">🏢 宿舍公告 (Dorm)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="form-group-custom">
+                    <label for="content" class="form-label-custom">公告詳細內容 <span class="text-danger">*</span></label>
+                    <textarea id="content" name="content" class="form-control-custom" rows="8" placeholder="請輸入詳細公告宣導資訊..." required></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="row g-3 mt-4">
+                    <div class="col-6 col-md-3">
+                        <a href="{{ url_for('board.announcements') }}" class="btn-secondary-custom w-100 py-2.5 text-center">取消</a>
+                    </div>
+                    <div class="col-6 col-md-4 ms-auto">
+                        <button type="submit" class="btn-premium w-100 py-2.5">
+                            <i class="bi bi-megaphone-fill"></i> 確認發布
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

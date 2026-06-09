@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}註冊新帳號 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5 animate-fade-in">
+    <div class="col-md-6 col-lg-5">
+        <div class="glass-panel">
+            <div class="text-center mb-4">
+                <h2 class="mb-1" style="font-family: var(--font-heading);">註冊 Heart Check</h2>
+                <p class="text-secondary small">加入校園互助社群，累積愛心與人氣！</p>
+            </div>
+            
+            <form action="{{ url_for('auth.register') }}" method="POST">
+                <div class="form-group-custom">
+                    <label for="name" class="form-label-custom">真實姓名或暱稱 <span class="text-danger">*</span></label>
+                    <input type="text" id="name" name="name" class="form-control-custom" placeholder="請輸入姓名或暱稱" required value="{{ request.form.get('name', '') }}">
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="student_id" class="form-label-custom">學號 <span class="text-danger">*</span></label>
+                    <input type="text" id="student_id" name="student_id" class="form-control-custom" placeholder="例如：B11002045" required value="{{ request.form.get('student_id', '') }}">
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="department" class="form-label-custom">科系 / 單位</label>
+                    <input type="text" id="department" name="department" class="form-control-custom" placeholder="例如：資工系（填寫「幹部」可管理公告）" value="{{ request.form.get('department', '') }}">
+                </div>
+
+                <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+
+                <div class="form-group-custom">
+                    <label for="username" class="form-label-custom">登入帳號 <span class="text-danger">*</span></label>
+                    <input type="text" id="username" name="username" class="form-control-custom" placeholder="請輸入登入帳號" required value="{{ request.form.get('username', '') }}">
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="password" class="form-label-custom">登入密碼 <span class="text-danger">*</span></label>
+                    <input type="password" id="password" name="password" class="form-control-custom" placeholder="請輸入登入密碼" required>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn-premium py-2.5">
+                        <i class="bi bi-person-plus-fill"></i> 建立帳號
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-4 text-secondary small">
+                已經有帳號了嗎？ <a href="{{ url_for('auth.login') }}" class="fw-semibold">立即登入</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

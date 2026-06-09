@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Heart Check 校園互助與人氣回饋平台{% endblock %}</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+
+    <!-- Premium Sticky Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-custom" href="{{ url_for('board.home') }}">
+                💖 Heart Check
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.home') }}">首頁</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" href="{{ url_for('item.list_items') }}">失物招領</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.announcements') }}">公告欄</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.traffic_info') }}">交通資訊</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.restaurant_info') }}">餐廳評價</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom" href="{{ url_for('user.leaderboard') }}">排行榜</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    {% if current_user %}
+                        <a href="{{ url_for('user.profile') }}" class="text-white text-decoration-none d-flex align-items-center gap-2">
+                            <span class="badge bg-purple rounded-pill px-2 py-1" style="background: var(--grad-purple-pink);">
+                                💝 {{ current_user.heart_balance }}
+                            </span>
+                            <span class="fw-semibold">{{ current_user.name }}</span>
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="btn-secondary-custom py-1.5 px-3 fs-7" style="padding: 6px 16px;">登出</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn-outline-premium py-1.5 px-3" style="padding: 6px 16px;">登入</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn-premium py-1.5 px-3" style="padding: 6px 16px;">註冊</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="container my-4">
+        
+        <!-- Flash Alert Messages Block -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row animate-fade-in">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert" style="border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff;">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if category == 'success' %}
+                                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                    {% elif category == 'danger' or category == 'error' %}
+                                        <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                    {% elif category == 'warning' %}
+                                        <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                                    {% else %}
+                                        <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                                    {% endif %}
+                                    <span>{{ message }}</span>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap 5 JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

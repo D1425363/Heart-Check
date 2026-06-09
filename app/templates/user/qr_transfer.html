@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}愛心值轉移 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-md-7 col-lg-6">
+        <div class="glass-panel">
+            
+            <!-- Recipient Information Header -->
+            <div class="text-center mb-4">
+                <div class="feed-avatar mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem; background: var(--grad-purple-pink);">
+                    {{ receiver.name[0] | upper }}
+                </div>
+                <h3 class="mb-1" style="font-family: var(--font-heading);">發送愛心給 {{ receiver.name }}</h3>
+                <p class="text-secondary small">學號：{{ receiver.student_id }} {% if receiver.department %}• {{ receiver.department }}{% endif %}</p>
+                
+                <!-- Recipient's Pinned Badges -->
+                {% if pinned_badges %}
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        {% for badge in pinned_badges %}
+                            <div class="showcase-badge-pill" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ badge.desc }}">
+                                <span>{{ badge.icon }}</span>
+                                <span>{{ badge.name }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+            
+            <!-- Transfer Form -->
+            <form action="{{ url_for('user.transfer', token=receiver.qr_code_token) }}" method="POST">
+                
+                <div class="form-group-custom">
+                    <label for="heart_amount" class="form-label-custom">愛心發送數量 <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); color: #fff;">💝</span>
+                        <input type="number" id="heart_amount" name="heart_amount" class="form-control form-control-custom" style="border-radius: 0 var(--radius-sm) var(--radius-sm) 0;" min="1" max="{{ sender.heart_balance }}" value="1" required>
+                    </div>
+                    <div class="form-text text-secondary mt-2">
+                        您的愛心餘額：<strong class="text-white">💝 {{ sender.heart_balance }}</strong> 顆。請量力而行。
+                    </div>
+                </div>
+
+                <div class="form-group-custom">
+                    <label for="thank_you_message" class="form-label-custom">寫下您的感謝與留言</label>
+                    <textarea id="thank_you_message" name="thank_you_message" class="form-control-custom" rows="4" placeholder="例如：謝謝你在宿舍樓下幫我搬行李！、謝謝你在微積分期末考前借我精美筆記！" maxlength="200"></textarea>
+                    <div class="form-text text-secondary mt-1 text-end" id="char-counter">0 / 200</div>
+                </div>
+
+                <div class="row g-3 mt-4">
+                    <div class="col-6">
+                        <a href="{{ url_for('user.profile') }}" class="btn-secondary-custom w-100 py-2.5 text-center">取消</a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn-premium w-100 py-2.5">
+                            <i class="bi bi-send-fill"></i> 送出愛心
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Character counter for textarea
+    const textarea = document.getElementById('thank_you_message');
+    const counter = document.getElementById('char-counter');
+
+    textarea.addEventListener('input', function() {
+        const textLength = textarea.value.length;
+        counter.textContent = `${textLength} / 200`;
+    });
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}編輯公告 - {{ item.title }} - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-md-9 col-lg-8">
+        <div class="glass-panel">
+            <h2 class="mb-1" style="font-family: var(--font-heading);">📝 編輯失物招領公告</h2>
+            <p class="text-secondary small mb-4">修改公告詳細資訊或變更物品認領狀態。</p>
+            
+            <form action="{{ url_for('item.update_item', item_id=item.id) }}" method="POST" enctype="multipart/form-data">
+                
+                <div class="row">
+                    <!-- Title -->
+                    <div class="col-md-8 form-group-custom">
+                        <label for="title" class="form-label-custom">物品名稱 <span class="text-danger">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control-custom" placeholder="例如：在學餐撿到藍色皮夾" required value="{{ item.title }}">
+                    </div>
+
+                    <!-- Type -->
+                    <div class="col-md-4 form-group-custom">
+                        <label for="item_type" class="form-label-custom">公告類型 <span class="text-danger">*</span></label>
+                        <select id="item_type" name="item_type" class="form-select form-control-custom" required>
+                            <option value="lost" {% if item.item_type == 'lost' %}selected{% endif %}>遺失尋物 (Lost)</option>
+                            <option value="found" {% if item.item_type == 'found' %}selected{% endif %}>撿到拾獲 (Found)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Location -->
+                    <div class="col-md-8 form-group-custom">
+                        <label for="location" class="form-label-custom">遺失或拾獲地點 <span class="text-danger">*</span></label>
+                        <input type="text" id="location" name="location" class="form-control-custom" placeholder="例如：行政大樓二樓" required value="{{ item.location }}">
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-4 form-group-custom">
+                        <label for="status" class="form-label-custom">物品狀態 <span class="text-danger">*</span></label>
+                        <select id="status" name="status" class="form-select form-control-custom" required>
+                            <option value="unclaimed" {% if item.status == 'unclaimed' %}selected{% endif %}>協尋中 / 未認領 (Unclaimed)</option>
+                            <option value="claimed" {% if item.status == 'claimed' %}selected{% endif %}>已尋回 / 已認領 (Claimed)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group-custom">
+                    <label for="description" class="form-label-custom">詳細特徵描述 <span class="text-danger">*</span></label>
+                    <textarea id="description" name="description" class="form-control-custom" rows="6" placeholder="請詳細說明物品特徵..." required>{{ item.description }}</textarea>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="form-group-custom">
+                    <label for="contact_info" class="form-label-custom">聯絡方式 (選填)</label>
+                    <input type="text" id="contact_info" name="contact_info" class="form-control-custom" placeholder="例如：手機 0912-345-678" value="{{ item.contact_info if item.contact_info else '' }}">
+                </div>
+
+                <!-- Existing photo showcase -->
+                {% if item.image_url %}
+                    <div class="mb-3">
+                        <label class="form-label-custom">目前公告相片</label>
+                        <div class="d-block">
+                            <img src="{{ url_for('static', filename=item.image_url) }}" alt="Current image" class="img-thumbnail" style="max-height: 150px;">
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- File upload -->
+                <div class="form-group-custom">
+                    <label for="image" class="form-label-custom">上傳新物品相片 (選填，將覆蓋原圖)</label>
+                    <input type="file" id="image" name="image" class="form-control form-control-custom" accept="image/*">
+                    <div class="form-text text-secondary mt-1">留空將保留原圖。支援 PNG, JPG, JPEG, GIF, WEBP。</div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="row g-3 mt-4">
+                    <div class="col-6 col-md-3">
+                        <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="btn-secondary-custom w-100 py-2.5 text-center">取消</a>
+                    </div>
+                    <div class="col-6 col-md-4 ms-auto">
+                        <button type="submit" class="btn-premium w-100 py-2.5">
+                            <i class="bi bi-save2-fill"></i> 儲存修改
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

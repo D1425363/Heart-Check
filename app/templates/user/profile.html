@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}個人檔案 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="row animate-fade-in">
+    <!-- Left Column: User Info & QR Code -->
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="glass-panel text-center">
+            <div class="feed-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2.2rem;">
+                {{ user.name[0] | upper }}
+            </div>
+            <h3 class="mb-1">{{ user.name }}</h3>
+            <p class="text-secondary small mb-2">學號：{{ user.student_id }}</p>
+            {% if user.department %}
+                <span class="badge bg-secondary px-3 py-1.5" style="border: 1px solid rgba(255,255,255,0.08);">
+                    {{ user.department }}
+                </span>
+            {% endif %}
+            
+            <!-- Pinned Badges Showcase -->
+            <div class="mt-4 pt-3 border-top border-secondary" style="border-top-color: rgba(255,255,255,0.08) !important;">
+                <h5 class="text-start fs-6 mb-2" style="font-family: var(--font-heading); color: var(--color-primary);">🏆 徽章展示櫃</h5>
+                <div class="badge-showcase justify-content-center">
+                    {% if pinned_badges %}
+                        {% for badge in pinned_badges %}
+                            <div class="showcase-badge-pill" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ badge.desc }}">
+                                <span>{{ badge.icon }}</span>
+                                <span>{{ badge.name }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small italic my-2">尚未釘選徽章，可在右側選擇釘選最多3個徽章</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Card -->
+        <div class="glass-panel text-center">
+            <h4 class="mb-3" style="font-family: var(--font-heading);">🔍 我的愛心 QR Code</h4>
+            <div class="d-flex justify-content-center mb-3">
+                <div id="qrcode-container" class="p-3 bg-white rounded-3 shadow-sm d-inline-block">
+                    <div id="qrcode"></div>
+                </div>
+            </div>
+            <p class="text-secondary small px-2">
+                請其他同學掃描此 QR Code，即可即時轉移「愛心值」並給予您留言回饋！
+            </p>
+        </div>
+    </div>
+
+    <!-- Right Column: Stats, Badge List & Transactions -->
+    <div class="col-lg-8">
+        <!-- Stats Row -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="card-stat card-stat-indigo">
+                    <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider">愛心值餘額</div>
+                    <div class="fs-1 fw-bold text-white mt-1">💝 {{ user.heart_balance }} <span class="fs-6 fw-normal text-secondary">顆</span></div>
+                    <div class="text-muted small mt-2">可用於發送給幫助您的其他同學</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-stat card-stat-purple">
+                    <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider">累積人氣值</div>
+                    <div class="fs-1 fw-bold text-white mt-1">💖 {{ user.popularity }} <span class="fs-6 fw-normal text-secondary">分</span></div>
+                    <div class="text-muted small mt-2">受助同學回饋所得的愛心值總和</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Badges List Form -->
+        <div class="glass-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 style="font-family: var(--font-heading); margin-bottom: 0;">🏅 校園榮譽徽章</h4>
+                {% if badges %}
+                    <span class="badge bg-purple rounded-pill" style="background: var(--grad-purple-pink);">已獲得 {{ badges | length }} / 7</span>
+                {% endif %}
+            </div>
+            
+            <p class="text-secondary small mb-3">
+                達成特定互助條件將自動解鎖徽章。選取已獲得的徽章（最多 3 個）以展示在展示櫃中！
+            </p>
+
+            <form action="{{ url_for('user.pin_badges') }}" method="POST">
+                <div class="badge-grid">
+                    {% set earned_types = [] %}
+                    {% for b in badges %}
+                        {% set _ = earned_types.append(b.badge_type) %}
+                    {% endfor %}
+                    
+                    <!-- Defining metadata locally for convenience -->
+                    {% set badge_definitions = [
+                        ('rookie', '初試身手', '🌱', '完成第一次愛心傳遞'),
+                        ('helper', '熱心人士', '🤝', '收到來自 5 位不同同學的愛心'),
+                        ('heart_helper', '暖心小幫手', '💖', '累積人氣值達到 10'),
+                        ('ambassador', '愛心大使', '🌟', '累計送出 50 顆愛心'),
+                        ('expert', '尋物達人', '🔍', '有 3 篇失物招領成功尋回'),
+                        ('grateful', '感恩的心', '✉️', '送出時填寫 5 次感謝留言'),
+                        ('poster', '情報員', '📢', '發布 10 篇失物招領公告')
+                    ] %}
+
+                    {% for b_type, b_name, b_icon, b_desc in badge_definitions %}
+                        {% set is_earned = b_type in earned_types %}
+                        {% set is_pinned = false %}
+                        {% if is_earned %}
+                            {% for eb in badges %}
+                                {% if eb.badge_type == b_type and eb.is_pinned == 1 %}
+                                    {% set is_pinned = true %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                        <div class="badge-item {% if is_earned %}earned{% else %}locked{% endif %} {% if is_pinned %}pinned{% endif %}"
+                             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ b_desc }}">
+                            <span class="badge-icon">{{ b_icon }}</span>
+                            <span class="badge-title">{{ b_name }}</span>
+                            
+                            {% if is_earned %}
+                                <div class="mt-2">
+                                    <input class="form-check-input" type="checkbox" name="badges" value="{{ b_type }}" id="chk-{{ b_type }}" {% if is_pinned %}checked{% endif %}>
+                                    <label class="form-check-label small text-secondary" for="chk-{{ b_type }}">釘選</label>
+                                </div>
+                            {% else %}
+                                <span class="badge-desc mt-2">未解鎖</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if badges %}
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn-premium">
+                            <i class="bi bi-pin-angle-fill"></i> 更新展示櫃
+                        </button>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Transactions History -->
+        <div class="glass-panel">
+            <h4 class="mb-4" style="font-family: var(--font-heading);">📜 互助歷史紀錄</h4>
+            
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle" style="background: transparent; border-collapse: separate; border-spacing: 0 8px;">
+                        <thead>
+                            <tr class="text-secondary small" style="border: none;">
+                                <th style="background: transparent; border: none; padding-left: 15px;">類型</th>
+                                <th style="background: transparent; border: none;">互動對象</th>
+                                <th style="background: transparent; border: none;">愛心異動</th>
+                                <th style="background: transparent; border: none;">感謝語與留言</th>
+                                <th style="background: transparent; border: none; padding-right: 15px;">時間</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                                {% set is_sender = tx.sender_id == user.id %}
+                                <tr style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-sm); margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
+                                    <td style="background: transparent; border: none; border-radius: var(--radius-sm) 0 0 var(--radius-sm); padding-left: 15px;">
+                                        {% if is_sender %}
+                                            <span class="badge bg-danger-subtle text-danger tag-badge" style="background: rgba(239, 68, 68, 0.15) !important;">送出愛心</span>
+                                        {% else %}
+                                            <span class="badge bg-success-subtle text-success tag-badge" style="background: rgba(16, 185, 129, 0.15) !important;">收到愛心</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="background: transparent; border: none; font-weight: 500;">
+                                        {{ tx.receiver_name if is_sender else tx.sender_name }}
+                                    </td>
+                                    <td style="background: transparent; border: none; font-family: var(--font-heading); font-weight: 700; font-size: 1.05rem;">
+                                        {% if is_sender %}
+                                            <span class="text-danger">-{{ tx.heart_amount }}</span>
+                                        {% else %}
+                                            <span class="text-success">+{{ tx.heart_amount }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="background: transparent; border: none; color: var(--text-secondary); font-size: 0.9rem; font-style: italic; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                        {{ tx.thank_you_message if tx.thank_you_message else '無留言' }}
+                                    </td>
+                                    <td style="background: transparent; border: none; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-muted); font-size: 0.8rem; padding-right: 15px;">
+                                        {{ tx.created_at.split('T')[0] }} {{ tx.created_at.split('T')[1][:5] if 'T' in tx.created_at else '' }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-secondary">
+                    <i class="bi bi-journal-x fs-1 mb-2 d-block text-muted"></i>
+                    暫時沒有任何愛心發送或接收的交易紀錄。
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- QR Code Library CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    // Initialize QR Code inside container
+    const qrText = "{{ qr_code_url }}";
+    new QRCode(document.getElementById("qrcode"), {
+        text: qrText,
+        width: 180,
+        height: 180,
+        colorDark : "#0f101f",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+
+    // Initialize Bootstraps tooltips for badges
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
+{% endblock %}
