@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Check 校園互助與人氣回饋平台 - 互動測試原型</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Outfit Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Embed Custom Style from app/static/css/style.css & enhancements */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #ff4b72 0%, #7033ff 100%);
+            --bg-gradient: linear-gradient(180deg, #f8f9fc 0%, #f1f3f9 100%);
+            --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 5px 15px -8px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 20px 40px -5px rgba(112, 51, 255, 0.12), 0 8px 24px -10px rgba(255, 75, 114, 0.12);
+            --text-primary: #1e1e24;
+            --text-secondary: #5c6270;
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.4);
+            --gold-gradient: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+            --silver-gradient: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+            --bronze-gradient: linear-gradient(135deg, #cd7f32 0%, #8b4513 100%);
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-primary);
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Simulator Admin Bar */
+        .simulator-bar {
+            background: linear-gradient(90deg, #1e1e24 0%, #2a2a35 100%);
+            color: #ffffff;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            z-index: 1050;
+            border-bottom: 2px solid #ff4b72;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .simulator-badge {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #ff4b72;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Glassmorphism Navbar */
+        .navbar {
+            background: var(--bg-glass) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-glass);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-secondary) !important;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active-nav {
+            color: #ff4b72 !important;
+            transform: translateY(-1px);
+        }
+
+        /* Premium Card Design */
+        .premium-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            overflow: hidden;
+        }
+
+        .premium-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+            border-color: rgba(112, 51, 255, 0.2);
+        }
+
+        /* Beautiful Buttons */
+        .btn-premium {
+            background: var(--primary-gradient);
+            color: white !important;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 10px 24px;
+            box-shadow: 0 4px 15px rgba(255, 75, 114, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .btn-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 75, 114, 0.35);
+            opacity: 0.95;
+        }
+
+        .btn-outline-premium {
+            background: transparent;
+            color: #ff4b72 !important;
+            border: 2px solid #ff4b72;
+            border-radius: 12px;
+            font-weight: 600;
+            padding: 8px 22px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-premium:hover {
+            background: var(--primary-gradient);
+            color: white !important;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(112, 51, 255, 0.2);
+        }
+
+        /* Heart & Popularity Pill UI */
+        .heart-badge {
+            background: linear-gradient(135deg, #ffe3e8 0%, #ffd0da 100%);
+            color: #ff4b72;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .popularity-badge {
+            background: linear-gradient(135deg, #eae3ff 0%, #dcd0ff 100%);
+            color: #7033ff;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Page Headers & Gradients */
+        .header-title {
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        /* Micro-interactions & animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+        }
+
+        /* Form Styling */
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e1e3ea;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #ff4b72;
+            box-shadow: 0 0 0 3px rgba(255, 75, 114, 0.15);
+        }
+
+        /* List Items Details */
+        .list-group-item {
+            border-radius: 12px !important;
+            border: 1px solid #f1f3f9;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .list-group-item:hover {
+            background-color: #fcfcff;
+            transform: translateX(3px);
+        }
+
+        /* Footer styling */
+        footer {
+            background: #1e1e24;
+            color: #a0a5b5;
+            font-weight: 400;
+            margin-top: auto;
+        }
+
+        /* QR Code Scanner Animation Frame */
+        .qr-frame {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            border: 4px solid #7033ff;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 10px 25px rgba(112, 51, 255, 0.15);
+        }
+        .qr-scanner-line {
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #ff4b72, transparent);
+            position: absolute;
+            width: 100%;
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        /* Timetable UI */
+        .timetable-cell {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .timetable-header {
+            background: #f1f3f9;
+            font-weight: 600;
+        }
+        .timetable-bus {
+            background: #eae3ff;
+            color: #7033ff;
+            font-weight: 700;
+            border-left: 4px solid #7033ff;
+        }
+
+        /* Routing Tab styles */
+        .app-view {
+            display: none;
+        }
+        .app-view.active-view {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 0. Prototype Simulator Admin Bar -->
+    <div class="simulator-bar d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="simulator-badge"><i class="fa-solid fa-flask me-1"></i>測試原型控制台</span>
+            <span class="text-white-50">| 模擬後端資料已啟用 (存於瀏覽器 localStorage)</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <label for="sim-user-select" class="small text-white-50 mb-0">切換當前登入者：</label>
+            <select id="sim-user-select" class="form-select form-select-sm py-0 px-2" style="width: auto; height: 26px; border-radius: 4px; font-size: 0.8rem;" onchange="switchSimUser(this.value)">
+                <!-- populated by JS -->
+            </select>
+            <button class="btn btn-danger btn-sm py-0 px-2" style="font-size: 0.75rem; height: 26px;" onclick="resetLocalStorage()"><i class="fa-solid fa-rotate-left me-1"></i>重置資料</button>
+            <button class="btn btn-success btn-sm py-0 px-2" style="font-size: 0.75rem; height: 26px;" onclick="triggerSimScan()"><i class="fa-solid fa-qrcode me-1"></i>模擬掃碼</button>
+        </div>
+    </div>
+
+    <!-- 1. Navigation Bar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand animate-fade-in" onclick="navigateTo('home')" style="cursor:pointer;">
+                <i class="fa-solid fa-heart-circle-check me-2"></i>Heart Check
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a id="nav-home" class="nav-link active-nav" onclick="navigateTo('home')"><i class="fa-solid fa-house me-1"></i>首頁</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav-announcements" class="nav-link" onclick="navigateTo('announcements')"><i class="fa-solid fa-bullhorn me-1"></i>校園公告</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav-items" class="nav-link" onclick="navigateTo('items')"><i class="fa-solid fa-box-open me-1"></i>失物招領</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav-leaderboard" class="nav-link" onclick="navigateTo('leaderboard')"><i class="fa-solid fa-trophy me-1"></i>排行榜</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav-traffic" class="nav-link" onclick="navigateTo('traffic')"><i class="fa-solid fa-bus me-1"></i>交通資訊</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav-restaurants" class="nav-link" onclick="navigateTo('restaurants')"><i class="fa-solid fa-utensils me-1"></i>餐廳評價</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-2" id="nav-auth-buttons">
+                    <!-- populated dynamically based on login state -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 2. Alert Notification Area -->
+    <div class="container mt-3" id="alert-container"></div>
+
+    <!-- 3. SPA Page Views -->
+    <main class="container py-4 flex-grow-1">
+
+        <!-- ============ HOME VIEW ============ -->
+        <section id="view-home" class="app-view active-view animate-fade-in">
+            <!-- Hero Welcome Section -->
+            <div class="card premium-card border-0 mb-4" style="background: linear-gradient(135deg, rgba(255, 75, 114, 0.08) 0%, rgba(112, 51, 255, 0.08) 100%);">
+                <div class="card-body p-4 p-lg-5 text-center">
+                    <h1 class="font-extrabold mb-3" style="font-weight: 850; font-size: 2.5rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        開啟校園的溫馨互助 💖
+                    </h1>
+                    <p class="text-secondary col-lg-8 mx-auto fs-5 mb-4">
+                        「Heart Check」是一個專門為校園設計的互助回饋平台。當您獲得同學幫助後，只需掃描對方的專屬 QR Code，即可轉移愛心值轉換為對方的人氣值！同時提供失物招領與宿舍生活公告服務。
+                    </p>
+                    <div id="home-welcome-actions" class="d-flex justify-content-center gap-3">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Status Card if Logged In -->
+            <div id="home-user-status" class="card premium-card p-3 mb-4" style="display: none;">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Quick Information Section -->
+            <div class="row g-4">
+                <!-- Left Column: Announcements -->
+                <div class="col-lg-6">
+                    <div class="card premium-card h-100 p-4">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="font-bold mb-0"><i class="fa-solid fa-bullhorn text-danger me-2"></i>最新公告</h4>
+                                <a onclick="navigateTo('announcements')" class="text-decoration-none text-danger font-bold small cursor-pointer">
+                                    查看全部 <i class="fa-solid fa-arrow-right-long ms-1"></i>
+                                </a>
+                            </div>
+                            <div id="home-announcements-list" class="list-group list-group-flush flex-grow-1">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Lost & Found -->
+                <div class="col-lg-6">
+                    <div class="card premium-card h-100 p-4">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="font-bold mb-0"><i class="fa-solid fa-box-open text-primary me-2"></i>最新協尋中失物</h4>
+                                <a onclick="navigateTo('items')" class="text-decoration-none text-danger font-bold small cursor-pointer">
+                                    尋寶去 <i class="fa-solid fa-arrow-right-long ms-1"></i>
+                                </a>
+                            </div>
+                            <div id="home-items-list" class="list-group list-group-flush flex-grow-1">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ ANNOUNCEMENTS VIEW ============ -->
+        <section id="view-announcements" class="app-view animate-fade-in">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="header-title mb-1">校園與宿舍公告看板</h2>
+                    <p class="text-muted mb-0">即時掌握學校與宿舍的最新通知與維修資訊</p>
+                </div>
+                <div class="d-flex align-items-center gap-2" id="announcement-admin-actions">
+                    <!-- Create button populated if logged in -->
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card premium-card p-3 mb-4">
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-premium active px-4 py-2" id="filter-ann-all" onclick="filterAnnouncements('all')">全部公告</button>
+                    <button class="btn btn-outline-premium px-4 py-2" id="filter-ann-dorm" onclick="filterAnnouncements('dorm')"><i class="fa-solid fa-hotel me-1"></i>宿舍公告</button>
+                    <button class="btn btn-outline-premium px-4 py-2" id="filter-ann-campus" onclick="filterAnnouncements('campus')"><i class="fa-solid fa-graduation-cap me-1"></i>校園公告</button>
+                </div>
+            </div>
+
+            <!-- List Grid -->
+            <div class="row g-4" id="announcements-grid">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+        <!-- ============ ANNOUNCEMENT WRITE/EDIT MODAL ============ -->
+        <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content premium-card border-0">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title font-bold text-dark" id="announcementModalLabel">發布新公告</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="announcement-form">
+                            <input type="hidden" id="ann-edit-id">
+                            <div class="mb-3">
+                                <label for="ann-title" class="form-label font-bold text-secondary">公告標題</label>
+                                <input type="text" class="form-control" id="ann-title" required placeholder="例如：宿舍A棟停水維修通知">
+                            </div>
+                            <div class="mb-3">
+                                <label for="ann-category" class="form-label font-bold text-secondary">公告分類</label>
+                                <select class="form-select" id="ann-category" required>
+                                    <option value="dorm">宿舍公告 (Dorm)</option>
+                                    <option value="campus">校園公告 (Campus)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="ann-content" class="form-label font-bold text-secondary">公告內容</label>
+                                <textarea class="form-control" id="ann-content" rows="5" required placeholder="請詳細說明公告事宜..."></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2 pt-2">
+                                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">取消</button>
+                                <button type="submit" class="btn btn-premium" id="btn-ann-submit">發布公告</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ LOST & FOUND VIEW ============ -->
+        <section id="view-items" class="app-view animate-fade-in">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="header-title mb-1">失物招領佈告欄</h2>
+                    <p class="text-muted mb-0">幫助遺失物重回主人懷抱，熱心協尋累積愛心</p>
+                </div>
+                <div id="item-add-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="card premium-card p-4 mb-4">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control border-start-0" id="item-search-query" placeholder="搜尋物品名稱或描述..." oninput="filterItems()">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="item-filter-type" onchange="filterItems()">
+                            <option value="all">公告類型：全部</option>
+                            <option value="lost">遺失物品 (Lost)</option>
+                            <option value="found">拾獲物品 (Found)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="item-filter-status" onchange="filterItems()">
+                            <option value="all">認領狀態：全部</option>
+                            <option value="unclaimed">協尋/招領中 (Unclaimed)</option>
+                            <option value="claimed">已尋回/認領 (Claimed)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Grid -->
+            <div class="row g-4" id="items-grid">
+                <!-- Populated dynamically -->
+            </div>
+        </section>
+
+        <!-- ============ ITEM DETAIL MODAL ============ -->
+        <div class="modal fade" id="itemDetailModal" tabindex="-1" aria-labelledby="itemDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content premium-card border-0">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title font-bold text-dark" id="itemDetailModalLabel">物品詳細資訊</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="item-detail-content">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ ITEM WRITE/EDIT MODAL ============ -->
+        <div class="modal fade" id="itemFormModal" tabindex="-1" aria-labelledby="itemFormModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content premium-card border-0">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title font-bold text-dark" id="itemFormModalLabel">發布失物招領公告</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="item-form">
+                            <input type="hidden" id="item-edit-id">
+                            <div class="mb-3">
+                                <label for="item-title" class="form-label font-bold text-secondary">物品名稱</label>
+                                <input type="text" class="form-control" id="item-title" required placeholder="例如：藍色太和工房水壺">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="item-type" class="form-label font-bold text-secondary">公告類型</label>
+                                    <select class="form-select" id="item-type" required>
+                                        <option value="lost">遺失 (Lost)</option>
+                                        <option value="found">拾獲 (Found)</option>
+                                    </select>
+                                </div>
+                                <div class="col" id="item-status-col">
+                                    <label for="item-status" class="form-label font-bold text-secondary">物品狀態</label>
+                                    <select class="form-select" id="item-status">
+                                        <option value="unclaimed">協尋/認領中</option>
+                                        <option value="claimed">已完成/尋回</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="item-location" class="form-label font-bold text-secondary">遺失/拾獲地點</label>
+                                <input type="text" class="form-control" id="item-location" required placeholder="例如：圖書館二樓檢索區或學餐">
+                            </div>
+                            <div class="mb-3">
+                                <label for="item-contact" class="form-label font-bold text-secondary">聯絡方式</label>
+                                <input type="text" class="form-control" id="item-contact" required placeholder="例如：手機 0912-345-678 或至圖書館服務台">
+                            </div>
+                            <div class="mb-3">
+                                <label for="item-desc" class="form-label font-bold text-secondary">詳細特徵描述</label>
+                                <textarea class="form-control" id="item-desc" rows="4" required placeholder="請描述物品外觀顏色、貼紙、遺失時間等細節..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="item-image" class="form-label font-bold text-secondary">上傳照片 (模擬)</label>
+                                <input type="file" class="form-control" id="item-image" accept="image/*" onchange="previewItemImage(this)">
+                                <div id="image-upload-preview" class="mt-2 text-center" style="display:none;">
+                                    <img id="item-preview-img" src="" alt="預覽" class="img-thumbnail" style="max-height: 150px;">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2 pt-2">
+                                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">取消</button>
+                                <button type="submit" class="btn btn-premium" id="btn-item-submit">發布公告</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ LEADERBOARD VIEW ============ -->
+        <section id="view-leaderboard" class="app-view animate-fade-in">
+            <div class="text-center mb-5">
+                <h2 class="header-title">校園愛心與人氣排行榜 🏆</h2>
+                <p class="text-muted fs-5">看看校園中有哪些熱心助人的愛心之星！</p>
+            </div>
+
+            <!-- Podium (Top 3 Users) -->
+            <div class="row g-4 justify-content-center mb-5 align-items-end" id="leaderboard-podium">
+                <!-- Populated dynamically (Gold, Silver, Bronze layout) -->
+            </div>
+
+            <!-- Leaderboard Table -->
+            <div class="card premium-card p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-secondary">
+                                <th scope="col" style="width: 80px;" class="text-center font-bold">名次</th>
+                                <th scope="col" class="font-bold">姓名</th>
+                                <th scope="col" class="font-bold">系級</th>
+                                <th scope="col" class="font-bold text-center">人氣值</th>
+                                <th scope="col" style="width: 150px;" class="text-center font-bold">互動</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PROFILE VIEW ============ -->
+        <section id="view-profile" class="app-view animate-fade-in">
+            <!-- User Info Dashboard -->
+            <div class="row g-4">
+                <!-- Left panel: QR Code & Status -->
+                <div class="col-lg-4 text-center">
+                    <div class="card premium-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <h4 class="font-bold mb-4 text-dark"><i class="fa-solid fa-qrcode text-primary me-2"></i>我的專屬條碼</h4>
+                            <div class="qr-frame p-3 mb-4">
+                                <div class="qr-scanner-line"></div>
+                                <!-- Elegant QR code simulation using SVG matrix -->
+                                <svg width="100%" height="100%" viewBox="0 0 100 100" style="shape-rendering: crispedges;">
+                                    <path d="M0,0 h30 v10 h-20 v20 h-10 z M70,0 h30 v30 h-10 v-20 h-20 z M0,70 h10 v20 h20 v10 h-30 z M90,90 h-20 v10 h30 v-30 h-10 z" fill="#7033ff"/>
+                                    <!-- QR patterns -->
+                                    <rect x="15" y="15" width="20" height="20" fill="#1e1e24"/>
+                                    <rect x="19" y="19" width="12" height="12" fill="#ffffff"/>
+                                    <rect x="22" y="22" width="6" height="6" fill="#1e1e24"/>
+                                    <rect x="65" y="15" width="20" height="20" fill="#1e1e24"/>
+                                    <rect x="69" y="19" width="12" height="12" fill="#ffffff"/>
+                                    <rect x="72" y="22" width="6" height="6" fill="#1e1e24"/>
+                                    <rect x="15" y="65" width="20" height="20" fill="#1e1e24"/>
+                                    <rect x="19" y="69" width="12" height="12" fill="#ffffff"/>
+                                    <rect x="22" y="72" width="6" height="6" fill="#1e1e24"/>
+                                    <!-- Random dots inside -->
+                                    <rect x="45" y="20" width="5" height="5" fill="#ff4b72"/>
+                                    <rect x="55" y="25" width="5" height="10" fill="#1e1e24"/>
+                                    <rect x="40" y="40" width="10" height="5" fill="#1e1e24"/>
+                                    <rect x="45" y="50" width="15" height="5" fill="#7033ff"/>
+                                    <rect x="65" y="45" width="5" height="15" fill="#1e1e24"/>
+                                    <rect x="55" y="65" width="10" height="10" fill="#ff4b72"/>
+                                    <rect x="45" y="75" width="5" height="10" fill="#1e1e24"/>
+                                    <rect x="75" y="65" width="5" height="5" fill="#1e1e24"/>
+                                    <rect x="80" y="75" width="5" height="10" fill="#7033ff"/>
+                                </svg>
+                            </div>
+                            <p class="text-secondary small mb-4">
+                                當您幫助了同學，可以展示此條碼讓受助者掃描，為您轉移愛心值累積人氣！
+                            </p>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-premium" onclick="triggerSimScan()"><i class="fa-solid fa-camera me-2"></i>掃描他人 QR Code</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right panel: Profile Details & Transactions -->
+                <div class="col-lg-8">
+                    <div class="card premium-card p-4 mb-4">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                            <div>
+                                <h3 class="font-bold mb-1 text-dark" id="profile-name"></h3>
+                                <p class="text-muted mb-0"><span id="profile-dept"></span> &bull; 學號：<span id="profile-student-id"></span></p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <div class="heart-badge"><i class="fa-solid fa-heart"></i> 愛心值：<span id="profile-hearts"></span></div>
+                                <div class="popularity-badge"><i class="fa-solid fa-star"></i> 人氣值：<span id="profile-popularity"></span></div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="opacity: 0.1;">
+
+                        <!-- Transaction log -->
+                        <h4 class="font-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2 text-secondary"></i>愛心交易與感謝歷史紀錄</h4>
+                        <div class="list-group list-group-flush" id="profile-transactions-list" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ QR CODE TRANSFER VIEW ============ -->
+        <section id="view-transfer" class="app-view animate-fade-in">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card premium-card p-4">
+                        <div class="text-center mb-4">
+                            <div class="heart-badge px-4 py-2 fs-5 mb-3"><i class="fa-solid fa-heart-pulse"></i> 發送愛心回饋</div>
+                            <h3 class="font-bold text-dark">感謝對方的幫助</h3>
+                            <p class="text-secondary small">請填寫要回饋給對方的愛心值點數與感謝悄悄話</p>
+                        </div>
+
+                        <form id="transfer-form">
+                            <div class="mb-4 text-center p-3 rounded-4" style="background: rgba(112, 51, 255, 0.05); border: 1px dashed rgba(112, 51, 255, 0.15);">
+                                <label class="small text-muted d-block mb-1">接收人（幫助者）</label>
+                                <span class="fs-5 font-bold text-dark" id="transfer-receiver-name">載入中...</span>
+                                <span class="d-block small text-muted font-monospace" id="transfer-receiver-id"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="transfer-amount" class="form-label font-bold text-secondary">發送愛心值數量</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white text-danger"><i class="fa-solid fa-heart"></i></span>
+                                    <input type="number" class="form-control" id="transfer-amount" required min="1" placeholder="請輸入愛心值點數">
+                                </div>
+                                <div class="form-text text-end small text-muted">我的可用餘額：<span id="transfer-my-balance" class="font-bold text-danger">0</span> 點</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="transfer-message" class="form-label font-bold text-secondary">感謝悄悄話 (留言)</label>
+                                <textarea class="form-control" id="transfer-message" rows="3" placeholder="寫些感謝的話吧，對方會非常開心喔！例如：感謝昨天在排球場幫我撿到學生證！"></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-premium py-3"><i class="fa-solid fa-paper-plane me-2"></i>確認送出</button>
+                                <button type="button" class="btn btn-secondary rounded-3 py-2" onclick="navigateTo('profile')">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ TRAFFIC INFO VIEW ============ -->
+        <section id="view-traffic" class="app-view animate-fade-in">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                <div>
+                    <h2 class="header-title mb-1">校園通勤與交通資訊</h2>
+                    <p class="text-muted mb-0">即時校車時刻表與聯外捷運/公車通勤整合</p>
+                </div>
+                <div>
+                    <span class="badge bg-success-subtle text-success p-2 rounded-pill"><i class="fa-solid fa-circle-check me-1"></i>校車正點運行中</span>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Bus Routes Map & Tab -->
+                <div class="col-lg-6">
+                    <div class="card premium-card p-4 h-100">
+                        <h4 class="font-bold mb-4"><i class="fa-solid fa-map-location-dot text-danger me-2"></i>校園接駁車路線</h4>
+                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="pills-route-a-tab" data-bs-toggle="pill" data-bs-target="#pills-route-a" type="button" role="tab" aria-controls="pills-route-a" aria-selected="true">教學區環線 (A線)</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pills-route-b-tab" data-bs-toggle="pill" data-bs-target="#pills-route-b" type="button" role="tab" aria-controls="pills-route-b" aria-selected="false">新宿舍直達 (B線)</button>
+                            </li>
+                        </ul>
+                        <div class="tab-content border p-3 rounded-4 bg-white" id="pills-tabContent">
+                            <div class="tab-pane fade show active" id="pills-route-a" role="tabpanel" aria-labelledby="pills-route-a-tab">
+                                <div class="timeline-route py-2">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="btn btn-primary btn-sm rounded-circle p-1" style="width:28px;height:28px;font-size:12px;display:inline-flex;justify-content:center;align-items:center;">1</div>
+                                        <div><strong>行政大樓站 (始發)</strong> <span class="badge bg-light text-dark font-monospace ms-2">每 10 分鐘一班</span></div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="btn btn-primary btn-sm rounded-circle p-1" style="width:28px;height:28px;font-size:12px;display:inline-flex;justify-content:center;align-items:center;">2</div>
+                                        <div><strong>綜合教學大樓站</strong> <span class="badge bg-light text-dark font-monospace ms-2">約 3 分鐘抵達</span></div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="btn btn-primary btn-sm rounded-circle p-1" style="width:28px;height:28px;font-size:12px;display:inline-flex;justify-content:center;align-items:center;">3</div>
+                                        <div><strong>圖書館與體育館站</strong> <span class="badge bg-light text-dark font-monospace ms-2">約 6 分鐘抵達</span></div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mb-0">
+                                        <div class="btn btn-primary btn-sm rounded-circle p-1" style="width:28px;height:28px;font-size:12px;display:inline-flex;justify-content:center;align-items:center;">4</div>
+                                        <div><strong>學生餐廳大樓站 (終點)</strong> <span class="badge bg-light text-dark font-monospace ms-2">約 10 分鐘抵達</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pills-route-b" role="tabpanel" aria-labelledby="pills-route-b-tab">
+                                <div class="timeline-route py-2">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="btn btn-success btn-sm rounded-circle p-1" style="width:28px;height:28px;font-size:12px;display:inline-flex;justify-content:center;align-items:center;">1</div>
+                                        <div><strong>男宿與女宿前廣場站 (始發)</strong> <span class="badge bg-light text-dark font-monospace ms-2">每 15 分鐘一班</span></div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="btn btn-success btn-sm rounded-circle p-1" style="width:28px;height:28px;font-size:12px;display:inline-flex;justify-content:center;align-items:center;">2</div>
+                                        <div><strong>活動中心與體育館站</strong> <span class="badge bg-light text-dark font-monospace ms-2">約 5 分鐘抵達</span></div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 mb-0">
+                                        <div class="btn btn-success btn-sm rounded-circle p-1" style="width:28px;height:28px;font-size:12px;display:inline-flex;justify-content:center;align-items:center;">3</div>
+                                        <div><strong>教學一館大樓前站 (終點)</strong> <span class="badge bg-light text-dark font-monospace ms-2">約 8 分鐘抵達</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timetable -->
+                <div class="col-lg-6">
+                    <div class="card premium-card p-4 h-100">
+                        <h4 class="font-bold mb-4"><i class="fa-solid fa-clock text-primary me-2"></i>即時校車出發時刻表</h4>
+                        <div class="row timetable-header g-0 rounded-3 mb-2 py-2">
+                            <div class="col-3 text-center font-bold">班次</div>
+                            <div class="col-3 text-center font-bold">發車時間</div>
+                            <div class="col-3 text-center font-bold">起迄站</div>
+                            <div class="col-3 text-center font-bold">狀態</div>
+                        </div>
+                        <div class="row timetable-bus g-0 rounded-3 mb-2 py-2 align-items-center">
+                            <div class="col-3 text-center font-bold">A-12</div>
+                            <div class="col-3 text-center font-monospace">18:00</div>
+                            <div class="col-3 text-center">行政 &rarr; 學餐</div>
+                            <div class="col-3 text-center"><span class="badge bg-success">即將發車</span></div>
+                        </div>
+                        <div class="row timetable-bus g-0 rounded-3 mb-2 py-2 align-items-center">
+                            <div class="col-3 text-center font-bold">B-08</div>
+                            <div class="col-3 text-center font-monospace">18:15</div>
+                            <div class="col-3 text-center">宿舍 &rarr; 教學</div>
+                            <div class="col-3 text-center"><span class="badge bg-warning text-dark">準備中</span></div>
+                        </div>
+                        <div class="row timetable-bus g-0 rounded-3 mb-2 py-2 align-items-center" style="opacity: 0.7;">
+                            <div class="col-3 text-center font-bold">A-13</div>
+                            <div class="col-3 text-center font-monospace">18:30</div>
+                            <div class="col-3 text-center">行政 &rarr; 學餐</div>
+                            <div class="col-3 text-center"><span class="badge bg-secondary">未發車</span></div>
+                        </div>
+                        <div class="row timetable-bus g-0 rounded-3 mb-0 py-2 align-items-center" style="opacity: 0.7;">
+                            <div class="col-3 text-center font-bold">B-09</div>
+                            <div class="col-3 text-center font-monospace">18:45</div>
+                            <div class="col-3 text-center">宿舍 &rarr; 教學</div>
+                            <div class="col-3 text-center"><span class="badge bg-secondary">未發車</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ RESTAURANTS VIEW ============ -->
+        <section id="view-restaurants" class="app-view animate-fade-in">
+            <div class="mb-4">
+                <h2 class="header-title mb-1">學餐與校園周邊餐廳評價</h2>
+                <p class="text-muted mb-0">看看同學心目中的美食，分享您的用餐心得！</p>
+            </div>
+
+            <!-- List Grid -->
+            <div class="row g-4">
+                <!-- Restaurant list -->
+                <div class="col-lg-6">
+                    <div class="card premium-card p-4">
+                        <h4 class="font-bold mb-4 text-dark"><i class="fa-solid fa-utensils text-danger me-2"></i>熱門校園美食餐廳</h4>
+                        <div class="list-group list-group-flush" id="restaurant-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Restaurant Reviews Detail & Add -->
+                <div class="col-lg-6">
+                    <div class="card premium-card p-4 h-100" id="restaurant-reviews-card">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <h4 class="font-bold mb-1 text-dark" id="selected-rest-name">選取餐廳</h4>
+                                <span class="badge bg-primary-subtle text-primary" id="selected-rest-tag">位置</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="fs-4 text-warning font-bold" id="selected-rest-rating">0.0</span>
+                                <span class="d-block small text-muted" id="selected-rest-reviews-count">0 則評價</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-3" style="opacity: 0.1;">
+
+                        <!-- Reviews stream -->
+                        <h5 class="font-bold mb-3">同學真心話評論</h5>
+                        <div class="mb-4 border rounded-4 p-3 bg-white" style="max-height: 250px; overflow-y: auto;" id="selected-rest-comments">
+                            <!-- comments populated here -->
+                        </div>
+
+                        <!-- Add Review -->
+                        <h5 class="font-bold mb-2">我來評分評論</h5>
+                        <form id="restaurant-review-form" onsubmit="submitRestaurantReview(event)">
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="small text-muted font-bold d-block mb-1">給予評分</label>
+                                    <div class="d-flex gap-1 text-warning fs-5" style="cursor:pointer;" id="form-star-rating">
+                                        <i class="fa-solid fa-star" onclick="setFormRating(1)"></i>
+                                        <i class="fa-solid fa-star" onclick="setFormRating(2)"></i>
+                                        <i class="fa-solid fa-star" onclick="setFormRating(3)"></i>
+                                        <i class="fa-solid fa-star" onclick="setFormRating(4)"></i>
+                                        <i class="fa-regular fa-star" onclick="setFormRating(5)"></i>
+                                    </div>
+                                    <input type="hidden" id="review-rating-value" value="4">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <textarea class="form-control" id="review-comment" rows="2" placeholder="覺得好吃或踩雷嗎？寫下您的真心評價..." required></textarea>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-premium btn-sm py-2">送出評價</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ AUTH LOGIN VIEW ============ -->
+        <section id="view-login" class="app-view animate-fade-in">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card premium-card p-4">
+                        <div class="text-center mb-4">
+                            <h2 class="header-title font-extrabold mb-1">登入 Heart Check</h2>
+                            <p class="text-muted small">請輸入您的帳號密碼開始體驗校園互助</p>
+                        </div>
+                        <form id="login-form">
+                            <div class="mb-3">
+                                <label for="login-username" class="form-label font-bold text-secondary">使用者帳號</label>
+                                <input type="text" class="form-control" id="login-username" required placeholder="請輸入註冊帳號">
+                            </div>
+                            <div class="mb-4">
+                                <label for="login-password" class="form-label font-bold text-secondary">密碼</label>
+                                <input type="password" class="form-control" id="login-password" required placeholder="請輸入密碼">
+                            </div>
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="submit" class="btn btn-premium py-2">登入系統</button>
+                            </div>
+                            <p class="text-center text-muted small mb-4">還沒有帳號嗎？ <a onclick="navigateTo('register')" class="text-danger font-bold cursor-pointer text-decoration-none">立即註冊</a></p>
+                            
+                            <hr class="my-4" style="opacity: 0.1;">
+                            
+                            <!-- Preset logins for testing -->
+                            <h6 class="font-bold text-dark text-center mb-2">快速測試免輸入登入：</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-secondary w-100 btn-sm" onclick="quickLogin('admin')">管理員 (admin)</button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-secondary w-100 btn-sm" onclick="quickLogin('hero')">熱心小明 (hero)</button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-secondary w-100 btn-sm" onclick="quickLogin('finder')">獵人小華 (finder)</button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-secondary w-100 btn-sm" onclick="quickLogin('user')">普通阿強 (user)</button>
+                                </div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">（以上密碼皆為：<code>password123</code>）</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ AUTH REGISTER VIEW ============ -->
+        <section id="view-register" class="app-view animate-fade-in">
+            <div class="row justify-content-center">
+                <div class="col-md-7 col-lg-6">
+                    <div class="card premium-card p-4">
+                        <div class="text-center mb-4">
+                            <h2 class="header-title font-extrabold mb-1">註冊新帳號</h2>
+                            <p class="text-muted small">建立專屬個人檔案，加入校園互助大家庭</p>
+                        </div>
+                        <form id="register-form">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="reg-username" class="form-label font-bold text-secondary">帳號 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="reg-username" required placeholder="例如：my_id">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="reg-password" class="form-label font-bold text-secondary">密碼 <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" id="reg-password" required placeholder="請設定安全密碼">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="reg-name" class="form-label font-bold text-secondary">真實姓名 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="reg-name" required placeholder="例如：林大明">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="reg-studentid" class="form-label font-bold text-secondary">學號 <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="reg-studentid" required placeholder="例如：S001004">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="reg-department" class="form-label font-bold text-secondary">科系名稱</label>
+                                <input type="text" class="form-control" id="reg-department" placeholder="例如：化學工程系">
+                            </div>
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="submit" class="btn btn-premium py-2">註冊並登入</button>
+                            </div>
+                            <p class="text-center text-muted small">已經有帳號了嗎？ <a onclick="navigateTo('login')" class="text-danger font-bold cursor-pointer text-decoration-none">立即登入</a></p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 4. Footer -->
+    <footer class="py-4 mt-auto text-center border-top text-white">
+        <div class="container">
+            <p class="mb-1">&copy; 2026 Heart Check 校園互助與人氣回饋平台 - 互動測試原型</p>
+            <p class="mb-0 text-muted small">此原型完全在前端瀏覽器運行，儲存數據將保存在您當前的瀏覽器中 💖</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- 5. Interactive JS Simulator Logic -->
+    <script>
+        // Default Mock Seed Data (Matching the Database Seeder)
+        const DEFAULT_SEED_DATA = {
+            users: {
+                "admin": { id: 1, username: "admin", name: "管理員 (宿舍幹部)", student_id: "S000000", department: "資訊工程系", heart_balance: 500, popularity: 250, qr_code_token: "token_admin" },
+                "hero": { id: 2, username: "hero", name: "熱心同學小明", student_id: "S001001", department: "電機工程系", heart_balance: 80, popularity: 999, qr_code_token: "token_hero" },
+                "finder": { id: 3, username: "finder", name: "失物獵人小華", student_id: "S001002", department: "企業管理系", heart_balance: 120, popularity: 150, qr_code_token: "token_finder" },
+                "user": { id: 4, username: "user", name: "普通學生阿強", student_id: "S001003", department: "生活應用科學系", heart_balance: 100, popularity: 0, qr_code_token: "token_user" }
+            },
+            announcements: [
+                { id: 1, title: "宿舍 A 棟熱水器緊急維修公告", category: "dorm", content: "各位宿生好，宿舍 A 棟 3 樓與 4 樓的熱水器因感應器故障，將於明日上午 9:00 至 12:00 進行停水維修，期間將暫停熱水供應，請宿生多加留意，造成不便敬請見諒。", author: "管理員 (宿舍幹部)", date: "2026-06-02" },
+                { id: 2, title: "115 學年度畢業典禮「愛心服務隊」志工招募中！", category: "campus", content: "歡迎各位熱心的同學加入畢業典禮服務隊！本次志工服務可折抵服務學習時數 6 小時，並可獲得 Heart Check 平台贈送的 50 點愛心值！歡迎至課外活動組報名，一起為學長姐留下美好的畢業回憶！", author: "管理員 (宿舍幹部)", date: "2026-06-01" },
+                { id: 3, title: "學餐二樓消防安檢通知", category: "campus", content: "本週五下午 2:00 起學餐二樓將進行例行性消防安全設備檢測，屆時警報器可能會短暫響起，請二樓各店家與用餐同學配合，切勿驚慌。", author: "管理員 (宿舍幹部)", date: "2026-06-02" }
+            ],
+            items: [
+                { id: 1, title: "在學餐遺失藍色太和工房水壺", type: "lost", status: "unclaimed", location: "學校餐廳二樓", desc: "今天中午 12:30 左右在學餐二樓靠窗座位用餐，離開時不小心把一個藍色太和工房的水壺（上面有貓咪貼紙）忘在桌上了。如果有同學撿到，拜託聯繫我，這是我很重要的生日禮物，非常感謝！", contact: "手機：0912-345-678 阿強", user_id: 4, user_name: "普通學生阿強", date: "2026-06-02", image: "" },
+                { id: 2, title: "在圖書館二樓拾獲 AirPods Pro 耳機", type: "found", status: "unclaimed", location: "圖書館二樓檢索區", desc: "下午 3:15 在圖書館二樓檢索區的 5 號電腦桌上撿到一個 AirPods Pro 耳機（有綠色矽膠保護套），已先交給圖書館一樓服務台。請失主攜帶證明或當場配對認領！", contact: "已送至圖書館服務台", user_id: 3, user_name: "失物獵人小華", date: "2026-06-02", image: "" },
+                { id: 3, title: "在體育館羽球場撿到一把黑色皮夾", type: "found", status: "unclaimed", location: "體育館羽球場", desc: "昨晚 8 點在羽球場 B 場地的休息長椅上拾獲一把黑色皮夾，裡面有學生證（張同學）及少量現金。請失主用聯絡我，或直接到體育組認領，我會把皮夾交過去。", contact: "電話：0987-654-321 小明", user_id: 2, user_name: "熱心同學小明", date: "2026-06-01", image: "" }
+            ],
+            transactions: [
+                { id: 1, sender: "普通學生阿強", receiver: "熱心同學小明", amount: 20, message: "謝謝小明同學昨天幫我搬宿舍行李，非常熱心！", date: "2026-06-02" },
+                { id: 2, sender: "失物獵人小華", receiver: "熱心同學小明", amount: 30, message: "感謝在排球場幫我撿到學生證並送回，大感謝！", date: "2026-06-02" }
+            ],
+            restaurants: {
+                "r1": { id: "r1", name: "學餐一樓 - 珍味自助餐", tag: "第一餐廳大樓", rating: 4.2, reviews: [
+                    { name: "熱心同學小明", stars: 5, comment: "這家菜色多，阿姨給的主菜很豪爽，CP值高！" },
+                    { name: "普通學生阿強", stars: 4, comment: "偏油但是價格合理，是月底省錢好去處。" }
+                ]},
+                "r2": { id: "r2", name: "學餐二樓 - 好佳拉麵", tag: "第一餐廳大樓", rating: 3.8, reviews: [
+                    { name: "失物獵人小華", stars: 4, comment: "豚骨拉麵味道還可以，免費加麵一次很飽。" },
+                    { name: "普通學生阿強", stars: 3, comment: "湯頭有一點鹹，叉燒稍微薄了一些。" }
+                ]},
+                "r3": { id: "r3", name: "校門外 - 晨光精緻早午餐", tag: "校區周邊", rating: 4.6, reviews: [
+                    { name: "管理員 (宿舍幹部)", stars: 5, comment: "拼盤超大份，紅茶香濃，假日排隊人超多！" }
+                ]}
+            },
+            currentUserId: 4 // default logged in as ordinary user "阿強"
+        };
+
+        // State Objects
+        let users = {};
+        let announcements = [];
+        let items = [];
+        let transactions = [];
+        let restaurants = {};
+        let currentUserId = null;
+        let selectedRestaurantId = "r1";
+
+        // Initialize state from localstorage or seed
+        function loadState() {
+            if (!localStorage.getItem("hc_users")) {
+                resetLocalStorage();
+            } else {
+                users = JSON.parse(localStorage.getItem("hc_users"));
+                announcements = JSON.parse(localStorage.getItem("hc_announcements"));
+                items = JSON.parse(localStorage.getItem("hc_items"));
+                transactions = JSON.parse(localStorage.getItem("hc_transactions"));
+                restaurants = JSON.parse(localStorage.getItem("hc_restaurants"));
+                currentUserId = parseInt(localStorage.getItem("hc_currentUserId"));
+            }
+            populateUserSelector();
+            updateAllViews();
+        }
+
+        function saveState() {
+            localStorage.setItem("hc_users", JSON.stringify(users));
+            localStorage.setItem("hc_announcements", JSON.stringify(announcements));
+            localStorage.setItem("hc_items", JSON.stringify(items));
+            localStorage.setItem("hc_transactions", JSON.stringify(transactions));
+            localStorage.setItem("hc_restaurants", JSON.stringify(restaurants));
+            localStorage.setItem("hc_currentUserId", currentUserId);
+        }
+
+        function resetLocalStorage() {
+            localStorage.setItem("hc_users", JSON.stringify(DEFAULT_SEED_DATA.users));
+            localStorage.setItem("hc_announcements", JSON.stringify(DEFAULT_SEED_DATA.announcements));
+            localStorage.setItem("hc_items", JSON.stringify(DEFAULT_SEED_DATA.items));
+            localStorage.setItem("hc_transactions", JSON.stringify(DEFAULT_SEED_DATA.transactions));
+            localStorage.setItem("hc_restaurants", JSON.stringify(DEFAULT_SEED_DATA.restaurants));
+            localStorage.setItem("hc_currentUserId", DEFAULT_SEED_DATA.currentUserId);
+            
+            users = JSON.parse(localStorage.getItem("hc_users"));
+            announcements = JSON.parse(localStorage.getItem("hc_announcements"));
+            items = JSON.parse(localStorage.getItem("hc_items"));
+            transactions = JSON.parse(localStorage.getItem("hc_transactions"));
+            restaurants = JSON.parse(localStorage.getItem("hc_restaurants"));
+            currentUserId = parseInt(localStorage.getItem("hc_currentUserId"));
+            
+            showAlert("資料庫重置成功！已載入預設測試學員與公告資料。", "success");
+            populateUserSelector();
+            updateAllViews();
+            navigateTo('home');
+        }
+
+        // Helpers
+        function getCurrentUser() {
+            return Object.values(users).find(u => u.id === currentUserId);
+        }
+
+        function showAlert(msg, type = "success") {
+            const container = document.getElementById("alert-container");
+            const alertId = "alert-" + Date.now();
+            container.innerHTML = `
+                <div class="alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show rounded-3 shadow-sm" id="${alertId}">
+                    <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'warning' ? 'fa-circle-exclamation' : 'fa-triangle-exclamation'} me-2"></i>
+                    ${msg}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            setTimeout(() => {
+                const el = document.getElementById(alertId);
+                if (el) {
+                    const bsAlert = new bootstrap.Alert(el);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+
+        // Navigator Router
+        window.navigateTo = function(viewId) {
+            // Hide all views
+            document.querySelectorAll(".app-view").forEach(el => el.classList.remove("active-view"));
+            // Show selected view
+            const view = document.getElementById("view-" + viewId);
+            if (view) {
+                view.classList.add("active-view");
+                window.scrollTo(0, 0);
+            }
+
+            // Update Nav link classes
+            document.querySelectorAll(".navbar-nav .nav-link").forEach(el => el.classList.remove("active-nav"));
+            const activeNav = document.getElementById("nav-" + viewId);
+            if (activeNav) activeNav.classList.add("active-nav");
+
+            // Custom views hooks
+            if (viewId === 'home') renderHomeView();
+            else if (viewId === 'announcements') renderAnnouncementsView();
+            else if (viewId === 'items') renderItemsView();
+            else if (viewId === 'leaderboard') renderLeaderboardView();
+            else if (viewId === 'profile') renderProfileView();
+            else if (viewId === 'restaurants') renderRestaurantsView();
+        }
+
+        // Simulator Actions
+        function populateUserSelector() {
+            const select = document.getElementById("sim-user-select");
+            select.innerHTML = '<option value="0">--- 未登入/遊客 ---</option>';
+            Object.values(users).forEach(u => {
+                select.innerHTML += `<option value="${u.id}" ${u.id === currentUserId ? 'selected' : ''}>${u.name} (${u.username})</option>`;
+            });
+        }
+
+        window.switchSimUser = function(val) {
+            currentUserId = parseInt(val) || null;
+            saveState();
+            updateAllViews();
+            showAlert(`已切換模擬登入者為：${currentUserId ? getCurrentUser().name : '遊客'}`, "info");
+            navigateTo('home');
+        }
+
+        window.triggerSimScan = function() {
+            if (!currentUserId) {
+                showAlert("請先登入（或於上方選單選取登入角色）才能進行掃描交易！", "warning");
+                navigateTo('login');
+                return;
+            }
+            
+            // Build modal or quick prompt list for transfer recipient selection
+            const scanOptions = Object.values(users).filter(u => u.id !== currentUserId);
+            if (scanOptions.length === 0) {
+                showAlert("沒有其他學員可以掃碼傳遞愛心。", "warning");
+                return;
+            }
+            
+            let listHtml = scanOptions.map(u => `
+                <button class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="simScanDirect('${u.qr_code_token}')">
+                    <div>
+                        <div class="font-bold">${u.name}</div>
+                        <small class="text-muted">${u.department} &bull; ${u.student_id}</small>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill">人氣: ${u.popularity}</span>
+                </button>
+            `).join("");
+
+            // Insert dynamic modal to document body and open it
+            const modalDiv = document.createElement("div");
+            modalDiv.className = "modal fade";
+            modalDiv.id = "simScanModal";
+            modalDiv.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content premium-card border-0">
+                        <div class="modal-header border-bottom-0 pb-0">
+                            <h5 class="modal-title font-bold text-dark"><i class="fa-solid fa-camera-retro text-primary me-2"></i>模擬掃描他人 QR Code</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-secondary small mb-3">請選擇您要「掃描」哪一位同學的專屬愛心條碼：</p>
+                            <div class="list-group">
+                                ${listHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modalDiv);
+            const modal = new bootstrap.Modal(modalDiv);
+            modal.show();
+
+            // Cleanup modal from DOM on close
+            modalDiv.addEventListener('hidden.bs.modal', function () {
+                modalDiv.remove();
+            });
+        }
+
+        window.simScanDirect = function(token) {
+            // Close the simulation selection modal
+            const simScanModal = document.getElementById("simScanModal");
+            if (simScanModal) {
+                const modal = bootstrap.Modal.getInstance(simScanModal);
+                if (modal) modal.hide();
+            }
+            
+            const receiver = Object.values(users).find(u => u.qr_code_token === token);
+            if (!receiver) {
+                showAlert("無效的 QR Code Token！", "error");
+                return;
+            }
+            
+            // Navigate to transfer screen
+            document.getElementById("transfer-receiver-name").innerText = receiver.name;
+            document.getElementById("transfer-receiver-id").innerText = `${receiver.department} / 學號：${receiver.student_id}`;
+            document.getElementById("transfer-my-balance").innerText = getCurrentUser().heart_balance;
+            document.getElementById("transfer-amount").value = "";
+            document.getElementById("transfer-message").value = "";
+            
+            // Set submission handler
+            document.getElementById("transfer-form").onsubmit = function(e) {
+                e.preventDefault();
+                executeHeartTransfer(receiver, token);
+            };
+
+            navigateTo('transfer');
+        };
+
+        function executeHeartTransfer(receiver, token) {
+            const amount = parseInt(document.getElementById("transfer-amount").value);
+            const msg = document.getElementById("transfer-message").value.trim();
+            const sender = getCurrentUser();
+
+            if (isNaN(amount) || amount <= 0) {
+                showAlert("轉移愛心值數量必須大於 0！", "error");
+                return;
+            }
+
+            if (sender.heart_balance < amount) {
+                showAlert("愛心值餘額不足！無法完成轉移。", "error");
+                return;
+            }
+
+            // Deduct & Add points
+            sender.heart_balance -= amount;
+            receiver.popularity += amount;
+
+            // Add transaction log
+            const now = new Date().toISOString().slice(0,10);
+            transactions.unshift({
+                id: transactions.length + 1,
+                sender: sender.name,
+                receiver: receiver.name,
+                amount: amount,
+                message: msg,
+                date: now
+            });
+
+            // Save state
+            saveState();
+            showAlert(`成功向 ${receiver.name} 發送 ${amount} 顆愛心與感謝！對方人氣值已提升。`, "success");
+            navigateTo('profile');
+        }
+
+        // Switch to login
+        window.quickLogin = function(username) {
+            const u = Object.values(users).find(usr => usr.username === username);
+            if (u) {
+                currentUserId = u.id;
+                saveState();
+                updateAllViews();
+                document.getElementById("sim-user-select").value = u.id;
+                showAlert(`已成功登入為：${u.name} 👋`, "success");
+                navigateTo('home');
+            }
+        }
+
+        // Dynamic State UI updates
+        function updateAllViews() {
+            const user = getCurrentUser();
+            const authDiv = document.getElementById("nav-auth-buttons");
+            
+            if (user) {
+                authDiv.innerHTML = `
+                    <span class="text-muted me-2 small d-none d-md-inline">
+                        <i class="fa-solid fa-user me-1 text-primary"></i>${user.name}
+                    </span>
+                    <button class="btn btn-outline-premium btn-sm" onclick="navigateTo('profile')">
+                        <i class="fa-solid fa-address-card me-1"></i>個人檔案
+                    </button>
+                    <button class="btn btn-danger btn-sm rounded-3 px-3" onclick="logoutSimUser()">
+                        <i class="fa-solid fa-sign-out-alt me-1"></i>登出
+                    </button>
+                `;
+            } else {
+                authDiv.innerHTML = `
+                    <button class="btn btn-outline-premium btn-sm" onclick="navigateTo('login')">
+                        <i class="fa-solid fa-sign-in-alt me-1"></i>登入
+                    </button>
+                    <button class="btn btn-premium btn-sm" onclick="navigateTo('register')">
+                        <i class="fa-solid fa-user-plus me-1"></i>註冊
+                    </button>
+                `;
+            }
+
+            renderHomeView();
+        }
+
+        window.logoutSimUser = function() {
+            currentUserId = null;
+            saveState();
+            updateAllViews();
+            document.getElementById("sim-user-select").value = "0";
+            showAlert("您已成功登出。", "info");
+            navigateTo('home');
+        };
+
+        // ============ RENDER: HOME ============
+        function renderHomeView() {
+            const user = getCurrentUser();
+            const actionsDiv = document.getElementById("home-welcome-actions");
+            const statusDiv = document.getElementById("home-user-status");
+
+            if (user) {
+                actionsDiv.innerHTML = `
+                    <button onclick="triggerSimScan()" class="btn btn-premium px-4 py-2">
+                        <i class="fa-solid fa-camera me-2"></i>掃描他人 QR Code
+                    </button>
+                    <button onclick="navigateTo('profile')" class="btn btn-outline-premium px-4 py-2">
+                        <i class="fa-solid fa-qrcode me-2"></i>我的專屬條碼
+                    </button>
+                `;
+                statusDiv.style.display = "block";
+                statusDiv.innerHTML = `
+                    <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div>
+                            <h5 class="mb-1 font-bold">哈囉，${user.name}！👋</h5>
+                            <p class="text-muted small mb-0">今天過得怎麼樣？準備好把愛心傳遞出去了嗎？</p>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <div class="heart-badge px-3 py-2">
+                                <i class="fa-solid fa-heart"></i>
+                                <span>愛心餘額: <strong>${user.heart_balance}</strong></span>
+                            </div>
+                            <div class="popularity-badge px-3 py-2">
+                                <i class="fa-solid fa-star"></i>
+                                <span>累積人氣: <strong>${user.popularity}</strong></span>
+                            </div>
+                            <button onclick="navigateTo('profile')" class="btn btn-premium btn-sm d-flex align-items-center">
+                                <i class="fa-solid fa-qrcode me-1"></i>我的條碼
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                actionsDiv.innerHTML = `
+                    <button onclick="navigateTo('login')" class="btn btn-premium px-4 py-2">
+                        <i class="fa-solid fa-sign-in-alt me-2"></i>立即登入體驗
+                    </button>
+                    <button onclick="navigateTo('register')" class="btn btn-outline-premium px-4 py-2">
+                        <i class="fa-solid fa-user-plus me-2"></i>註冊新帳號
+                    </button>
+                `;
+                statusDiv.style.display = "none";
+            }
+
+            // Populate recent lists
+            const annList = document.getElementById("home-announcements-list");
+            if (announcements.length === 0) {
+                annList.innerHTML = `<div class="text-center py-5 my-auto"><p class="text-muted">目前沒有任何發布的公告。</p></div>`;
+            } else {
+                annList.innerHTML = announcements.slice(0, 3).map(ann => `
+                    <a onclick="navigateTo('announcements')" class="list-group-item list-group-item-action py-3 border-bottom px-0 cursor-pointer">
+                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                            <h6 class="mb-1 font-bold text-dark">${ann.title}</h6>
+                            <span class="badge ${ann.category === 'dorm' ? 'bg-primary-subtle text-primary' : 'bg-info-subtle text-info-emphasis'} rounded-pill small">
+                                ${ann.category === 'dorm' ? '宿舍' : '校園'}
+                            </span>
+                        </div>
+                        <p class="mb-1 text-muted small text-truncate">${ann.content}</p>
+                        <small class="text-muted font-monospace">${ann.date}</small>
+                    </a>
+                `).join("");
+            }
+
+            const itemList = document.getElementById("home-items-list");
+            const activeUnclaimed = items.filter(i => i.status === 'unclaimed');
+            if (activeUnclaimed.length === 0) {
+                itemList.innerHTML = `<div class="text-center py-5 my-auto"><p class="text-muted">目前沒有協尋中的遺失物品。校園一片和諧！✨</p></div>`;
+            } else {
+                itemList.innerHTML = activeUnclaimed.slice(0, 3).map(item => `
+                    <a onclick="viewItemDetail(${item.id})" class="list-group-item list-group-item-action py-3 border-bottom px-0 cursor-pointer">
+                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                            <h6 class="mb-1 font-bold text-dark">
+                                <span class="badge ${item.type === 'lost' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} me-1 small">
+                                    ${item.type === 'lost' ? '遺失' : '拾獲'}
+                                </span>
+                                ${item.title}
+                            </h6>
+                            <small class="text-muted font-monospace">${item.date}</small>
+                        </div>
+                        <p class="mb-1 text-muted small text-truncate"><i class="fa-solid fa-location-dot me-1 text-danger"></i> 地點: ${item.location}</p>
+                    </a>
+                `).join("");
+            }
+        }
+
+        // ============ RENDER: ANNOUNCEMENTS ============
+        let activeAnnFilter = 'all';
+        window.filterAnnouncements = function(category) {
+            activeAnnFilter = category;
+            document.getElementById("filter-ann-all").classList.toggle("active", category === 'all');
+            document.getElementById("filter-ann-dorm").classList.toggle("active", category === 'dorm');
+            document.getElementById("filter-ann-campus").classList.toggle("active", category === 'campus');
+            renderAnnouncementsView();
+        }
+
+        function renderAnnouncementsView() {
+            const user = getCurrentUser();
+            const adminActions = document.getElementById("announcement-admin-actions");
+            
+            // Only admin or members can post announcements
+            if (user && user.username === 'admin') {
+                adminActions.innerHTML = `
+                    <button class="btn btn-premium" onclick="openAnnouncementModal()"><i class="fa-solid fa-plus me-1"></i>發布公告</button>
+                `;
+            } else {
+                adminActions.innerHTML = '';
+            }
+
+            const grid = document.getElementById("announcements-grid");
+            const filtered = announcements.filter(ann => activeAnnFilter === 'all' || ann.category === activeAnnFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted fs-5">此分類目前沒有任何公告。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(ann => {
+                const canEdit = user && user.username === 'admin';
+                const actionButtons = canEdit ? `
+                    <div class="card-footer bg-transparent border-top-0 d-flex justify-content-end gap-2 pt-0 pb-3">
+                        <button class="btn btn-outline-secondary btn-sm rounded-3" onclick="openAnnouncementModal(${ann.id})"><i class="fa-solid fa-edit"></i> 編輯</button>
+                        <button class="btn btn-danger btn-sm rounded-3" onclick="deleteAnnouncement(${ann.id})"><i class="fa-solid fa-trash"></i> 刪除</button>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card premium-card h-100 d-flex flex-column justify-content-between">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge ${ann.category === 'dorm' ? 'bg-primary-subtle text-primary' : 'bg-info-subtle text-info-emphasis'} rounded-pill px-3 py-1 font-bold">
+                                        ${ann.category === 'dorm' ? '宿舍' : '校園'}
+                                    </span>
+                                    <small class="text-muted font-monospace">${ann.date}</small>
+                                </div>
+                                <h5 class="card-title font-bold text-dark mb-2">${ann.title}</h5>
+                                <p class="card-text text-secondary small" style="white-space: pre-line;">${ann.content}</p>
+                            </div>
+                            ${actionButtons}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        window.openAnnouncementModal = function(id = null) {
+            const modal = new bootstrap.Modal(document.getElementById("announcementModal"));
+            const form = document.getElementById("announcement-form");
+            
+            if (id) {
+                // Edit
+                const ann = announcements.find(a => a.id === id);
+                document.getElementById("announcementModalLabel").innerText = "編輯公告";
+                document.getElementById("ann-edit-id").value = id;
+                document.getElementById("ann-title").value = ann.title;
+                document.getElementById("ann-category").value = ann.category;
+                document.getElementById("ann-content").value = ann.content;
+                document.getElementById("btn-ann-submit").innerText = "保存修改";
+            } else {
+                // Create
+                document.getElementById("announcementModalLabel").innerText = "發布新公告";
+                document.getElementById("ann-edit-id").value = "";
+                form.reset();
+                document.getElementById("btn-ann-submit").innerText = "發布公告";
+            }
+            modal.show();
+        };
+
+        document.getElementById("announcement-form").onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById("ann-edit-id").value;
+            const title = document.getElementById("ann-title").value.trim();
+            const category = document.getElementById("ann-category").value;
+            const content = document.getElementById("ann-content").value.trim();
+            
+            if (id) {
+                // Update
+                const annIndex = announcements.findIndex(a => a.id === parseInt(id));
+                announcements[annIndex].title = title;
+                announcements[annIndex].category = category;
+                announcements[annIndex].content = content;
+                showAlert("公告修改成功！", "success");
+            } else {
+                // Add
+                announcements.unshift({
+                    id: announcements.length + 1,
+                    title: title,
+                    category: category,
+                    content: content,
+                    author: getCurrentUser().name,
+                    date: new Date().toISOString().slice(0, 10)
+                });
+                showAlert("公告發布成功！", "success");
+            }
+
+            saveState();
+            const modalEl = document.getElementById("announcementModal");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            renderAnnouncementsView();
+        };
+
+        window.deleteAnnouncement = function(id) {
+            if (confirm("您確定要刪除這筆公告嗎？")) {
+                announcements = announcements.filter(a => a.id !== id);
+                saveState();
+                showAlert("公告已成功刪除。", "success");
+                renderAnnouncementsView();
+            }
+        };
+
+        // ============ RENDER: LOST & FOUND ============
+        function renderItemsView() {
+            const user = getCurrentUser();
+            const addContainer = document.getElementById("item-add-container");
+            
+            if (user) {
+                addContainer.innerHTML = `
+                    <button class="btn btn-premium" onclick="openItemFormModal()"><i class="fa-solid fa-plus me-1"></i>發布尋物/拾獲</button>
+                `;
+            } else {
+                addContainer.innerHTML = '';
+            }
+
+            filterItems();
+        }
+
+        window.filterItems = function() {
+            const user = getCurrentUser();
+            const query = document.getElementById("item-search-query").value.toLowerCase();
+            const type = document.getElementById("item-filter-type").value;
+            const status = document.getElementById("item-filter-status").value;
+
+            const grid = document.getElementById("items-grid");
+            const filtered = items.filter(item => {
+                const matchesQuery = item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query) || item.location.toLowerCase().includes(query);
+                const matchesType = type === 'all' || item.type === type;
+                const matchesStatus = status === 'all' || item.status === status;
+                return matchesQuery && matchesType && matchesStatus;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <p class="text-muted fs-5">沒有找到符合條件的失物招領項目。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const statusText = item.status === 'unclaimed' ? (item.type === 'lost' ? '尋找中' : '招領中') : '已完成';
+                const statusClass = item.status === 'unclaimed' ? (item.type === 'lost' ? 'bg-danger text-white' : 'bg-success text-white') : 'bg-secondary text-white';
+                
+                const isAuthor = user && user.id === item.user_id;
+                const actionDropdown = isAuthor ? `
+                    <div class="dropdown position-absolute" style="top: 15px; right: 15px;">
+                        <button class="btn btn-light btn-sm rounded-circle p-1" style="width:28px;height:28px;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="border-radius:12px;">
+                            <li><a class="dropdown-item py-2 cursor-pointer" onclick="openItemFormModal(${item.id})"><i class="fa-solid fa-edit me-2 text-secondary"></i>編輯</a></li>
+                            ${item.status === 'unclaimed' ? `<li><a class="dropdown-item py-2 cursor-pointer" onclick="markItemClaimed(${item.id})"><i class="fa-solid fa-check-double me-2 text-success"></i>標記已尋回</a></li>` : ''}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item py-2 text-danger cursor-pointer" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash me-2"></i>刪除</a></li>
+                        </ul>
+                    </div>
+                ` : '';
+
+                const itemImg = item.image ? item.image : `https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=400&auto=format&fit=crop`; // default luggage/wallet representation placeholder
+
+                return `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card premium-card h-100 position-relative d-flex flex-column justify-content-between">
+                            ${actionDropdown}
+                            <div>
+                                <div style="height: 180px; overflow: hidden;" class="bg-light">
+                                    <img src="${itemImg}" alt="${item.title}" class="w-100 h-100 object-fit-cover">
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge ${item.type === 'lost' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} font-bold">
+                                            ${item.type === 'lost' ? '遺失 (Lost)' : '拾獲 (Found)'}
+                                        </span>
+                                        <span class="badge ${statusClass} small rounded-pill">${statusText}</span>
+                                    </div>
+                                    <h5 class="card-title font-bold text-dark mb-2">${item.title}</h5>
+                                    <p class="card-text text-secondary text-truncate small mb-2"><i class="fa-solid fa-location-dot me-1 text-danger"></i> 地點: ${item.location}</p>
+                                    <p class="card-text text-muted small text-truncate">${item.desc}</p>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0 px-4 pb-4 pt-0">
+                                <button class="btn btn-outline-premium btn-sm w-100" onclick="viewItemDetail(${item.id})">
+                                    <i class="fa-solid fa-circle-info me-1"></i> 詳細資訊與聯絡方式
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        window.viewItemDetail = function(id) {
+            const item = items.find(i => i.id === id);
+            const statusText = item.status === 'unclaimed' ? (item.type === 'lost' ? '尋找中' : '招領中') : '已完成';
+            const statusClass = item.status === 'unclaimed' ? (item.type === 'lost' ? 'bg-danger text-white' : 'bg-success text-white') : 'bg-secondary text-white';
+            const itemImg = item.image ? item.image : `https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=400&auto=format&fit=crop`;
+
+            const detailContent = document.getElementById("item-detail-content");
+            detailContent.innerHTML = `
+                <div class="row g-4">
+                    <div class="col-md-5">
+                        <div class="rounded-4 overflow-hidden shadow-sm" style="max-height: 280px;">
+                            <img src="${itemImg}" alt="${item.title}" class="w-100 h-100 object-fit-cover">
+                        </div>
+                    </div>
+                    <div class="col-md-7 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge ${item.type === 'lost' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} fs-6 font-bold px-3 py-1">
+                                    ${item.type === 'lost' ? '遺失物' : '拾獲物'}
+                                </span>
+                                <span class="badge ${statusClass} rounded-pill px-3 py-1">${statusText}</span>
+                            </div>
+                            <h3 class="font-bold text-dark mb-3">${item.title}</h3>
+                            <p class="text-secondary small mb-3" style="white-space: pre-line;"><strong>物品描述：</strong><br>${item.desc}</p>
+                            <p class="text-danger small mb-2"><i class="fa-solid fa-location-dot me-1"></i> <strong>遺失/拾獲地點：</strong>${item.location}</p>
+                            <p class="text-primary small mb-3"><i class="fa-solid fa-phone me-1"></i> <strong>聯絡資訊：</strong>${item.contact}</p>
+                        </div>
+                        <div class="border-top pt-3 mt-3 d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">發布者：${item.user_name} &bull; ${item.date}</span>
+                            <button type="button" class="btn btn-secondary rounded-3 btn-sm" data-bs-dismiss="modal">關閉</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const modal = new bootstrap.Modal(document.getElementById("itemDetailModal"));
+            modal.show();
+        };
+
+        window.openItemFormModal = function(id = null) {
+            const modal = new bootstrap.Modal(document.getElementById("itemFormModal"));
+            const form = document.getElementById("item-form");
+            const statusCol = document.getElementById("item-status-col");
+            
+            if (id) {
+                // Edit
+                const item = items.find(i => i.id === id);
+                document.getElementById("itemFormModalLabel").innerText = "編輯失物招領公告";
+                document.getElementById("item-edit-id").value = id;
+                document.getElementById("item-title").value = item.title;
+                document.getElementById("item-type").value = item.type;
+                document.getElementById("item-status").value = item.status;
+                document.getElementById("item-location").value = item.location;
+                document.getElementById("item-contact").value = item.contact;
+                document.getElementById("item-desc").value = item.desc;
+                statusCol.style.display = "block";
+                document.getElementById("btn-item-submit").innerText = "保存修改";
+            } else {
+                // Create
+                document.getElementById("itemFormModalLabel").innerText = "發布失物招領公告";
+                document.getElementById("item-edit-id").value = "";
+                form.reset();
+                statusCol.style.display = "none";
+                document.getElementById("image-upload-preview").style.display = "none";
+                document.getElementById("btn-item-submit").innerText = "發布公告";
+            }
+            modal.show();
+        };
+
+        window.previewItemImage = function(input) {
+            const previewDiv = document.getElementById("image-upload-preview");
+            const previewImg = document.getElementById("item-preview-img");
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewDiv.style.display = "block";
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewDiv.style.display = "none";
+            }
+        };
+
+        document.getElementById("item-form").onsubmit = function(e) {
+            e.preventDefault();
+            const id = document.getElementById("item-edit-id").value;
+            const title = document.getElementById("item-title").value.trim();
+            const type = document.getElementById("item-type").value;
+            const location = document.getElementById("item-location").value.trim();
+            const contact = document.getElementById("item-contact").value.trim();
+            const desc = document.getElementById("item-desc").value.trim();
+            const previewImg = document.getElementById("item-preview-img");
+            const hasNewImage = document.getElementById("image-upload-preview").style.display === 'block';
+            
+            const user = getCurrentUser();
+
+            if (id) {
+                // Edit
+                const itemIndex = items.findIndex(i => i.id === parseInt(id));
+                items[itemIndex].title = title;
+                items[itemIndex].type = type;
+                items[itemIndex].status = document.getElementById("item-status").value;
+                items[itemIndex].location = location;
+                items[itemIndex].contact = contact;
+                items[itemIndex].desc = desc;
+                if (hasNewImage) {
+                    items[itemIndex].image = previewImg.src;
+                }
+                showAlert("公告修改成功！", "success");
+            } else {
+                // Add
+                items.unshift({
+                    id: items.length + 1,
+                    title: title,
+                    type: type,
+                    status: "unclaimed",
+                    location: location,
+                    contact: contact,
+                    desc: desc,
+                    user_id: user.id,
+                    user_name: user.name,
+                    date: new Date().toISOString().slice(0, 10),
+                    image: hasNewImage ? previewImg.src : ""
+                });
+                showAlert("失物公告發布成功！", "success");
+            }
+
+            saveState();
+            const modalEl = document.getElementById("itemFormModal");
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            filterItems();
+        };
+
+        window.markItemClaimed = function(id) {
+            const item = items.find(i => i.id === id);
+            if (item) {
+                item.status = 'claimed';
+                saveState();
+                showAlert("已成功將公告狀態標記為：已完成/尋回 💖", "success");
+                filterItems();
+            }
+        };
+
+        window.deleteItem = function(id) {
+            if (confirm("您確定要刪除這筆失物公告嗎？")) {
+                items = items.filter(i => i.id !== id);
+                saveState();
+                showAlert("公告已成功刪除。", "success");
+                filterItems();
+            }
+        };
+
+        // ============ RENDER: LEADERBOARD ============
+        function renderLeaderboardView() {
+            // Sort users by popularity score descending
+            const sortedUsers = Object.values(users).sort((a,b) => b.popularity - a.popularity);
+            
+            // Render Podium (Top 3)
+            const podium = document.getElementById("leaderboard-podium");
+            if (sortedUsers.length >= 3) {
+                const gold = sortedUsers[0];
+                const silver = sortedUsers[1];
+                const bronze = sortedUsers[2];
+
+                podium.innerHTML = `
+                    <!-- 2nd: Silver -->
+                    <div class="col-4 col-md-3 order-1 text-center">
+                        <div class="card premium-card p-3 mb-2" style="border: 2px solid #c0c0c0; transform: scale(0.95);">
+                            <div class="fs-1" style="background: var(--silver-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><i class="fa-solid fa-medal"></i></div>
+                            <h6 class="font-bold text-dark mb-1 text-truncate">${silver.name}</h6>
+                            <small class="text-muted d-block text-truncate mb-2 text-center" style="font-size:0.75rem;">${silver.department}</small>
+                            <span class="badge bg-secondary rounded-pill px-3 py-1 font-bold">人氣: ${silver.popularity}</span>
+                        </div>
+                        <div class="h-25 py-2 font-bold text-muted" style="background: #e9ecef; border-radius: 12px 12px 0 0;">2ND</div>
+                    </div>
+                    
+                    <!-- 1st: Gold -->
+                    <div class="col-4 col-md-3 order-2 text-center">
+                        <div class="card premium-card p-3 mb-2" style="border: 2px solid #ffd700; transform: scale(1.05); box-shadow: 0 15px 35px rgba(255, 215, 0, 0.2);">
+                            <div class="fs-1" style="background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><i class="fa-solid fa-crown"></i></div>
+                            <h5 class="font-bold text-dark mb-1 text-truncate">${gold.name}</h5>
+                            <small class="text-muted d-block text-truncate mb-2 text-center" style="font-size:0.75rem;">${gold.department}</small>
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-1 font-bold">人氣: ${gold.popularity}</span>
+                        </div>
+                        <div class="h-50 py-3 font-bold text-dark" style="background: #ffe699; border-radius: 12px 12px 0 0;">1ST</div>
+                    </div>
+
+                    <!-- 3rd: Bronze -->
+                    <div class="col-4 col-md-3 order-3 text-center">
+                        <div class="card premium-card p-3 mb-2" style="border: 2px solid #cd7f32; transform: scale(0.9);">
+                            <div class="fs-1" style="background: var(--bronze-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><i class="fa-solid fa-medal"></i></div>
+                            <h6 class="font-bold text-dark mb-1 text-truncate">${bronze.name}</h6>
+                            <small class="text-muted d-block text-truncate mb-2 text-center" style="font-size:0.75rem;">${bronze.department}</small>
+                            <span class="badge bg-bronze rounded-pill px-3 py-1 font-bold text-white" style="background-color: #cd7f32;">人氣: ${bronze.popularity}</span>
+                        </div>
+                        <div class="h-25 py-2 font-bold text-muted" style="background: #eddccb; border-radius: 12px 12px 0 0;">3RD</div>
+                    </div>
+                `;
+            } else {
+                podium.innerHTML = '<p class="text-muted">人氣資料加載中...</p>';
+            }
+
+            // Render Table List
+            const tbody = document.getElementById("leaderboard-table-body");
+            tbody.innerHTML = sortedUsers.map((u, index) => {
+                const rank = index + 1;
+                let badge = `<span class="badge bg-light text-dark rounded-circle p-2 font-monospace" style="width:32px;height:32px;display:inline-flex;justify-content:center;align-items:center;">${rank}</span>`;
+                if (rank === 1) badge = `<i class="fa-solid fa-crown text-warning fs-5"></i>`;
+                else if (rank === 2) badge = `<i class="fa-solid fa-medal text-secondary fs-5"></i>`;
+                else if (rank === 3) badge = `<i class="fa-solid fa-medal text-danger fs-5"></i>`;
+
+                const isMe = currentUserId === u.id;
+                const heartAction = (currentUserId && !isMe) ? `
+                    <button class="btn btn-outline-premium btn-sm" onclick="simScanDirect('${u.qr_code_token}')">
+                        <i class="fa-solid fa-heart me-1"></i>送愛心
+                    </button>
+                ` : (isMe ? `<span class="text-muted small">我自己</span>` : `<span class="text-muted small">-</span>`);
+
+                return `
+                    <tr class="${isMe ? 'table-warning-subtle' : ''}">
+                        <td class="text-center font-bold">${badge}</td>
+                        <td class="font-bold text-dark">${u.name} ${isMe ? '<span class="badge bg-danger ms-1">我</span>' : ''}</td>
+                        <td>${u.department}</td>
+                        <td class="text-center font-bold text-primary">${u.popularity}</td>
+                        <td class="text-center">${heartAction}</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        // ============ RENDER: PROFILE ============
+        function renderProfileView() {
+            const user = getCurrentUser();
+            if (!user) {
+                showAlert("請先登入後查看個人檔案！", "warning");
+                navigateTo('login');
+                return;
+            }
+
+            document.getElementById("profile-name").innerText = user.name;
+            document.getElementById("profile-dept").innerText = user.department;
+            document.getElementById("profile-student-id").innerText = user.student_id;
+            document.getElementById("profile-hearts").innerText = user.heart_balance;
+            document.getElementById("profile-popularity").innerText = user.popularity;
+
+            // Load transaction log
+            const logList = document.getElementById("profile-transactions-list");
+            const myTx = transactions.filter(t => t.sender === user.name || t.receiver === user.name);
+
+            if (myTx.length === 0) {
+                logList.innerHTML = `<div class="text-center py-4 text-muted small">尚無愛心交易或留言紀錄</div>`;
+                return;
+            }
+
+            logList.innerHTML = myTx.map(t => {
+                const isSent = t.sender === user.name;
+                const symbol = isSent ? `<i class="fa-solid fa-arrow-up text-danger me-2"></i>` : `<i class="fa-solid fa-arrow-down text-success me-2"></i>`;
+                const amountText = isSent ? `-${t.amount} 點` : `+${t.amount} 點`;
+                const colorClass = isSent ? 'text-danger' : 'text-success';
+                const peerName = isSent ? `送給：${t.receiver}` : `收到自：${t.sender}`;
+                const note = t.message ? `<div class="text-muted small mt-2 bg-light p-2 rounded-3" style="border-left: 3px solid #ff4b72; font-style: italic;">「 ${t.message} 」</div>` : '';
+
+                return `
+                    <div class="list-group-item py-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                ${symbol} <strong>${peerName}</strong>
+                            </div>
+                            <span class="${colorClass} font-bold">${amountText}</span>
+                        </div>
+                        ${note}
+                        <div class="text-end text-muted small font-monospace mt-1">${t.date}</div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // ============ RENDER: RESTAURANTS ============
+        function renderRestaurantsView() {
+            const list = document.getElementById("restaurant-list");
+            
+            list.innerHTML = Object.values(restaurants).map(r => {
+                const isActive = r.id === selectedRestaurantId;
+                return `
+                    <button type="button" class="list-group-item list-group-item-action py-3 border-bottom d-flex justify-content-between align-items-center ${isActive ? 'bg-light font-bold' : ''}" onclick="selectRestaurant('${r.id}')">
+                        <div>
+                            <div class="text-dark font-bold">${r.name}</div>
+                            <small class="text-muted">${r.tag}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-warning font-bold"><i class="fa-solid fa-star me-1"></i>${r.rating.toFixed(1)}</span>
+                            <span class="d-block small text-muted font-monospace">${r.reviews.length} 則評論</span>
+                        </div>
+                    </button>
+                `;
+            }).join("");
+
+            // Show selected restaurant detail
+            const r = restaurants[selectedRestaurantId];
+            document.getElementById("selected-rest-name").innerText = r.name;
+            document.getElementById("selected-rest-tag").innerText = r.tag;
+            document.getElementById("selected-rest-rating").innerText = r.rating.toFixed(1);
+            document.getElementById("selected-rest-reviews-count").innerText = `${r.reviews.length} 則評價`;
+
+            const commentsDiv = document.getElementById("selected-rest-comments");
+            if (r.reviews.length === 0) {
+                commentsDiv.innerHTML = `<p class="text-muted small py-4 text-center">目前沒有這家餐廳的評論，快來搶沙發！</p>`;
+            } else {
+                commentsDiv.innerHTML = r.reviews.map(rev => `
+                    <div class="border-bottom pb-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="font-bold text-dark small">${rev.name}</span>
+                            <span class="text-warning small">${'<i class="fa-solid fa-star"></i>'.repeat(rev.stars)}${'<i class="fa-regular fa-star"></i>'.repeat(5 - rev.stars)}</span>
+                        </div>
+                        <p class="mb-0 text-muted small mt-1">${rev.comment}</p>
+                    </div>
+                `).join("");
+            }
+        }
+
+        window.selectRestaurant = function(id) {
+            selectedRestaurantId = id;
+            renderRestaurantsView();
+        };
+
+        window.setFormRating = function(stars) {
+            document.getElementById("review-rating-value").value = stars;
+            const container = document.getElementById("form-star-rating");
+            container.innerHTML = "";
+            for (let i = 1; i <= 5; i++) {
+                if (i <= stars) {
+                    container.innerHTML += `<i class="fa-solid fa-star" onclick="setFormRating(${i})"></i>`;
+                } else {
+                    container.innerHTML += `<i class="fa-regular fa-star" onclick="setFormRating(${i})"></i>`;
+                }
+            }
+        };
+
+        window.submitRestaurantReview = function(e) {
+            e.preventDefault();
+            const user = getCurrentUser();
+            if (!user) {
+                showAlert("請先登入後才能發表評價！", "warning");
+                navigateTo('login');
+                return;
+            }
+
+            const stars = parseInt(document.getElementById("review-rating-value").value);
+            const comment = document.getElementById("review-comment").value.trim();
+            const r = restaurants[selectedRestaurantId];
+
+            r.reviews.unshift({
+                name: user.name,
+                stars: stars,
+                comment: comment
+            });
+
+            // Recalculate average rating
+            const total = r.reviews.reduce((sum, rev) => sum + rev.stars, 0);
+            r.rating = total / r.reviews.length;
+
+            saveState();
+            showAlert("評價發表成功，感謝您的分享！", "success");
+            document.getElementById("restaurant-review-form").reset();
+            setFormRating(4); // Reset stars to default
+            renderRestaurantsView();
+        };
+
+        // ============ AUTH ACTIONS ============
+        document.getElementById("login-form").onsubmit = function(e) {
+            e.preventDefault();
+            const username = document.getElementById("login-username").value.trim();
+            const u = Object.values(users).find(usr => usr.username === username);
+            
+            if (u) {
+                currentUserId = u.id;
+                saveState();
+                updateAllViews();
+                document.getElementById("sim-user-select").value = u.id;
+                showAlert(`歡迎回來，${u.name}！`, "success");
+                navigateTo('home');
+            } else {
+                showAlert("登入失敗：此帳號在原型測試中未註冊。", "error");
+            }
+        };
+
+        document.getElementById("register-form").onsubmit = function(e) {
+            e.preventDefault();
+            const username = document.getElementById("reg-username").value.trim();
+            const password = document.getElementById("reg-password").value;
+            const name = document.getElementById("reg-name").value.trim();
+            const student_id = document.getElementById("reg-studentid").value.trim();
+            const dept = document.getElementById("reg-department").value.trim() || "未設定學系";
+
+            // Check if username/studentID already exists
+            const dupUser = Object.values(users).find(u => u.username === username || u.student_id === student_id);
+            if (dupUser) {
+                showAlert("註冊失敗：帳號或學號已被使用！", "error");
+                return;
+            }
+
+            // Create new mock user
+            const newId = Object.keys(users).length + 1;
+            users[username] = {
+                id: newId,
+                username: username,
+                name: name,
+                student_id: student_id,
+                department: dept,
+                heart_balance: 100, // starting gift
+                popularity: 0,
+                qr_code_token: "token_" + username + "_" + Math.floor(Math.random() * 1000)
+            };
+
+            currentUserId = newId;
+            saveState();
+            populateUserSelector();
+            updateAllViews();
+            showAlert("註冊成功！已自動登入。獲得開學新人禮 100 點愛心 💖", "success");
+            navigateTo('home');
+        };
+
+        // Window Startup
+        window.onload = function() {
+            loadState();
+        };
+    </script>
+</body>
+</html>

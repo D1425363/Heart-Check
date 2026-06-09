@@ -8,17 +8,32 @@
     <div class="col-lg-4">
         <!-- Profile Card -->
         <div class="glass-panel text-center">
-            <div class="feed-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2.2rem;">
-                {{ user.name[0] | upper }}
+            <div class="mb-3 position-relative d-inline-block">
+                {% if user.avatar %}
+                    <img src="{% if user.avatar.startswith('http') %}{{ user.avatar }}{% else %}{{ url_for('static', filename=user.avatar) }}{% endif %}" 
+                         class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid rgba(99, 102, 241, 0.5);">
+                {% else %}
+                    <div class="feed-avatar mx-auto" style="width: 80px; height: 80px; font-size: 2.2rem;">
+                        {{ user.name[0] | upper }}
+                    </div>
+                {% endif %}
             </div>
+            
             <h3 class="mb-1">{{ user.name }}</h3>
             <p class="text-secondary small mb-2">學號：{{ user.student_id }}</p>
             {% if user.department %}
-                <span class="badge bg-secondary px-3 py-1.5" style="border: 1px solid rgba(255,255,255,0.08);">
+                <span class="badge bg-secondary px-3 py-1.5 mb-2" style="border: 1px solid rgba(255,255,255,0.08);">
                     {{ user.department }}
                 </span>
             {% endif %}
             
+            <!-- Edit Profile Button Trigger -->
+            <div class="mt-2">
+                <button type="button" class="btn-secondary-custom py-1.5 px-3 fs-7 w-100" data-bs-toggle="modal" data-bs-target="#editProfileModal" style="padding: 6px 12px; font-size: 0.85rem;">
+                    <i class="bi bi-pencil-square"></i> 編輯個人資料
+                </button>
+            </div>
+
             <!-- Pinned Badges Showcase -->
             <div class="mt-4 pt-3 border-top border-secondary" style="border-top-color: rgba(255,255,255,0.08) !important;">
                 <h5 class="text-start fs-6 mb-2" style="font-family: var(--font-heading); color: var(--color-primary);">🏆 徽章展示櫃</h5>
@@ -40,6 +55,13 @@
         <!-- QR Code Card -->
         <div class="glass-panel text-center">
             <h4 class="mb-3" style="font-family: var(--font-heading);">🔍 我的愛心 QR Code</h4>
+            
+            {% if is_local_warning %}
+                <div class="alert alert-warning py-1.5 px-2 small mb-3 text-start" style="font-size: 0.75rem; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); color: var(--color-warning);">
+                    <i class="bi bi-wifi me-1"></i> 已將連線地址映射至局域網 IP：<strong>{{ qr_code_url.split('/')[2].split(':')[0] }}</strong>，請確保手機與電腦連線至同一個 Wi-Fi 熱點以進行掃描。
+                </div>
+            {% endif %}
+
             <div class="d-flex justify-content-center mb-3">
                 <div id="qrcode-container" class="p-3 bg-white rounded-3 shadow-sm d-inline-block">
                     <div id="qrcode"></div>
@@ -55,89 +77,142 @@
     <div class="col-lg-8">
         <!-- Stats Row -->
         <div class="row mb-4">
-            <div class="col-md-6 mb-3 mb-md-0">
-                <div class="card-stat card-stat-indigo">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card-stat card-stat-indigo h-100">
                     <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider">愛心值餘額</div>
-                    <div class="fs-1 fw-bold text-white mt-1">💝 {{ user.heart_balance }} <span class="fs-6 fw-normal text-secondary">顆</span></div>
+                    <div class="fs-2 fw-bold text-white mt-1">💝 {{ user.heart_balance }} <span class="fs-6 fw-normal text-secondary">顆</span></div>
                     <div class="text-muted small mt-2">可用於發送給幫助您的其他同學</div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card-stat card-stat-purple">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card-stat card-stat-purple h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.02) 100%); border: 1px solid rgba(168, 85, 247, 0.25);">
                     <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider">累積人氣值</div>
-                    <div class="fs-1 fw-bold text-white mt-1">💖 {{ user.popularity }} <span class="fs-6 fw-normal text-secondary">分</span></div>
+                    <div class="fs-2 fw-bold text-white mt-1">💖 {{ user.popularity }} <span class="fs-6 fw-normal text-secondary">分</span></div>
                     <div class="text-muted small mt-2">受助同學回饋所得的愛心值總和</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-stat h-100" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0.02) 100%); border: 1px solid rgba(6, 182, 212, 0.25); position: relative; overflow: hidden; border-radius: var(--radius-md);">
+                    <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider" style="position: relative; z-index: 1;">全校人氣排名</div>
+                    <div class="fs-2 fw-bold text-white mt-1" style="position: relative; z-index: 1;">🏆 #{{ rank if rank else 'N/A' }}</div>
+                    <div class="text-muted small mt-2" style="position: relative; z-index: 1;">
+                        📤 送出: {{ total_sent }} / 📥 收到: {{ total_received }}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Badges List Form -->
+        <!-- Tab Panel for Custom Pinned Badges vs Legacy System Badges -->
         <div class="glass-panel">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 style="font-family: var(--font-heading); margin-bottom: 0;">🏅 校園榮譽徽章</h4>
-                {% if badges %}
-                    <span class="badge bg-purple rounded-pill" style="background: var(--grad-purple-pink);">已獲得 {{ badges | length }} / 7</span>
-                {% endif %}
-            </div>
+            <ul class="nav nav-tabs border-secondary mb-3" id="badgeTab" role="tablist" style="border-bottom-color: rgba(255,255,255,0.08) !important;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link nav-link-custom active border-0 text-white" id="milestone-tab" data-bs-toggle="tab" data-bs-target="#milestone" type="button" role="tab" aria-controls="milestone" aria-selected="true" style="background: transparent;">
+                        🏅 我的自訂展示徽章 (7大類)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link nav-link-custom border-0 text-white-50" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-badges" type="button" role="tab" aria-controls="system-badges" aria-selected="false" style="background: transparent;">
+                        🎓 系統成就統計徽章 (6大類)
+                    </button>
+                </li>
+            </ul>
             
-            <p class="text-secondary small mb-3">
-                達成特定互助條件將自動解鎖徽章。選取已獲得的徽章（最多 3 個）以展示在展示櫃中！
-            </p>
+            <div class="tab-content" id="badgeTabContent">
+                <!-- Milestone Tab (Our Custom Pinning System) -->
+                <div class="tab-pane fade show active" id="milestone" role="tabpanel" aria-labelledby="milestone-tab">
+                    <p class="text-secondary small mb-3">
+                        達成特定互助條件將自動解鎖徽章。選取已獲得的徽章（最多 3 個）以展示在展示櫃中！
+                    </p>
 
-            <form action="{{ url_for('user.pin_badges') }}" method="POST">
-                <div class="badge-grid">
-                    {% set earned_types = [] %}
-                    {% for b in badges %}
-                        {% set _ = earned_types.append(b.badge_type) %}
-                    {% endfor %}
-                    
-                    <!-- Defining metadata locally for convenience -->
-                    {% set badge_definitions = [
-                        ('rookie', '初試身手', '🌱', '完成第一次愛心傳遞'),
-                        ('helper', '熱心人士', '🤝', '收到來自 5 位不同同學的愛心'),
-                        ('heart_helper', '暖心小幫手', '💖', '累積人氣值達到 10'),
-                        ('ambassador', '愛心大使', '🌟', '累計送出 50 顆愛心'),
-                        ('expert', '尋物達人', '🔍', '有 3 篇失物招領成功尋回'),
-                        ('grateful', '感恩的心', '✉️', '送出時填寫 5 次感謝留言'),
-                        ('poster', '情報員', '📢', '發布 10 篇失物招領公告')
-                    ] %}
-
-                    {% for b_type, b_name, b_icon, b_desc in badge_definitions %}
-                        {% set is_earned = b_type in earned_types %}
-                        {% set is_pinned = false %}
-                        {% if is_earned %}
-                            {% for eb in badges %}
-                                {% if eb.badge_type == b_type and eb.is_pinned == 1 %}
-                                    {% set is_pinned = true %}
-                                {% endif %}
+                    <form action="{{ url_for('user.pin_badges') }}" method="POST">
+                        <div class="badge-grid">
+                            {% set earned_types = [] %}
+                            {% for b in badges %}
+                                {% set _ = earned_types.append(b.badge_type) %}
                             {% endfor %}
-                        {% endif %}
-
-                        <div class="badge-item {% if is_earned %}earned{% else %}locked{% endif %} {% if is_pinned %}pinned{% endif %}"
-                             data-bs-toggle="tooltip" data-bs-placement="top" title="{{ b_desc }}">
-                            <span class="badge-icon">{{ b_icon }}</span>
-                            <span class="badge-title">{{ b_name }}</span>
                             
-                            {% if is_earned %}
-                                <div class="mt-2">
-                                    <input class="form-check-input" type="checkbox" name="badges" value="{{ b_type }}" id="chk-{{ b_type }}" {% if is_pinned %}checked{% endif %}>
-                                    <label class="form-check-label small text-secondary" for="chk-{{ b_type }}">釘選</label>
-                                </div>
-                            {% else %}
-                                <span class="badge-desc mt-2">未解鎖</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
+                            {% set badge_definitions = [
+                                ('rookie', '初試身手', '🌱', '完成第一次愛心傳遞'),
+                                ('helper', '熱心人士', '🤝', '收到來自 5 位不同同學的愛心'),
+                                ('heart_helper', '暖心小幫手', '💖', '累積人氣值達到 10'),
+                                ('ambassador', '愛心大使', '🌟', '累計送出 50 顆愛心'),
+                                ('expert', '尋物達人', '🔍', '有 3 篇失物招領成功尋回'),
+                                ('grateful', '感恩的心', '✉️', '送出時填寫 5 次感謝留言'),
+                                ('poster', '情報員', '📢', '發布 10 篇失物招領公告')
+                            ] %}
 
-                {% if badges %}
-                    <div class="text-end mt-4">
-                        <button type="submit" class="btn-premium">
-                            <i class="bi bi-pin-angle-fill"></i> 更新展示櫃
-                        </button>
+                            {% for b_type, b_name, b_icon, b_desc in badge_definitions %}
+                                {% set is_earned = b_type in earned_types %}
+                                {% set is_pinned = false %}
+                                {% if is_earned %}
+                                    {% for eb in badges %}
+                                        {% if eb.badge_type == b_type and eb.is_pinned == 1 %}
+                                            {% set is_pinned = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
+                                <div class="badge-item {% if is_earned %}earned{% else %}locked{% endif %} {% if is_pinned %}pinned{% endif %}"
+                                     data-bs-toggle="tooltip" data-bs-placement="top" title="{{ b_desc }}">
+                                    <span class="badge-icon">{{ b_icon }}</span>
+                                    <span class="badge-title">{{ b_name }}</span>
+                                    
+                                    {% if is_earned %}
+                                        <div class="mt-2">
+                                            <input class="form-check-input" type="checkbox" name="badges" value="{{ b_type }}" id="chk-{{ b_type }}" {% if is_pinned %}checked{% endif %}>
+                                            <label class="form-check-label small text-secondary" for="chk-{{ b_type }}">釘選</label>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge-desc mt-2">未解鎖</span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if badges %}
+                            <div class="text-end mt-4">
+                                <button type="submit" class="btn-premium">
+                                    <i class="bi bi-pin-angle-fill"></i> 更新展示櫃
+                                </button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+                
+                <!-- Legacy System Badges (Dynamic calculated badges by D1425363) -->
+                <div class="tab-pane fade" id="system-badges" role="tabpanel" aria-labelledby="system-tab">
+                    <p class="text-secondary small mb-3">依據您在平台上的各項累計行為自動解鎖與更新進度：</p>
+                    <div class="row g-3">
+                        {% for lb in legacy_badges %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="p-3 rounded-3 h-100 d-flex flex-column" style="background: rgba(255,255,255,0.02); border: 1px solid {% if lb.unlocked %}rgba(168, 85, 247, 0.35){% else %}rgba(255,255,255,0.05){% endif %}; opacity: {% if lb.unlocked %}1{% else %}0.5{% endif %};">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <!-- Icon placeholder since font-awesome isn't in base but we render standard emoji based on id -->
+                                        <span class="fs-4">
+                                            {% if lb.id == 'newbie' %}👶
+                                            {% elif lb.id == 'ambassador' %}🤝
+                                            {% elif lb.id == 'star' %}🔥
+                                            {% elif lb.id == 'helper' %}🤗
+                                            {% elif lb.id == 'tycoon' %}💎
+                                            {% elif lb.id == 'dorm' %}🏠
+                                            {% else %}🏅{% endif %}
+                                        </span>
+                                        <h6 class="mb-0 text-white font-bold">{{ lb.name }}</h6>
+                                    </div>
+                                    <p class="text-secondary small style-desc mb-2">{{ lb.description }}</p>
+                                    <div class="mt-auto text-end">
+                                        {% if lb.unlocked %}
+                                            <span class="badge bg-success-subtle text-success py-1.5 px-2 small" style="background: rgba(16, 185, 129, 0.15) !important;">已解鎖</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted py-1.5 px-2 small" style="background: rgba(255,255,255,0.08) !important;">{{ lb.progress }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endif %}
-            </form>
+                </div>
+            </div>
         </div>
 
         <!-- Transactions History -->
@@ -197,6 +272,77 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--bg-secondary); border: 1px solid var(--border-glass) !important; color: #fff;">
+            <div class="modal-header border-0 bg-dark rounded-top-4 p-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.05) !important;">
+                <h5 class="modal-title font-bold text-white" id="editProfileModalLabel">
+                    <i class="bi bi-person-fill-gear text-primary me-2"></i>編輯個人資料
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('user.update_profile') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <!-- Real name / Nickname -->
+                    <div class="form-group-custom mb-3">
+                        <label for="name" class="form-label-custom">真實姓名 / 暱稱 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-custom" id="name" name="name" value="{{ user.name }}" required autocomplete="off">
+                    </div>
+                    
+                    <!-- Department / Year -->
+                    <div class="form-group-custom mb-3">
+                        <label for="department" class="form-label-custom">科系與年級 (系級)</label>
+                        <input type="text" class="form-control form-control-custom" id="department" name="department" value="{{ user.department or '' }}" placeholder="例如：資訊工程系三年級" autocomplete="off">
+                    </div>
+                    
+                    <!-- Avatar Selection Choice -->
+                    <div class="form-group-custom mb-3">
+                        <label class="form-label-custom d-block">修改頭像方式</label>
+                        <div class="form-check form-check-inline mb-2 me-3">
+                            <input class="form-check-input" type="radio" name="avatar_choice" id="choice_predefined" value="predefined" checked onclick="toggleAvatarInput('predefined')">
+                            <label class="form-check-label text-secondary small" for="choice_predefined">選擇推薦可愛表情</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-2">
+                            <input class="form-check-input" type="radio" name="avatar_choice" id="choice_upload" value="upload" onclick="toggleAvatarInput('upload')">
+                            <label class="form-check-label text-secondary small" for="choice_upload">上傳自訂頭像相片</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Predefined Avatars Option Grid -->
+                    <div id="predefined_avatars_section" class="mb-3">
+                        <label class="form-label-custom small text-muted">選擇一個推薦 Emoji 頭像：</label>
+                        <div class="row row-cols-6 g-2 text-center">
+                            {% set seeds = ['Coco', 'Milo', 'Zoe', 'Bubba', 'Daisy', 'Peanut', 'Lucky', 'Cookie', 'Pippin', 'Sparky', 'Gismo', 'Oliver'] %}
+                            {% for seed in seeds %}
+                            <div class="col">
+                                <label class="avatar-option-label d-block cursor-pointer">
+                                    <input type="radio" name="predefined_seed" value="{{ seed }}" class="btn-check" {% if loop.first %}checked{% endif %}>
+                                    <div class="avatar-option-card rounded-circle p-1 border shadow-sm transition-all" style="width: 50px; height: 50px; border-color: rgba(255,255,255,0.08) !important; background: rgba(0,0,0,0.15);">
+                                        <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed={{ seed }}" alt="{{ seed }}" class="img-fluid rounded-circle">
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Avatar Upload File Selector -->
+                    <div id="custom_avatar_section" class="mb-3 d-none">
+                        <label for="avatar_file" class="form-label-custom small text-muted">選擇要上傳的頭像檔案：</label>
+                        <input class="form-control form-control-custom" type="file" id="avatar_file" name="avatar_file" accept="image/*">
+                        <div class="form-text text-secondary mt-1" style="font-size: 0.75rem;">支援 PNG, JPG, JPEG, GIF 或 SVG 圖片。</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3 bg-dark rounded-bottom-4 px-4" style="border-top: 1px solid rgba(255,255,255,0.05) !important;">
+                    <button type="button" class="btn-secondary-custom py-2 px-3 fs-7" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn-premium py-2 px-4 fs-7"><i class="bi bi-save-fill"></i> 儲存變更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -213,6 +359,17 @@
         colorLight : "#ffffff",
         correctLevel : QRCode.CorrectLevel.H
     });
+
+    // Toggle custom avatar selection fields
+    function toggleAvatarInput(choice) {
+        if (choice === 'predefined') {
+            document.getElementById('predefined_avatars_section').classList.remove('d-none');
+            document.getElementById('custom_avatar_section').classList.add('d-none');
+        } else {
+            document.getElementById('predefined_avatars_section').classList.add('d-none');
+            document.getElementById('custom_avatar_section').classList.remove('d-none');
+        }
+    }
 
     // Initialize Bootstraps tooltips for badges
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
