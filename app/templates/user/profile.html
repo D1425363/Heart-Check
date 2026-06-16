@@ -81,6 +81,21 @@
     .animate-bounce {
         animation: bounce 2s infinite ease-in-out;
     }
+    
+    /* Custom styles for chart toggle buttons */
+    .btn-check:checked + label.btn-chart-toggle {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(255, 75, 114, 0.25) !important;
+    }
+    .btn-check:not(:checked) + label.btn-chart-toggle {
+        background: transparent;
+        color: var(--text-secondary);
+    }
+    .btn-check:not(:checked) + label.btn-chart-toggle:hover {
+        background: rgba(112, 51, 255, 0.05);
+        color: #7033ff;
+    }
 </style>
 {% endblock %}
 
@@ -268,6 +283,50 @@
     </div>
 </div>
 
+<!-- Middle Row: Heart Growth Chart Section -->
+<div class="row g-4 mt-2 animate-fade-in">
+    <div class="col-12">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <h4 class="font-bold mb-0">
+                        <i class="fa-solid fa-chart-line text-danger me-2"></i>愛心成長與統計圖表
+                    </h4>
+                    
+                    <!-- Controls -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <!-- Chart Type: Cumulative vs Periodic -->
+                        <div class="btn-group btn-group-sm shadow-sm rounded-3 overflow-hidden" role="group" style="background: rgba(255,255,255,0.5); padding: 2px; border: 1px solid #e1e3ea;">
+                            <input type="radio" class="btn-check" name="chart_type" id="type_cumulative" value="cumulative" checked>
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="type_cumulative" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">累積成長</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_type" id="type_periodic" value="periodic">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="type_periodic" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">單期變動</label>
+                        </div>
+
+                        <!-- Period Selector: Daily / Weekly / Monthly -->
+                        <div class="btn-group btn-group-sm shadow-sm rounded-3 overflow-hidden" role="group" style="background: rgba(255,255,255,0.5); padding: 2px; border: 1px solid #e1e3ea;">
+                            <input type="radio" class="btn-check" name="chart_period" id="period_daily" value="daily" checked>
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_daily" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每日</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_period" id="period_weekly" value="weekly">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_weekly" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每週</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_period" id="period_monthly" value="monthly">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_monthly" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每月</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Container -->
+                <div class="position-relative" style="height: 350px;">
+                    <canvas id="heartChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bottom Row: Achievements Badges Section -->
 <div class="row g-4 mt-2 animate-fade-in">
     <div class="col-12">
@@ -374,6 +433,12 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
     function toggleAvatarInput(choice) {
         if (choice === 'predefined') {
@@ -384,5 +449,245 @@
             document.getElementById('custom_avatar_section').classList.remove('d-none');
         }
     }
+
+    // Chart.js implementation
+    const currentBalance = {{ user.heart_balance }};
+    const currentPopularity = {{ user.popularity }};
+    const registrationDate = new Date("{{ user.created_at }}");
+    const transactions = [
+        {% for t in transactions %}
+        {
+            amount: {{ t.heart_amount }},
+            isSender: {{ 'true' if t.sender_id == user.id else 'false' }},
+            date: new Date("{{ t.created_at }}")
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    function generatePeriodDates(period) {
+        const dates = [];
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        
+        if (period === 'daily') {
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                dates.push(d);
+            }
+        } else if (period === 'weekly') {
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i * 7);
+                dates.push(d);
+            }
+        } else if (period === 'monthly') {
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(today);
+                d.setMonth(today.getMonth() - i);
+                dates.push(d);
+            }
+        }
+        return dates;
+    }
+
+    function formatDateLabel(d, period) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        if (period === 'daily' || period === 'weekly') {
+            return `${mm}/${dd}`;
+        } else {
+            return `${yyyy}/${mm}`;
+        }
+    }
+
+    function getChartData(period, type) {
+        const dates = generatePeriodDates(period);
+        const labels = dates.map(d => formatDateLabel(d, period));
+        
+        let dataset1 = [];
+        let dataset2 = [];
+        let label1 = '';
+        let label2 = '';
+        
+        if (type === 'cumulative') {
+            label1 = '可用愛心餘額 (Balance)';
+            label2 = '累積獲得人氣 (Popularity)';
+            
+            dates.forEach(d => {
+                const sent_after = transactions.filter(t => t.isSender && t.date > d).reduce((sum, t) => sum + t.amount, 0);
+                const received_after = transactions.filter(t => !t.isSender && t.date > d).reduce((sum, t) => sum + t.amount, 0);
+                
+                dataset1.push(currentBalance + sent_after);
+                dataset2.push(currentPopularity - received_after);
+            });
+        } else {
+            label1 = '送出愛心 (Sent)';
+            label2 = '獲得愛心 (Received)';
+            
+            dates.forEach(d => {
+                let d_end = new Date(d);
+                let d_start = new Date(d);
+                
+                if (period === 'daily') {
+                    d_start.setHours(0, 0, 0, 0);
+                } else if (period === 'weekly') {
+                    d_start.setDate(d_start.getDate() - 6);
+                    d_start.setHours(0, 0, 0, 0);
+                } else if (period === 'monthly') {
+                    d_start.setMonth(d_start.getMonth() - 1);
+                    d_start.setDate(d_start.getDate() + 1);
+                    d_start.setHours(0, 0, 0, 0);
+                }
+                
+                const sent = transactions.filter(t => t.isSender && t.date >= d_start && t.date <= d_end).reduce((sum, t) => sum + t.amount, 0);
+                const received = transactions.filter(t => !t.isSender && t.date >= d_start && t.date <= d_end).reduce((sum, t) => sum + t.amount, 0);
+                
+                dataset1.push(sent);
+                dataset2.push(received);
+            });
+        }
+        
+        return {
+            labels: labels,
+            dataset1: dataset1,
+            dataset2: dataset2,
+            label1: label1,
+            label2: label2
+        };
+    }
+
+    let heartChart = null;
+
+    function renderChart() {
+        const period = document.querySelector('input[name="chart_period"]:checked').value;
+        const type = document.querySelector('input[name="chart_type"]:checked').value;
+        
+        const data = getChartData(period, type);
+        
+        const ctx = document.getElementById('heartChart').getContext('2d');
+        
+        if (heartChart) {
+            heartChart.destroy();
+        }
+
+        // Create gradients
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(112, 51, 255, 0.4)');
+        gradientPurple.addColorStop(1, 'rgba(112, 51, 255, 0.0)');
+
+        const gradientPink = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPink.addColorStop(0, 'rgba(255, 75, 114, 0.4)');
+        gradientPink.addColorStop(1, 'rgba(255, 75, 114, 0.0)');
+        
+        heartChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: data.label1,
+                        data: data.dataset1,
+                        borderColor: '#7033ff',
+                        backgroundColor: gradientPurple,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#7033ff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: data.label2,
+                        data: data.dataset2,
+                        borderColor: '#ff4b72',
+                        backgroundColor: gradientPink,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#ff4b72',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '600'
+                            },
+                            color: '#1e1e24'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(30, 30, 36, 0.9)',
+                        titleFont: {
+                            family: "'Outfit', sans-serif",
+                            weight: '700'
+                        },
+                        bodyFont: {
+                            family: "'Outfit', sans-serif"
+                        },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '500'
+                            },
+                            color: '#5c6270'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: '#f1f3f9'
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '500'
+                            },
+                            color: '#5c6270',
+                            precision: 0
+                        },
+                        min: 0
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize chart
+    document.addEventListener('DOMContentLoaded', () => {
+        renderChart();
+        
+        // Add event listeners for controls
+        document.querySelectorAll('input[name="chart_period"]').forEach(radio => {
+            radio.addEventListener('change', renderChart);
+        });
+        document.querySelectorAll('input[name="chart_type"]').forEach(radio => {
+            radio.addEventListener('change', renderChart);
+        });
+    });
 </script>
 {% endblock %}
