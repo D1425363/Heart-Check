@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Hero Section -->
 <div class="glass-panel text-center py-5 mb-4 animate-fade-in" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%); border-color: rgba(99, 102, 241, 0.3);">
-    <h1 class="display-4 fw-bold text-white mb-2" style="font-family: var(--font-heading);">💖 Heart Check</h1>
+    <h1 class="display-4 fw-bold mb-2" style="font-family: var(--font-heading); color: var(--text-primary);">💖 Heart Check</h1>
     <p class="lead text-secondary-50 mx-auto" style="max-width: 600px; font-size: 1.15rem;">
         透過「愛心值」與「人氣累積」機制，讓校園互助與感謝被即時記錄，整合失物協尋、宿舍公告、周邊餐廳與通勤交通，打造充滿人情味的智慧校園！
     </p>
@@ -34,7 +34,7 @@
         
         <!-- Live Heart Feed (愛心留言牆) -->
         <div class="glass-panel">
-            <h3 class="mb-3" style="font-family: var(--font-heading); color: #fff; display: flex; align-items: center; gap: 8px;">
+            <h3 class="mb-3" style="font-family: var(--font-heading); color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                 💌 動態愛心留言牆
             </h3>
             <p class="text-secondary small mb-3">看看校園中正在發生的溫暖互助故事：</p>
@@ -54,12 +54,12 @@
                                 <div class="feed-details">
                                     <div class="feed-meta">
                                         {% if tx.is_anonymous %}
-                                            <strong class="text-white" style="color: #a78bfa !important;">某位同學</strong>
+                                            <strong style="color: #a78bfa;">某位同學</strong>
                                         {% else %}
-                                            <strong class="text-white">{{ tx.sender_name }}</strong>
+                                            <strong style="color: var(--text-primary);">{{ tx.sender_name }}</strong>
                                         {% endif %}
                                         送出了愛心給 
-                                        <strong class="text-white">{{ tx.receiver_name }}</strong>
+                                        <strong style="color: var(--text-primary);">{{ tx.receiver_name }}</strong>
                                     </div>
                                     {% if tx.thank_you_message %}
                                     <div class="feed-msg">
@@ -85,7 +85,7 @@
         <!-- Latest Lost & Found Items -->
         <div class="glass-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0;">🔍 最新失物協尋</h3>
+                <h3 style="font-family: var(--font-heading); color: var(--text-primary); margin-bottom: 0;">🔍 最新失物協尋</h3>
                 <a href="{{ url_for('item.list_items') }}" class="small fw-semibold">查看全部</a>
             </div>
             
@@ -113,7 +113,7 @@
                                         <span class="text-muted small ms-2"><i class="bi bi-geo-alt-fill text-danger"></i> {{ item.location }}</span>
                                     </div>
                                     <h5 class="fs-6 mb-0">
-                                        <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="text-white">{{ item.title }}</a>
+                                        <a href="{{ url_for('item.item_detail', item_id=item.id) }}" style="color: var(--text-primary);">{{ item.title }}</a>
                                     </h5>
                                 </div>
                                 <div class="text-muted small flex-shrink-0">
@@ -139,7 +139,7 @@
         <!-- Latest Announcements -->
         <div class="glass-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0;">📢 最新公佈欄</h3>
+                <h3 style="font-family: var(--font-heading); color: var(--text-primary); margin-bottom: 0;">📢 最新公佈欄</h3>
                 <a href="{{ url_for('board.announcements') }}" class="small fw-semibold">查看全部</a>
             </div>
 
@@ -155,7 +155,7 @@
                                 {% endif %}
                                 <span class="text-muted small">{{ ann.created_at.split('T')[0] }}</span>
                             </div>
-                            <h5 class="fs-6 mb-1 text-white">{{ ann.title }}</h5>
+                            <h5 class="fs-6 mb-1" style="color: var(--text-primary);">{{ ann.title }}</h5>
                             <p class="text-secondary small mb-0 text-truncate">{{ ann.content }}</p>
                         </div>
                     {% endfor %}
@@ -171,7 +171,7 @@
         <!-- 校園求助區快捷入口 -->
         <div class="glass-panel">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0;">🆘 校園求助區</h3>
+                <h3 style="font-family: var(--font-heading); color: var(--text-primary); margin-bottom: 0;">🆘 校園求助區</h3>
                 <a href="{{ url_for('help.index') }}" class="small fw-semibold">查看全部</a>
             </div>
             <div class="row g-2">
@@ -205,7 +205,7 @@
 
         <!-- Quick Info Shortcuts -->
         <div class="glass-panel">
-            <h3 class="mb-3" style="font-family: var(--font-heading); color: #fff;">💡 校園生活小工具</h3>
+            <h3 class="mb-3" style="font-family: var(--font-heading); color: var(--text-primary);">💡 校園生活小工具</h3>
             <div class="d-flex flex-column gap-2">
                 <a href="{{ url_for('board.traffic_info') }}" class="btn-secondary-custom justify-content-start py-2.5">
                     <span class="fs-5 me-2">🚌</span> <strong>校園通勤交通時刻表</strong> <span class="text-muted small ms-auto">點擊查詢</span>

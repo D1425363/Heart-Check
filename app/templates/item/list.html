@@ -103,7 +103,7 @@
 
                         <!-- Title -->
                         <h4 class="item-card-title">
-                            <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="text-white">{{ item.title }}</a>
+                            <a href="{{ url_for('item.item_detail', item_id=item.id) }}" style="color: var(--text-primary);">{{ item.title }}</a>
                         </h4>
                         
                         <!-- Description snippet -->
@@ -125,7 +125,7 @@
     {% else %}
         <div class="glass-panel text-center py-5 my-5">
             <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
-            <h4 class="text-white">沒有符合條件的公告</h4>
+            <h4 style="color: var(--text-primary);">沒有符合條件的公告</h4>
             <p class="text-secondary small">可以更換搜尋關鍵字，或是發布一篇新公告試試看！</p>
         </div>
     {% endif %}

@@ -866,3 +866,151 @@ a:hover {
         padding: 15px;
     }
 }
+
+
+/* ==========================================================================
+   COMPREHENSIVE THEME-RESPONSIVE TEXT CONTRAST OVERRIDES
+   ========================================================================== */
+
+/* Fix remaining text-white class overrides */
+[data-theme="light"] .text-white {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .text-white-50 {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] a.text-white:hover,
+[data-theme="light"] a.text-white:focus {
+    color: var(--color-primary) !important;
+}
+
+/* Fix form elements in light mode */
+[data-theme="light"] .form-control-custom {
+    color: var(--text-primary) !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .form-control-custom::placeholder {
+    color: var(--text-muted) !important;
+}
+
+[data-theme="light"] .form-control-custom:focus {
+    background: rgba(0, 0, 0, 0.06) !important;
+    border-color: var(--color-primary) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .form-select.form-control-custom {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .input-group-text {
+    color: var(--text-secondary) !important;
+    background: rgba(0, 0, 0, 0.04) !important;
+    border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Fix item card borders in light mode */
+[data-theme="light"] .item-card {
+    border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .item-card-footer {
+    border-top-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Fix comment cards in light mode */
+[data-theme="light"] .comment-card {
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Fix modal in light mode */
+.modal-content {
+    color: var(--text-primary) !important;
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-glass) !important;
+}
+
+[data-theme="light"] .modal-header {
+    border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .modal-footer {
+    border-top-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .modal-header .btn-close {
+    filter: none !important;
+}
+
+/* Fix tables in light mode (handle both table-dark and normal) */
+[data-theme="light"] .table-dark {
+    --bs-table-bg: rgba(0,0,0,0.02) !important;
+    --bs-table-color: var(--text-primary) !important;
+    --bs-table-border-color: rgba(0, 0, 0, 0.08) !important;
+    --bs-table-striped-bg: rgba(0,0,0,0.03) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] table {
+    --bs-table-color: var(--text-primary);
+    --bs-table-bg: transparent;
+    color: var(--text-primary);
+}
+
+[data-theme="light"] th,
+[data-theme="light"] td {
+    color: var(--text-primary) !important;
+}
+
+/* Fix dark panel backgrounds in light mode */
+[data-theme="light"] .glass-panel {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Card stat colors */
+.card-stat {
+    color: var(--text-primary);
+}
+
+.card-stat .text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+/* Fix leaderboard podium name labels in light mode */
+[data-theme="light"] .podium-column .position-absolute {
+    color: var(--text-primary) !important;
+}
+
+/* Ensure nav links are visible in light mode */
+[data-theme="light"] .nav-link-custom {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .nav-link-custom:hover,
+[data-theme="light"] .nav-link-custom.active {
+    color: var(--color-primary) !important;
+}
+
+/* Fix btn-secondary-custom text in light mode */
+[data-theme="light"] .btn-secondary-custom {
+    color: var(--text-primary) !important;
+}
+
+/* Fix feed items in light mode */
+[data-theme="light"] .feed-details {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .feed-meta {
+    color: var(--text-primary) !important;
+}
+
+/* Fix form labels */
+[data-theme="light"] .form-label-custom {
+    color: var(--text-secondary) !important;
+}

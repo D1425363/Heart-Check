@@ -36,11 +36,11 @@
                 <div class="form-group-custom">
                     <label for="heart_amount" class="form-label-custom">愛心發送數量 <span class="text-danger">*</span></label>
                     <div class="input-group">
-                        <span class="input-group-text" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); color: #fff;">💝</span>
+                        <span class="input-group-text">💝</span>
                         <input type="number" id="heart_amount" name="heart_amount" class="form-control form-control-custom" style="border-radius: 0 var(--radius-sm) var(--radius-sm) 0;" min="1" max="{{ sender.heart_balance }}" value="1" required>
                     </div>
                     <div class="form-text text-secondary mt-2">
-                        您的愛心餘額：<strong class="text-white">💝 {{ sender.heart_balance }}</strong> 顆。請量力而行。
+                        您的愛心餘額：<strong style="color: var(--text-primary);">&#x1F49D; {{ sender.heart_balance }}</strong> 顆。請量力而行。
                     </div>
                 </div>
 

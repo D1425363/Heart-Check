@@ -89,7 +89,7 @@
                 <div class="row animate-fade-in">
                     <div class="col-12">
                         {% for category, message in messages %}
-                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert" style="border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff;">
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert" style="border-radius: var(--radius-sm); border: 1px solid rgba(128,128,128,0.1); background: var(--bg-glass); backdrop-filter: blur(10px); color: var(--text-primary);">
                                 <div class="d-flex align-items-center gap-2">
                                     {% if category == 'success' %}
                                         <i class="bi bi-check-circle-fill text-success fs-5"></i>

@@ -42,9 +42,9 @@
                         </div>
                         <div class="podium-rank-box">
                             <span class="fs-4 fw-bold">2nd</span>
-                            <span class="small text-white-50">{{ user2.period_popularity }} 💖</span>
+                            <span class="small" style="color: var(--text-secondary);">{{ user2.period_popularity }} 💖</span>
                             {% if current_period != 'total' %}
-                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user2.popularity }} 💖)</span>
+                                <span class="small d-block mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85; color: var(--text-secondary);">(累積 {{ user2.popularity }} 💖)</span>
                             {% endif %}
                             {% if user2.pinned_badges %}
                                 <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
@@ -68,9 +68,9 @@
                         </div>
                         <div class="podium-rank-box">
                             <span class="fs-3 fw-bold">1st</span>
-                            <span class="small text-white-50">{{ user1.period_popularity }} 💖</span>
+                            <span class="small" style="color: var(--text-secondary);">{{ user1.period_popularity }} 💖</span>
                             {% if current_period != 'total' %}
-                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user1.popularity }} 💖)</span>
+                                <span class="small d-block mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85; color: var(--text-secondary);">(累積 {{ user1.popularity }} 💖)</span>
                             {% endif %}
                             {% if user1.pinned_badges %}
                                 <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
@@ -93,9 +93,9 @@
                         </div>
                         <div class="podium-rank-box">
                             <span class="fs-5 fw-bold">3rd</span>
-                            <span class="small text-white-50">{{ user3.period_popularity }} 💖</span>
+                            <span class="small" style="color: var(--text-secondary);">{{ user3.period_popularity }} 💖</span>
                             {% if current_period != 'total' %}
-                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user3.popularity }} 💖)</span>
+                                <span class="small d-block mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85; color: var(--text-secondary);">(累積 {{ user3.popularity }} 💖)</span>
                             {% endif %}
                             {% if user3.pinned_badges %}
                                 <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">

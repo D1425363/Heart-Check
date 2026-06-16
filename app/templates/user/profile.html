@@ -311,6 +311,8 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
 <!-- Middle Row: Heart Growth Chart Section -->
 <div class="row g-4 mt-2 animate-fade-in">
@@ -504,6 +506,7 @@
                                 </div>
                             </div>
                         {% endfor %}
+
                     </div>
                 {% else %}
                     <div class="text-center py-4 text-secondary">
@@ -511,6 +514,7 @@
                         暫時沒有任何愛心發送或接收的交易紀錄。
                     </div>
                 {% endif %}
+
         </div>
     </div>
 </div>
@@ -518,9 +522,9 @@
 <!-- Edit Profile Modal -->
 <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--bg-secondary); border: 1px solid var(--border-glass) !important; color: #fff;">
-            <div class="modal-header border-0 bg-dark rounded-top-4 p-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.05) !important;">
-                <h5 class="modal-title font-bold text-white" id="editProfileModalLabel">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--bg-secondary); border: 1px solid var(--border-glass) !important; color: var(--text-primary);">
+            <div class="modal-header border-0 rounded-top-4 p-3 px-4" style="background: var(--bg-glass); border-bottom: 1px solid rgba(128,128,128,0.1) !important;">
+                <h5 class="modal-title font-bold" style="color: var(--text-primary);" id="editProfileModalLabel">
                     <i class="bi bi-person-fill-gear text-primary me-2"></i>編輯個人資料
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -592,6 +596,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- QR Code Library CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
     // Initialize QR Code inside container

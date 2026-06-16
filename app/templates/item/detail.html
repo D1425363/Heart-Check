@@ -39,18 +39,18 @@
     <!-- Right Column: Details & Creator Details -->
     <div class="col-lg-7">
         <div class="glass-panel">
-            <h2 class="mb-3" style="font-family: var(--font-heading); color: #fff;">{{ item.title }}</h2>
+            <h2 class="mb-3" style="font-family: var(--font-heading); color: var(--text-primary);">{{ item.title }}</h2>
             
             <!-- Details Grid -->
             <div class="p-3 rounded-3 mb-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
                 <div class="row g-3">
                     <div class="col-sm-6">
                         <div class="text-secondary small">📍 遺失/拾獲地點</div>
-                        <div class="fw-semibold text-white mt-0.5">{{ item.location }}</div>
+                        <div class="fw-semibold mt-0.5" style="color: var(--text-primary);">{{ item.location }}</div>
                     </div>
                     <div class="col-sm-6">
                         <div class="text-secondary small">👤 發布人</div>
-                        <div class="fw-semibold text-white mt-0.5 d-flex align-items-center gap-2">
+                        <div class="fw-semibold mt-0.5 d-flex align-items-center gap-2" style="color: var(--text-primary);">
                             <span>{{ item.user_name }}</span>
                             <!-- Show Publisher's Pinned Badges -->
                             {% if owner_pinned_badges %}
@@ -64,7 +64,7 @@
                     </div>
                     <div class="col-12 border-top border-secondary pt-3" style="border-top-color: rgba(255,255,255,0.05) !important;">
                         <div class="text-secondary small">📞 聯絡方式</div>
-                        <div class="fw-semibold text-white mt-0.5">
+                        <div class="fw-semibold mt-0.5" style="color: var(--text-primary);">
                             {{ item.contact_info if item.contact_info else '發布者未留聯絡資訊，可點擊上方發布人頭像/透過留言聯繫。' }}
                         </div>
                     </div>
@@ -74,7 +74,7 @@
             <!-- Description -->
             <div class="mb-4">
                 <h5 class="fs-6 text-secondary" style="font-family: var(--font-heading);">📝 詳細描述</h5>
-                <div class="p-3 rounded-3 text-white-50" style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.02); white-space: pre-wrap;">{{ item.description }}</div>
+                <div class="p-3 rounded-3" style="background: rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.02); white-space: pre-wrap; color: var(--text-secondary);">{{ item.description }}</div>
             </div>
 
             <!-- Creator Action Buttons -->
@@ -114,7 +114,7 @@
 <div class="row mt-4 animate-fade-in">
     <div class="col-12">
         <div class="glass-panel">
-            <h4 class="mb-4" style="font-family: var(--font-heading); color: #fff;">💬 留言與線索回報區</h4>
+            <h4 class="mb-4" style="font-family: var(--font-heading); color: var(--text-primary);">💬 留言與線索回報區</h4>
 
             <!-- Comment Input Form -->
             {% if current_user %}
