@@ -10,19 +10,17 @@ def seed():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Check if we already have users
-    cursor.execute("SELECT COUNT(*) AS count FROM users;")
-    row = cursor.fetchone()
-    count = row['count']
-    if count > 0:
-        print("Database already has data. Skipping seed.")
-        conn.close()
-        return
-        
+    # Clear existing data
+    cursor.execute("DELETE FROM user_badges;")
+    cursor.execute("DELETE FROM item_comments;")
+    cursor.execute("DELETE FROM announcements;")
+    cursor.execute("DELETE FROM items;")
+    cursor.execute("DELETE FROM heart_transactions;")
+    cursor.execute("DELETE FROM users;")
+    
     print("Seeding database...")
     
     # 2. Add users
-    # Password is password123 for all users
     pwd_hash = generate_password_hash("password123")
     
     users = [
@@ -32,7 +30,8 @@ def seed():
         ("user", pwd_hash, "普通學生阿強", "S001003", "生活應用科學系", 100, 0, "token_user")
     ]
     
-    now = datetime.datetime.now().isoformat()
+    now = datetime.datetime.now()
+    now_iso = now.isoformat()
     
     for username, p_hash, name, student_id, dept, hearts, pop, token in users:
         cursor.execute(
@@ -40,7 +39,7 @@ def seed():
             INSERT OR IGNORE INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
-            (username, p_hash, name, student_id, dept, hearts, pop, token, now, now)
+            (username, p_hash, name, student_id, dept, hearts, pop, token, now_iso, now_iso)
         )
     
     conn.commit()
@@ -62,7 +61,7 @@ def seed():
             INSERT INTO announcements (title, content, category, author_id, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?);
             """,
-            (title, content, cat, author_id, now, now)
+            (title, content, cat, author_id, now_iso, now_iso)
         )
         
     # 4. Add Lost & Found items
@@ -78,13 +77,30 @@ def seed():
             INSERT INTO items (title, description, image_url, location, item_type, status, user_id, contact_info, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
-            (title, desc, img, loc, itype, status, uid, cinfo, now, now)
+            (title, desc, img, loc, itype, status, uid, cinfo, now_iso, now_iso)
         )
         
     # 5. Add transactions
+    # Helper to calculate relative times
+    def days_ago(n):
+        return (now - datetime.timedelta(days=n)).isoformat()
+
     transactions = [
-        (user_map["user"], user_map["hero"], 20, "謝謝小明同學昨天幫我搬宿舍行李，非常熱心！", now),
-        (user_map["finder"], user_map["hero"], 30, "感謝在排球場幫我撿到學生證並送回，大感謝！", now)
+        (user_map["user"], user_map["hero"], 20, "謝謝小明同學今天幫我搬行李，非常熱心！", days_ago(0)),
+        # Change days_ago(3) to days_ago(1) to make it fall within the current week for leaderboard testing
+        (user_map["finder"], user_map["hero"], 30, "感謝在排球場幫我撿到學生證並送回，大感謝！", days_ago(1)),
+        (user_map["admin"], user_map["hero"], 50, "感謝協助宿舍消防演練的引導！", days_ago(10)),
+        (user_map["user"], user_map["hero"], 15, "感謝分享昨天的微積分筆記，太強了！", days_ago(18)),
+        (user_map["finder"], user_map["hero"], 25, "感謝在雨天借我雨傘，好人一生平安！", days_ago(35)),
+        (user_map["admin"], user_map["hero"], 40, "感謝幹部會議上的熱烈發言與建議！", days_ago(50)),
+        (user_map["user"], user_map["hero"], 60, "感謝上學期期末考前一週的宿舍夜讀指導！", days_ago(75)),
+        
+        (user_map["hero"], user_map["finder"], 20, "謝謝幫我帶午餐，真的超方便！", days_ago(5)),
+        (user_map["hero"], user_map["user"], 30, "感謝幫忙看照房間，我回家那幾天多虧有你！", days_ago(22)),
+        (user_map["hero"], user_map["admin"], 15, "感謝宿舍幹部協助處理熱水器漏水問題！", days_ago(60)),
+        
+        (user_map["finder"], user_map["user"], 10, "感謝在走廊借我原子筆用！", days_ago(40)),
+        (user_map["admin"], user_map["finder"], 25, "感謝幫忙張貼校園健康週海報！", days_ago(12))
     ]
     
     for sender, receiver, amt, msg, ttime in transactions:

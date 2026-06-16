@@ -2,71 +2,359 @@
 
 {% block title %}個人檔案 - Heart Check{% endblock %}
 
+{% block styles %}
+<style>
+    /* Badge styling */
+    .badge-card {
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid #e1e3ea;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .badge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+    
+    .locked-badge {
+        filter: grayscale(0.9);
+        opacity: 0.65;
+    }
+    
+    .locked-badge::before {
+        content: "\f023";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        color: #a0a5b5;
+        font-size: 0.85rem;
+    }
+    
+    .unlocked-badge {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
+    
+    .style-desc {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        min-height: 34px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Avatar radio options style */
+    .avatar-option-label input:checked + .avatar-option-card {
+        border-color: #ff4b72 !important;
+        box-shadow: 0 0 0 3px rgba(255, 75, 114, 0.25) !important;
+        transform: scale(1.1);
+        background-color: #ffe3e8;
+    }
+    
+    .avatar-option-card {
+        cursor: pointer;
+        background-color: #fff;
+        border: 2px solid #e1e3ea !important;
+    }
+    
+    .avatar-option-card:hover {
+        border-color: #7033ff !important;
+        transform: scale(1.05);
+    }
+    
+    /* Medal colors */
+    .text-silver {
+        color: #b0c4de !important;
+    }
+    .text-bronze {
+        color: #cd7f32 !important;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    .animate-bounce {
+        animation: bounce 2s infinite ease-in-out;
+    }
+    
+    /* Custom styles for chart toggle buttons */
+    .btn-check:checked + label.btn-chart-toggle {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(255, 75, 114, 0.25) !important;
+    }
+    .btn-check:not(:checked) + label.btn-chart-toggle {
+        background: transparent;
+        color: var(--text-secondary);
+    }
+    .btn-check:not(:checked) + label.btn-chart-toggle:hover {
+        background: rgba(112, 51, 255, 0.05);
+        color: #7033ff;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row g-4 animate-fade-in">
-    <!-- Left Column: User Profile & QR Code -->
-    <div class="col-lg-5">
-        <div class="card premium-card text-center p-4 h-100">
-            <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                <!-- Avatar Placeholder -->
-                <div class="bg-gradient p-1 rounded-circle mb-3" style="background: var(--primary-gradient);">
-                    <div class="bg-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="fa-solid fa-user-tie fa-3x text-secondary"></i>
+<div class="row animate-fade-in">
+    <!-- Left Column: User Info & QR Code -->
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="glass-panel text-center">
+            <div class="mb-3 position-relative d-inline-block">
+                {% if user.avatar %}
+                    <img src="{% if user.avatar.startswith('http') %}{{ user.avatar }}{% else %}{{ url_for('static', filename=user.avatar) }}{% endif %}" 
+                         class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid rgba(99, 102, 241, 0.5);">
+                {% else %}
+                    <div class="feed-avatar mx-auto" style="width: 80px; height: 80px; font-size: 2.2rem;">
+                        {{ user.name[0] | upper }}
                     </div>
-                </div>
-                
-                <h3 class="font-bold mb-1">{{ user.name }}</h3>
-                <p class="text-muted mb-3">{{ user.department or '未填寫科系' }} · 學號: {{ user.student_id }}</p>
+                {% endif %}
+            </div>
+            
+            <h3 class="mb-1">{{ user.name }}</h3>
+            <p class="text-secondary small mb-2">學號：{{ user.student_id }}</p>
+            {% if user.department %}
+                <span class="badge bg-secondary px-3 py-1.5 mb-2" style="border: 1px solid rgba(255,255,255,0.08);">
+                    {{ user.department }}
+                </span>
+            {% endif %}
+            
+            <!-- Edit Profile Button Trigger -->
+            <div class="mt-2">
+                <button type="button" class="btn-secondary-custom py-1.5 px-3 fs-7 w-100" data-bs-toggle="modal" data-bs-target="#editProfileModal" style="padding: 6px 12px; font-size: 0.85rem;">
+                    <i class="bi bi-pencil-square"></i> 編輯個人資料
+                </button>
+            </div>
 
-                <!-- Balance Pills -->
-                <div class="d-flex justify-content-center gap-3 mb-4 w-100">
-                    <div class="heart-badge flex-grow-1 justify-content-center py-3">
-                        <i class="fa-solid fa-heart fa-lg"></i>
-                        <div>
-                            <span class="d-block small text-muted font-normal text-start">愛心餘額</span>
-                            <span class="fs-4 d-block text-start font-bold">{{ user.heart_balance }}</span>
-                        </div>
-                    </div>
-                    <div class="popularity-badge flex-grow-1 justify-content-center py-3">
-                        <i class="fa-solid fa-star fa-lg"></i>
-                        <div>
-                            <span class="d-block small text-muted font-normal text-start">累積人氣</span>
-                            <span class="fs-4 d-block text-start font-bold">{{ user.popularity }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="w-100 border-light-subtle my-3">
-
-                <!-- QR Code Generation -->
-                <div class="my-3">
-                    <h5 class="font-bold mb-2"><i class="fa-solid fa-qrcode me-2 text-danger"></i>您的專屬互助 QR Code</h5>
-                    <p class="text-muted small px-3 mb-3">當他人給予您幫助後，展示此條碼讓對方掃描，即可接收對方轉移的人氣回饋！</p>
-                    
-                    <div class="bg-white p-3 rounded-4 shadow-sm border d-inline-block">
-                        <!-- We generate the QR Code pointing directly to the transfer page on-the-fly -->
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ qr_transfer_url }}" 
-                             alt="QR Code" 
-                             class="img-fluid" 
-                             style="max-width: 180px;">
-                    </div>
-                    <div class="mt-2 text-muted small">
-                        Token: <span class="font-monospace">{{ user.qr_code_token[:8] }}...</span>
-                    </div>
-                    
-                    {% if is_local_warning %}
-                    <div class="alert alert-warning small mt-3 text-start rounded-3 shadow-sm" role="alert" style="border-left: 4px solid #ffc107;">
-                        <i class="fa-solid fa-triangle-exclamation text-warning me-1"></i>
-                        <strong>手機掃描提示：</strong><br>
-                        1. 手機與電腦需連接<strong>同一個 Wi-Fi</strong>。<br>
-                        2. 電腦的區域 IP 為 <code>{{ qr_transfer_url.split('/qr/')[0] }}</code>。<br>
-                        3. 如手機打不開網頁，請確認防火牆是否阻擋了 Port 5000 連線。
-                    </div>
+            <!-- Pinned Badges Showcase -->
+            <div class="mt-4 pt-3 border-top border-secondary" style="border-top-color: rgba(255,255,255,0.08) !important;">
+                <h5 class="text-start fs-6 mb-2" style="font-family: var(--font-heading); color: var(--color-primary);">🏆 徽章展示櫃</h5>
+                <div class="badge-showcase justify-content-center">
+                    {% if pinned_badges %}
+                        {% for badge in pinned_badges %}
+                            <div class="showcase-badge-pill" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ badge.desc }}">
+                                <span>{{ badge.icon }}</span>
+                                <span>{{ badge.name }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted small italic my-2">尚未釘選徽章，可在右側選擇釘選最多3個徽章</p>
                     {% endif %}
                 </div>
             </div>
         </div>
+
+        <!-- QR Code Card -->
+        <div class="glass-panel text-center">
+            <h4 class="mb-3" style="font-family: var(--font-heading);">🔍 我的愛心 QR Code</h4>
+            
+            {% if is_local_warning %}
+                <div class="alert alert-warning py-1.5 px-2 small mb-3 text-start" style="font-size: 0.75rem; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2); color: var(--color-warning);">
+                    <i class="bi bi-wifi me-1"></i> 已將連線地址映射至局域網 IP：<strong>{{ qr_code_url.split('/')[2].split(':')[0] }}</strong>，請確保手機與電腦連線至同一個 Wi-Fi 熱點以進行掃描。
+                </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-center mb-3">
+                <div id="qrcode-container" class="p-3 bg-white rounded-3 shadow-sm d-inline-block">
+                    <div id="qrcode"></div>
+                </div>
+            </div>
+            <p class="text-secondary small px-2">
+                請其他同學掃描此 QR Code，即可即時轉移「愛心值」並給予您留言回饋！
+            </p>
+        </div>
     </div>
+
+    <!-- Right Column: Stats, Badge List & Transactions -->
+    <div class="col-lg-8">
+        <!-- Stats Row -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card-stat card-stat-indigo h-100">
+                    <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider">愛心值餘額</div>
+                    <div class="fs-2 fw-bold text-white mt-1">💝 {{ user.heart_balance }} <span class="fs-6 fw-normal text-secondary">顆</span></div>
+                    <div class="text-muted small mt-2">可用於發送給幫助您的其他同學</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card-stat card-stat-purple h-100" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.02) 100%); border: 1px solid rgba(168, 85, 247, 0.25);">
+                    <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider">累積人氣值</div>
+                    <div class="fs-2 fw-bold text-white mt-1">💖 {{ user.popularity }} <span class="fs-6 fw-normal text-secondary">分</span></div>
+                    <div class="text-muted small mt-2">受助同學回饋所得的愛心值總和</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-stat h-100" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(6, 182, 212, 0.02) 100%); border: 1px solid rgba(6, 182, 212, 0.25); position: relative; overflow: hidden; border-radius: var(--radius-md);">
+                    <div class="text-secondary small font-heading fw-bold text-uppercase tracking-wider" style="position: relative; z-index: 1;">全校人氣排名</div>
+                    <div class="fs-2 fw-bold text-white mt-1" style="position: relative; z-index: 1;">🏆 #{{ rank if rank else 'N/A' }}</div>
+                    <div class="text-muted small mt-2" style="position: relative; z-index: 1;">
+                        📤 送出: {{ total_sent }} / 📥 收到: {{ total_received }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Panel for Custom Pinned Badges vs Legacy System Badges -->
+        <div class="glass-panel">
+            <ul class="nav nav-tabs border-secondary mb-3" id="badgeTab" role="tablist" style="border-bottom-color: rgba(255,255,255,0.08) !important;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link nav-link-custom active border-0 text-white" id="milestone-tab" data-bs-toggle="tab" data-bs-target="#milestone" type="button" role="tab" aria-controls="milestone" aria-selected="true" style="background: transparent;">
+                        🏅 我的自訂展示徽章 (7大類)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link nav-link-custom border-0 text-white-50" id="system-tab" data-bs-toggle="tab" data-bs-target="#system-badges" type="button" role="tab" aria-controls="system-badges" aria-selected="false" style="background: transparent;">
+                        🎓 系統成就統計徽章 (6大類)
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="badgeTabContent">
+                <!-- Milestone Tab (Our Custom Pinning System) -->
+                <div class="tab-pane fade show active" id="milestone" role="tabpanel" aria-labelledby="milestone-tab">
+                    <p class="text-secondary small mb-3">
+                        達成特定互助條件將自動解鎖徽章。選取已獲得的徽章（最多 3 個）以展示在展示櫃中！
+                    </p>
+
+                    <form action="{{ url_for('user.pin_badges') }}" method="POST">
+                        <div class="badge-grid">
+                            {% set earned_types = [] %}
+                            {% for b in badges %}
+                                {% set _ = earned_types.append(b.badge_type) %}
+                            {% endfor %}
+                            
+                            {% set badge_definitions = [
+                                ('rookie', '初試身手', '🌱', '完成第一次愛心傳遞'),
+                                ('helper', '熱心人士', '🤝', '收到來自 5 位不同同學的愛心'),
+                                ('heart_helper', '暖心小幫手', '💖', '累積人氣值達到 10'),
+                                ('ambassador', '愛心大使', '🌟', '累計送出 50 顆愛心'),
+                                ('expert', '尋物達人', '🔍', '有 3 篇失物招領成功尋回'),
+                                ('grateful', '感恩的心', '✉️', '送出時填寫 5 次感謝留言'),
+                                ('poster', '情報員', '📢', '發布 10 篇失物招領公告')
+                            ] %}
+
+                            {% for b_type, b_name, b_icon, b_desc in badge_definitions %}
+                                {% set is_earned = b_type in earned_types %}
+                                {% set is_pinned = false %}
+                                {% if is_earned %}
+                                    {% for eb in badges %}
+                                        {% if eb.badge_type == b_type and eb.is_pinned == 1 %}
+                                            {% set is_pinned = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
+                                <div class="badge-item {% if is_earned %}earned{% else %}locked{% endif %} {% if is_pinned %}pinned{% endif %}"
+                                     data-bs-toggle="tooltip" data-bs-placement="top" title="{{ b_desc }}">
+                                    <span class="badge-icon">{{ b_icon }}</span>
+                                    <span class="badge-title">{{ b_name }}</span>
+                                    
+                                    {% if is_earned %}
+                                        <div class="mt-2">
+                                            <input class="form-check-input" type="checkbox" name="badges" value="{{ b_type }}" id="chk-{{ b_type }}" {% if is_pinned %}checked{% endif %}>
+                                            <label class="form-check-label small text-secondary" for="chk-{{ b_type }}">釘選</label>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge-desc mt-2">未解鎖</span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if badges %}
+                            <div class="text-end mt-4">
+                                <button type="submit" class="btn-premium">
+                                    <i class="bi bi-pin-angle-fill"></i> 更新展示櫃
+                                </button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+                
+                <!-- Legacy System Badges (Dynamic calculated badges by D1425363) -->
+                <div class="tab-pane fade" id="system-badges" role="tabpanel" aria-labelledby="system-tab">
+                    <p class="text-secondary small mb-3">依據您在平台上的各項累計行為自動解鎖與更新進度：</p>
+                    <div class="row g-3">
+                        {% for lb in legacy_badges %}
+                            <div class="col-md-6 col-lg-4">
+                                <div class="p-3 rounded-3 h-100 d-flex flex-column" style="background: rgba(255,255,255,0.02); border: 1px solid {% if lb.unlocked %}rgba(168, 85, 247, 0.35){% else %}rgba(255,255,255,0.05){% endif %}; opacity: {% if lb.unlocked %}1{% else %}0.5{% endif %};">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <!-- Icon placeholder since font-awesome isn't in base but we render standard emoji based on id -->
+                                        <span class="fs-4">
+                                            {% if lb.id == 'newbie' %}👶
+                                            {% elif lb.id == 'ambassador' %}🤝
+                                            {% elif lb.id == 'star' %}🔥
+                                            {% elif lb.id == 'helper' %}🤗
+                                            {% elif lb.id == 'tycoon' %}💎
+                                            {% elif lb.id == 'dorm' %}🏠
+                                            {% else %}🏅{% endif %}
+                                        </span>
+                                        <h6 class="mb-0 text-white font-bold">{{ lb.name }}</h6>
+                                    </div>
+                                    <p class="text-secondary small style-desc mb-2">{{ lb.description }}</p>
+                                    <div class="mt-auto text-end">
+                                        {% if lb.unlocked %}
+                                            <span class="badge bg-success-subtle text-success py-1.5 px-2 small" style="background: rgba(16, 185, 129, 0.15) !important;">已解鎖</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-muted py-1.5 px-2 small" style="background: rgba(255,255,255,0.08) !important;">{{ lb.progress }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- Middle Row: Heart Growth Chart Section -->
+<div class="row g-4 mt-2 animate-fade-in">
+    <div class="col-12">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <h4 class="font-bold mb-0">
+                        <i class="fa-solid fa-chart-line text-danger me-2"></i>愛心成長與統計圖表
+                    </h4>
+                    
+                    <!-- Controls -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <!-- Chart Type: Cumulative vs Periodic -->
+                        <div class="btn-group btn-group-sm shadow-sm rounded-3 overflow-hidden" role="group" style="background: rgba(255,255,255,0.5); padding: 2px; border: 1px solid #e1e3ea;">
+                            <input type="radio" class="btn-check" name="chart_type" id="type_cumulative" value="cumulative" checked>
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="type_cumulative" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">累積成長</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_type" id="type_periodic" value="periodic">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="type_periodic" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">單期變動</label>
+                        </div>
+
+                        <!-- Period Selector: Daily / Weekly / Monthly -->
+                        <div class="btn-group btn-group-sm shadow-sm rounded-3 overflow-hidden" role="group" style="background: rgba(255,255,255,0.5); padding: 2px; border: 1px solid #e1e3ea;">
+                            <input type="radio" class="btn-check" name="chart_period" id="period_daily" value="daily" checked>
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_daily" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每日</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_period" id="period_weekly" value="weekly">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_weekly" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每週</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_period" id="period_monthly" value="monthly">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_monthly" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每月</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Container -->
+                <div class="position-relative" style="height: 350px;">
+                    <canvas id="heartChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Right Column: Missions, Badges, and History -->
     <div class="col-lg-7">
@@ -173,12 +461,25 @@
                 <h4 class="font-bold mb-3">
                     <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>愛心互動歷史紀錄
                 </h4>
-                
-                {% if not transactions %}
-                    <div class="text-center py-5">
-                        <span class="fs-1 text-muted"><i class="fa-solid fa-heart-crack"></i></span>
-                        <p class="text-muted mt-3">目前還沒有任何愛心轉移紀錄。</p>
-                        <p class="text-muted small">多幫助他人，或者在獲得幫助時給予他人愛心人氣吧！</p>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+                    {% for badge in badges %}
+                    <div class="col">
+                        <div class="card h-100 text-center border-0 rounded-4 p-3 shadow-sm badge-card {% if badge.unlocked %}unlocked-badge{% else %}locked-badge{% endif %}"
+                             style="background: {% if badge.unlocked %}rgba(255, 255, 255, 0.9){% else %}rgba(240, 242, 245, 0.5){% endif %}; border: 1px solid {% if badge.unlocked %}{{ badge.color }}33{% else %}#e1e3ea{% endif %} !important;">
+                            <div class="badge-icon-wrapper mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                 style="width: 55px; height: 55px; background: {% if badge.unlocked %}{{ badge.color }}1a{% else %}#f1f3f9{% endif %}; color: {% if badge.unlocked %}{{ badge.color }}{% else %}#a0a5b5{% endif %};">
+                                <i class="{{ badge.icon }} fa-2x"></i>
+                            </div>
+                            <h6 class="font-bold mb-1 {% if not badge.unlocked %}text-muted{% endif %}">{{ badge.name }}</h6>
+                            <p class="text-muted mb-2 style-desc">{{ badge.description }}</p>
+                            <div class="mt-auto">
+                                {% if badge.unlocked %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>已解鎖</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted border rounded-pill small px-2 py-1">{{ badge.progress }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
                 {% else %}
                     <div class="list-group list-group-flush" style="max-height: 350px; overflow-y: auto;">
@@ -211,14 +512,357 @@
                                             <span class="text-success font-bold fs-5">+{{ t.heart_amount }} <i class="fa-solid fa-star"></i></span>
                                         {% endif %}
                                         <div class="text-muted small mt-1 font-monospace">{{ t.created_at[:16].replace('T', ' ') }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-secondary">
+                    <i class="bi bi-journal-x fs-1 mb-2 d-block text-muted"></i>
+                    暫時沒有任何愛心發送或接收的交易紀錄。
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--bg-secondary); border: 1px solid var(--border-glass) !important; color: #fff;">
+            <div class="modal-header border-0 bg-dark rounded-top-4 p-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.05) !important;">
+                <h5 class="modal-title font-bold text-white" id="editProfileModalLabel">
+                    <i class="bi bi-person-fill-gear text-primary me-2"></i>編輯個人資料
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('user.update_profile') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <!-- Real name / Nickname -->
+                    <div class="form-group-custom mb-3">
+                        <label for="name" class="form-label-custom">真實姓名 / 暱稱 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control form-control-custom" id="name" name="name" value="{{ user.name }}" required autocomplete="off">
+                    </div>
+                    
+                    <!-- Department / Year -->
+                    <div class="form-group-custom mb-3">
+                        <label for="department" class="form-label-custom">科系與年級 (系級)</label>
+                        <input type="text" class="form-control form-control-custom" id="department" name="department" value="{{ user.department or '' }}" placeholder="例如：資訊工程系三年級" autocomplete="off">
+                    </div>
+                    
+                    <!-- Avatar Selection Choice -->
+                    <div class="form-group-custom mb-3">
+                        <label class="form-label-custom d-block">修改頭像方式</label>
+                        <div class="form-check form-check-inline mb-2 me-3">
+                            <input class="form-check-input" type="radio" name="avatar_choice" id="choice_predefined" value="predefined" checked onclick="toggleAvatarInput('predefined')">
+                            <label class="form-check-label text-secondary small" for="choice_predefined">選擇推薦可愛表情</label>
+                        </div>
+                        <div class="form-check form-check-inline mb-2">
+                            <input class="form-check-input" type="radio" name="avatar_choice" id="choice_upload" value="upload" onclick="toggleAvatarInput('upload')">
+                            <label class="form-check-label text-secondary small" for="choice_upload">上傳自訂頭像相片</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Predefined Avatars Option Grid -->
+                    <div id="predefined_avatars_section" class="mb-3">
+                        <label class="form-label-custom small text-muted">選擇一個推薦 Emoji 頭像：</label>
+                        <div class="row row-cols-6 g-2 text-center">
+                            {% set seeds = ['Coco', 'Milo', 'Zoe', 'Bubba', 'Daisy', 'Peanut', 'Lucky', 'Cookie', 'Pippin', 'Sparky', 'Gismo', 'Oliver'] %}
+                            {% for seed in seeds %}
+                            <div class="col">
+                                <label class="avatar-option-label d-block cursor-pointer">
+                                    <input type="radio" name="predefined_seed" value="{{ seed }}" class="btn-check" {% if loop.first %}checked{% endif %}>
+                                    <div class="avatar-option-card rounded-circle p-1 border shadow-sm transition-all" style="width: 50px; height: 50px; border-color: rgba(255,255,255,0.08) !important; background: rgba(0,0,0,0.15);">
+                                        <img src="https://api.dicebear.com/7.x/fun-emoji/svg?seed={{ seed }}" alt="{{ seed }}" class="img-fluid rounded-circle">
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Avatar Upload File Selector -->
+                    <div id="custom_avatar_section" class="mb-3 d-none">
+                        <label for="avatar_file" class="form-label-custom small text-muted">選擇要上傳的頭像檔案：</label>
+                        <input class="form-control form-control-custom" type="file" id="avatar_file" name="avatar_file" accept="image/*">
+                        <div class="form-text text-secondary mt-1" style="font-size: 0.75rem;">支援 PNG, JPG, JPEG, GIF 或 SVG 圖片。</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-3 bg-dark rounded-bottom-4 px-4" style="border-top: 1px solid rgba(255,255,255,0.05) !important;">
+                    <button type="button" class="btn-secondary-custom py-2 px-3 fs-7" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn-premium py-2 px-4 fs-7"><i class="bi bi-save-fill"></i> 儲存變更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Initialize QR Code inside container
+    const qrText = "{{ qr_code_url }}";
+    new QRCode(document.getElementById("qrcode"), {
+        text: qrText,
+        width: 180,
+        height: 180,
+        colorDark : "#0f101f",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+
+    // Toggle custom avatar selection fields
+    function toggleAvatarInput(choice) {
+        if (choice === 'predefined') {
+            document.getElementById('predefined_avatars_section').classList.remove('d-none');
+            document.getElementById('custom_avatar_section').classList.add('d-none');
+        } else {
+            document.getElementById('predefined_avatars_section').classList.add('d-none');
+            document.getElementById('custom_avatar_section').classList.remove('d-none');
+        }
+    }
+
+    // Chart.js implementation
+    const currentBalance = {{ user.heart_balance }};
+    const currentPopularity = {{ user.popularity }};
+    const registrationDate = new Date("{{ user.created_at }}");
+    const transactions = [
+        {% for t in transactions %}
+        {
+            amount: {{ t.heart_amount }},
+            isSender: {{ 'true' if t.sender_id == user.id else 'false' }},
+            date: new Date("{{ t.created_at }}")
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    function generatePeriodDates(period) {
+        const dates = [];
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        
+        if (period === 'daily') {
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                dates.push(d);
+            }
+        } else if (period === 'weekly') {
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i * 7);
+                dates.push(d);
+            }
+        } else if (period === 'monthly') {
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(today);
+                d.setMonth(today.getMonth() - i);
+                dates.push(d);
+            }
+        }
+        return dates;
+    }
+
+    function formatDateLabel(d, period) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        if (period === 'daily' || period === 'weekly') {
+            return `${mm}/${dd}`;
+        } else {
+            return `${yyyy}/${mm}`;
+        }
+    }
+
+    function getChartData(period, type) {
+        const dates = generatePeriodDates(period);
+        const labels = dates.map(d => formatDateLabel(d, period));
+        
+        let dataset1 = [];
+        let dataset2 = [];
+        let label1 = '';
+        let label2 = '';
+        
+        if (type === 'cumulative') {
+            label1 = '可用愛心餘額 (Balance)';
+            label2 = '累積獲得人氣 (Popularity)';
+            
+            dates.forEach(d => {
+                const sent_after = transactions.filter(t => t.isSender && t.date > d).reduce((sum, t) => sum + t.amount, 0);
+                const received_after = transactions.filter(t => !t.isSender && t.date > d).reduce((sum, t) => sum + t.amount, 0);
+                
+                dataset1.push(currentBalance + sent_after);
+                dataset2.push(currentPopularity - received_after);
+            });
+        } else {
+            label1 = '送出愛心 (Sent)';
+            label2 = '獲得愛心 (Received)';
+            
+            dates.forEach(d => {
+                let d_end = new Date(d);
+                let d_start = new Date(d);
+                
+                if (period === 'daily') {
+                    d_start.setHours(0, 0, 0, 0);
+                } else if (period === 'weekly') {
+                    d_start.setDate(d_start.getDate() - 6);
+                    d_start.setHours(0, 0, 0, 0);
+                } else if (period === 'monthly') {
+                    d_start.setMonth(d_start.getMonth() - 1);
+                    d_start.setDate(d_start.getDate() + 1);
+                    d_start.setHours(0, 0, 0, 0);
+                }
+                
+                const sent = transactions.filter(t => t.isSender && t.date >= d_start && t.date <= d_end).reduce((sum, t) => sum + t.amount, 0);
+                const received = transactions.filter(t => !t.isSender && t.date >= d_start && t.date <= d_end).reduce((sum, t) => sum + t.amount, 0);
+                
+                dataset1.push(sent);
+                dataset2.push(received);
+            });
+        }
+        
+        return {
+            labels: labels,
+            dataset1: dataset1,
+            dataset2: dataset2,
+            label1: label1,
+            label2: label2
+        };
+    }
+
+    let heartChart = null;
+
+    function renderChart() {
+        const period = document.querySelector('input[name="chart_period"]:checked').value;
+        const type = document.querySelector('input[name="chart_type"]:checked').value;
+        
+        const data = getChartData(period, type);
+        
+        const ctx = document.getElementById('heartChart').getContext('2d');
+        
+        if (heartChart) {
+            heartChart.destroy();
+        }
+
+        // Create gradients
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(112, 51, 255, 0.4)');
+        gradientPurple.addColorStop(1, 'rgba(112, 51, 255, 0.0)');
+
+        const gradientPink = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPink.addColorStop(0, 'rgba(255, 75, 114, 0.4)');
+        gradientPink.addColorStop(1, 'rgba(255, 75, 114, 0.0)');
+        
+        heartChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: data.label1,
+                        data: data.dataset1,
+                        borderColor: '#7033ff',
+                        backgroundColor: gradientPurple,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#7033ff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: data.label2,
+                        data: data.dataset2,
+                        borderColor: '#ff4b72',
+                        backgroundColor: gradientPink,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#ff4b72',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '600'
+                            },
+                            color: '#1e1e24'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(30, 30, 36, 0.9)',
+                        titleFont: {
+                            family: "'Outfit', sans-serif",
+                            weight: '700'
+                        },
+                        bodyFont: {
+                            family: "'Outfit', sans-serif"
+                        },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '500'
+                            },
+                            color: '#5c6270'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: '#f1f3f9'
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '500'
+                            },
+                            color: '#5c6270',
+                            precision: 0
+                        },
+                        min: 0
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize chart
+    document.addEventListener('DOMContentLoaded', () => {
+        renderChart();
+        
+        // Add event listeners for controls
+        document.querySelectorAll('input[name="chart_period"]').forEach(radio => {
+            radio.addEventListener('change', renderChart);
+        });
+        document.querySelectorAll('input[name="chart_type"]').forEach(radio => {
+            radio.addEventListener('change', renderChart);
+        });
+    });
+</script>
 {% endblock %}

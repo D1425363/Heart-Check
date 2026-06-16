@@ -4,65 +4,179 @@
 
 {% block content %}
 <div class="row justify-content-center animate-fade-in">
-    <div class="col-lg-8">
+    <div class="col-lg-10">
         <div class="text-center mb-5">
-            <span class="fs-1 text-warning"><i class="fa-solid fa-ranking-star"></i></span>
-            <h2 class="header-title mt-2 mb-1">愛心人氣排行榜</h2>
-            <p class="text-muted">感恩互助，見證校園溫馨榜樣</p>
+            <h1 class="display-5 fw-bold" style="font-family: var(--font-heading); background: var(--grad-indigo-purple); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                🏆 校園互助人氣排行榜
+            </h1>
+            <p class="text-secondary">感謝這些默默付出、熱心協助同學的溫暖身影！</p>
         </div>
 
-        <div class="card premium-card p-4">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col" class="text-center" style="width: 10%;">排名</th>
-                                <th scope="col" style="width: 50%;">使用者</th>
-                                <th scope="col" style="width: 25%;">科系</th>
-                                <th scope="col" class="text-center" style="width: 15%;">累積人氣</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for u in top_users %}
-                                <tr {% if loop.index == 1 %}class="table-warning-subtle"{% endif %}>
-                                    <td class="text-center font-bold">
-                                        {% if loop.index == 1 %}
-                                            <span class="fs-4 text-warning"><i class="fa-solid fa-crown"></i></span>
-                                        {% elif loop.index == 2 %}
-                                            <span class="fs-5 text-secondary" style="color: #c0c0c0 !important;"><i class="fa-solid fa-medal"></i></span>
-                                        {% elif loop.index == 3 %}
-                                            <span class="fs-6 text-danger" style="color: #cd7f32 !important;"><i class="fa-solid fa-medal"></i></span>
-                                        {% else %}
-                                            <span class="text-muted font-monospace">{{ loop.index }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                <i class="fa-solid fa-user text-secondary"></i>
-                                            </div>
-                                            <div>
-                                                <span class="font-bold d-block">{{ u.name }}</span>
-                                                <span class="text-muted small">學號: {{ u.student_id[:4] }}*****</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="text-secondary">{{ u.department or '未公開科系' }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="popularity-badge">
-                                            <i class="fa-solid fa-star"></i>{{ u.popularity }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <!-- Period Tabs -->
+        <div class="d-flex justify-content-center gap-2 mb-5 overflow-auto pb-1">
+            <a href="{{ url_for('user.leaderboard', period='total') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'total' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                🏆 總排行
+            </a>
+            <a href="{{ url_for('user.leaderboard', period='today') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'today' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                ☀️ 今日排行
+            </a>
+            <a href="{{ url_for('user.leaderboard', period='week') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'week' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                📅 本周排行
+            </a>
+            <a href="{{ url_for('user.leaderboard', period='month') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'month' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                🌙 本月排行
+            </a>
         </div>
+
+        {% if top_users %}
+            <!-- Podium for top 3 -->
+            <div class="leaderboard-podium">
+                
+                <!-- 2nd Place -->
+                {% if top_users | length >= 2 %}
+                    {% set user2 = top_users[1] %}
+                    <div class="podium-column podium-column-2">
+                        <div class="podium-avatar">
+                            <span>🥈</span>
+                            <div class="position-absolute" style="top: 100%; font-size: 0.8rem; font-weight: bold; margin-top: 5px;">{{ user2.name }}</div>
+                        </div>
+                        <div class="podium-rank-box">
+                            <span class="fs-4 fw-bold">2nd</span>
+                            <span class="small text-white-50">{{ user2.period_popularity }} 💖</span>
+                            {% if current_period != 'total' %}
+                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user2.popularity }} 💖)</span>
+                            {% endif %}
+                            {% if user2.pinned_badges %}
+                                <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
+                                    {% for b in user2.pinned_badges %}
+                                        <span style="font-size: 0.8rem;" data-bs-toggle="tooltip" title="{{ b.name }}">{{ b.icon }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- 1st Place -->
+                {% if top_users | length >= 1 %}
+                    {% set user1 = top_users[0] %}
+                    <div class="podium-column podium-column-1">
+                        <div class="podium-avatar">
+                            <span class="podium-crown">👑</span>
+                            <span>🥇</span>
+                            <div class="position-absolute" style="top: 100%; font-size: 0.85rem; font-weight: bold; margin-top: 5px;">{{ user1.name }}</div>
+                        </div>
+                        <div class="podium-rank-box">
+                            <span class="fs-3 fw-bold">1st</span>
+                            <span class="small text-white-50">{{ user1.period_popularity }} 💖</span>
+                            {% if current_period != 'total' %}
+                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user1.popularity }} 💖)</span>
+                            {% endif %}
+                            {% if user1.pinned_badges %}
+                                <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
+                                    {% for b in user1.pinned_badges %}
+                                        <span style="font-size: 0.95rem;" data-bs-toggle="tooltip" title="{{ b.name }}">{{ b.icon }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- 3rd Place -->
+                {% if top_users | length >= 3 %}
+                    {% set user3 = top_users[2] %}
+                    <div class="podium-column podium-column-3">
+                        <div class="podium-avatar">
+                            <span>🥉</span>
+                            <div class="position-absolute" style="top: 100%; font-size: 0.8rem; font-weight: bold; margin-top: 5px;">{{ user3.name }}</div>
+                        </div>
+                        <div class="podium-rank-box">
+                            <span class="fs-5 fw-bold">3rd</span>
+                            <span class="small text-white-50">{{ user3.period_popularity }} 💖</span>
+                            {% if current_period != 'total' %}
+                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user3.popularity }} 💖)</span>
+                            {% endif %}
+                            {% if user3.pinned_badges %}
+                                <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
+                                    {% for b in user3.pinned_badges %}
+                                        <span style="font-size: 0.8rem;" data-bs-toggle="tooltip" title="{{ b.name }}">{{ b.icon }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <!-- List for ranks 4-10 -->
+            <div class="leaderboard-list mt-5">
+                {% if top_users | length > 3 %}
+                    <h4 class="mb-3 fs-5" style="font-family: var(--font-heading); color: var(--text-secondary);">🎖️ 更多熱心同學</h4>
+                    {% for user in top_users[3:] %}
+                        <div class="leaderboard-row">
+                            <!-- Rank Number -->
+                            <div class="rank-number">#{{ loop.index + 3 }}</div>
+                            
+                            <!-- User Info & Badges -->
+                            <div class="rank-details">
+                                <div class="feed-avatar" style="width: 38px; height: 38px; font-size: 1rem;">
+                                    {{ user.name[0] | upper }}
+                                </div>
+                                <div>
+                                    <span class="rank-name">{{ user.name }}</span>
+                                    {% if user.department %}
+                                        <span class="text-muted small ms-2">({{ user.department }})</span>
+                                    {% endif %}
+                                    
+                                    <!-- Badges -->
+                                    {% if user.pinned_badges %}
+                                        <span class="ms-3">
+                                            {% for b in user.pinned_badges %}
+                                                <span class="me-1" data-bs-toggle="tooltip" title="{{ b.name }} ({{ b.desc }})">{{ b.icon }}</span>
+                                            {% endfor %}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Score -->
+                            <div class="rank-score text-end" style="line-height: 1.2;">
+                                <div>💖 {{ user.period_popularity }} 分</div>
+                                {% if current_period != 'total' %}
+                                    <div class="text-muted" style="font-size: 0.75rem; font-weight: normal; margin-top: 2px;">總累積 {{ user.popularity }} 分</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="glass-panel text-center py-5">
+                <i class="bi bi-trophy fs-1 text-muted mb-3 d-block"></i>
+                {% if current_period == 'today' %}
+                    <p class="text-secondary">今天尚無人氣資料，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% elif current_period == 'week' %}
+                    <p class="text-secondary">本周尚無人氣資料，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% elif current_period == 'month' %}
+                    <p class="text-secondary">本月尚無人氣資料，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% else %}
+                    <p class="text-secondary">目前尚無排行榜數據，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+</script>
 {% endblock %}

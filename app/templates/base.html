@@ -4,21 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Heart Check 校園互助與人氣回饋平台{% endblock %}</title>
-    <!-- Bootstrap 5 CSS -->
+    <!-- Bootstrap 5 CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Custom Style -->
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     {% block styles %}{% endblock %}
 </head>
 <body>
 
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <!-- Premium Sticky Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('board.home') }}">
-                <i class="fa-solid fa-heart-circle-check me-2"></i>Heart Check
+            <a class="navbar-brand navbar-brand-custom" href="{{ url_for('board.home') }}">
+                💖 Heart Check
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -26,89 +32,113 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('board.home') }}"><i class="fa-solid fa-house me-1"></i>首頁</a>
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.home') }}">首頁</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('board.announcements') }}"><i class="fa-solid fa-bullhorn me-1"></i>校園公告</a>
+                        <a class="nav-link nav-link-custom" href="{{ url_for('item.list_items') }}">失物招領</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('item.list_items') }}"><i class="fa-solid fa-box-open me-1"></i>失物招領</a>
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.announcements') }}">公告欄</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('user.leaderboard') }}"><i class="fa-solid fa-trophy me-1"></i>排行榜</a>
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.traffic_info') }}">交通資訊</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.thanks') }}"><i class="fa-solid fa-heart-pulse text-danger me-1"></i>感謝牆</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('board.traffic_info') }}"><i class="fa-solid fa-bus me-1"></i>交通資訊</a>
+                        <a class="nav-link nav-link-custom" href="{{ url_for('board.restaurant_info') }}">餐廳評價</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('board.restaurant_info') }}"><i class="fa-solid fa-utensils me-1"></i>餐廳評價</a>
+                        <a class="nav-link nav-link-custom" href="{{ url_for('user.leaderboard') }}">排行榜</a>
                     </li>
                 </ul>
-                <div class="d-flex align-items-center gap-2">
-                    {% if session.get('user_id') %}
-                        <span class="text-muted me-2 small">
-                            <i class="fa-solid fa-user me-1 text-primary"></i>{{ session.get('user_name') }}
-                        </span>
-                        <a class="btn btn-outline-premium btn-sm" href="{{ url_for('user.profile') }}">
-                            <i class="fa-solid fa-address-card me-1"></i>個人檔案
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle" class="btn btn-link text-secondary p-0 border-0" style="font-size: 1.25rem;" aria-label="Toggle theme">
+                        <i id="theme-toggle-icon" class="bi bi-moon-fill"></i>
+                    </button>
+                    
+                    {% if current_user %}
+                        <a href="{{ url_for('user.profile') }}" class="text-white text-decoration-none d-flex align-items-center gap-2">
+                            <span class="badge bg-purple rounded-pill px-2 py-1" style="background: var(--grad-purple-pink);">
+                                💝 {{ current_user.heart_balance }}
+                            </span>
+                            <span class="fw-semibold">{{ current_user.name }}</span>
                         </a>
-                        <a class="btn btn-danger btn-sm rounded-3 px-3" href="{{ url_for('auth.logout') }}">
-                            <i class="fa-solid fa-sign-out-alt me-1"></i>登出
-                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="btn-secondary-custom py-1.5 px-3 fs-7" style="padding: 6px 16px;">登出</a>
                     {% else %}
-                        <a class="btn btn-outline-premium btn-sm" href="{{ url_for('auth.login') }}">
-                            <i class="fa-solid fa-sign-in-alt me-1"></i>登入
-                        </a>
-                        <a class="btn btn-premium btn-sm" href="{{ url_for('auth.register') }}">
-                            <i class="fa-solid fa-user-plus me-1"></i>註冊
-                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn-outline-premium py-1.5 px-3" style="padding: 6px 16px;">登入</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn-premium py-1.5 px-3" style="padding: 6px 16px;">註冊</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Flash Messages -->
-    <div class="container mt-4">
+    <!-- Main Content Container -->
+    <div class="container my-4">
+        
+        <!-- Flash Alert Messages Block -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 shadow-sm" role="alert">
-                        {% if category == 'success' %}
-                            <i class="fa-solid fa-circle-check me-2"></i>
-                        {% elif category == 'warning' %}
-                            <i class="fa-solid fa-circle-exclamation me-2"></i>
-                        {% elif category == 'danger' or category == 'error' %}
-                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                        {% else %}
-                            <i class="fa-solid fa-circle-info me-2"></i>
-                        {% endif %}
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="row animate-fade-in">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert" style="border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); color: #fff;">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if category == 'success' %}
+                                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                    {% elif category == 'danger' or category == 'error' %}
+                                        <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                                    {% elif category == 'warning' %}
+                                        <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                                    {% else %}
+                                        <i class="bi bi-info-circle-fill text-info fs-5"></i>
+                                    {% endif %}
+                                    <span>{{ message }}</span>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
+
+        {% block content %}{% endblock %}
     </div>
 
-    <!-- Main Content -->
-    <main class="container py-4 flex-grow-1">
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="py-4 mt-auto text-center border-top bg-dark text-white">
-        <div class="container">
-            <p class="mb-1">&copy; 2026 Heart Check 校園互助與人氣回饋平台</p>
-            <p class="mb-0 text-muted small">由學生團隊熱情開發與維護，旨在促進友善互助的校園文化 💖</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap 5 Bundle JS -->
+    <!-- Bootstrap 5 JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Theme Toggle Logic Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleIcon = document.getElementById('theme-toggle-icon');
+            
+            function updateIcon(theme) {
+                if (theme === 'light') {
+                    themeToggleIcon.className = 'bi bi-sun-fill text-warning';
+                } else {
+                    themeToggleIcon.className = 'bi bi-moon-fill';
+                }
+            }
+            
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            updateIcon(currentTheme);
+            
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateIcon(newTheme);
+            });
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

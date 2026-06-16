@@ -4,55 +4,49 @@
 
 {% block content %}
 <div class="row justify-content-center animate-fade-in">
-    <div class="col-lg-8">
-        <div class="card premium-card p-4">
-            <div class="card-body">
-                <div class="mb-4">
-                    <h2 class="header-title mb-1"><i class="fa-solid fa-pen-to-square me-2"></i>編輯公告通知</h2>
-                    <p class="text-muted">編輯並修改您發布的公告內容</p>
+    <div class="col-md-9 col-lg-8">
+        <div class="glass-panel">
+            <h2 class="mb-1" style="font-family: var(--font-heading);">📝 編輯公告</h2>
+            <p class="text-secondary small mb-4">修改已發布之校園或宿舍公告。</p>
+            
+            <form action="{{ url_for('board.update_announcement', announcement_id=announcement.id) }}" method="POST">
+                
+                <div class="row">
+                    <!-- Title -->
+                    <div class="col-md-8 form-group-custom">
+                        <label for="title" class="form-label-custom">公告標題 <span class="text-danger">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control-custom" placeholder="請輸入公告標題" required value="{{ announcement.title }}">
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-4 form-group-custom">
+                        <label for="category" class="form-label-custom">公告分類 <span class="text-danger">*</span></label>
+                        <select id="category" name="category" class="form-select form-control-custom" required>
+                            <option value="campus" {% if announcement.category == 'campus' %}selected{% endif %}>🏫 校園公告 (Campus)</option>
+                            <option value="dorm" {% if announcement.category == 'dorm' %}selected{% endif %}>🏢 宿舍公告 (Dorm)</option>
+                        </select>
+                    </div>
                 </div>
 
-                <form action="{{ url_for('board.update_announcement', announcement_id=announcement.id) }}" method="POST">
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="category" class="form-label font-semibold">公告分類 <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-list"></i></span>
-                                <select class="form-select" id="category" name="category" required>
-                                    <option value="dorm" {% if announcement.category == 'dorm' %}selected{% endif %}>宿舍公告</option>
-                                    <option value="campus" {% if announcement.category == 'campus' %}selected{% endif %}>校園公告</option>
-                                </select>
-                            </div>
-                        </div>
+                <!-- Content -->
+                <div class="form-group-custom">
+                    <label for="content" class="form-label-custom">公告詳細內容 <span class="text-danger">*</span></label>
+                    <textarea id="content" name="content" class="form-control-custom" rows="8" placeholder="請輸入詳細公告宣導資訊..." required>{{ announcement.content }}</textarea>
+                </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="title" class="form-label font-semibold">公告標題 <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-heading"></i></span>
-                                <input type="text" class="form-control" id="title" name="title" value="{{ announcement.title }}" required autocomplete="off">
-                            </div>
-                        </div>
+                <!-- Buttons -->
+                <div class="row g-3 mt-4">
+                    <div class="col-6 col-md-3">
+                        <a href="{{ url_for('board.announcements') }}" class="btn-secondary-custom w-100 py-2.5 text-center">取消</a>
                     </div>
-
-                    <div class="mb-4">
-                        <label for="content" class="form-label font-semibold">公告詳細內容 <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fa-solid fa-paragraph text-primary"></i></span>
-                            <textarea class="form-control" id="content" name="content" rows="6" required>{{ announcement.content }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <a href="{{ url_for('board.announcements') }}" class="btn btn-light flex-grow-1 py-2 rounded-3 border">
-                            <i class="fa-solid fa-xmark me-2"></i>取消
-                        </a>
-                        <button type="submit" class="btn btn-premium flex-grow-2 py-2">
-                            <i class="fa-solid fa-floppy-disk me-2"></i>儲存變更
+                    <div class="col-6 col-md-4 ms-auto">
+                        <button type="submit" class="btn-premium w-100 py-2.5">
+                            <i class="bi bi-save2-fill"></i> 儲存修改
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
+            
         </div>
     </div>
 </div>

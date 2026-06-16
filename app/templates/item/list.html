@@ -1,118 +1,133 @@
 {% extends "base.html" %}
 
-{% block title %}失物招領公告 - Heart Check{% endblock %}
+{% block title %}失物招領佈告欄 - Heart Check{% endblock %}
 
 {% block content %}
-<div class="row mb-4 align-items-center animate-fade-in">
-    <div class="col-md-8">
-        <h2 class="header-title mb-1"><i class="fa-solid fa-box-open me-2"></i>失物招領佈告欄</h2>
-        <p class="text-muted">尋找遺失物或協助同學尋回拾獲物品</p>
+<div class="animate-fade-in">
+    <!-- Header Row -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="display-6 fw-bold" style="font-family: var(--font-heading);">🔍 失物招領佈告欄</h1>
+            <p class="text-secondary mb-0">尋找您的遺失物品，或協助同學找回失物。</p>
+        </div>
+        <div>
+            {% if current_user %}
+                <a href="{{ url_for('item.new_item') }}" class="btn-premium">
+                    <i class="bi bi-plus-circle-fill"></i> 發布公告
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-premium">
+                    <i class="bi bi-box-arrow-in-right"></i> 登入後發布公告
+                </a>
+            {% endif %}
+        </div>
     </div>
-    <div class="col-md-4 text-md-end">
-        <a href="{{ url_for('item.new_item') }}" class="btn btn-premium">
-            <i class="fa-solid fa-circle-plus me-1"></i>發布公告
-        </a>
-    </div>
-</div>
 
-<!-- Search and Filter Form -->
-<div class="card premium-card p-3 mb-4 animate-fade-in">
-    <form action="{{ url_for('item.list_items') }}" method="GET" class="row g-2 align-items-end">
-        <div class="col-md-3">
-            <label for="type" class="form-label small font-semibold">公告類型</label>
-            <select class="form-select" id="type" name="type">
-                <option value="" {% if type == '' %}selected{% endif %}>全部類型</option>
-                <option value="lost" {% if type == 'lost' %}selected{% endif %}>尋物啟事 (Lost)</option>
-                <option value="found" {% if type == 'found' %}selected{% endif %}>拾獲公告 (Found)</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="status" class="form-label small font-semibold">認領狀態</label>
-            <select class="form-select" id="status" name="status">
-                <option value="" {% if status == '' %}selected{% endif %}>全部狀態</option>
-                <option value="unclaimed" {% if status == 'unclaimed' %}selected{% endif %}>協尋中 / 未認領</option>
-                <option value="claimed" {% if status == 'claimed' %}selected{% endif %}>已認領 / 已尋回</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="q" class="form-label small font-semibold">關鍵字搜尋</label>
-            <input type="text" class="form-control" id="q" name="q" placeholder="搜尋標題、描述、地點..." value="{{ q or '' }}">
-        </div>
-        <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-outline-premium">
-                <i class="fa-solid fa-magnifying-glass me-1"></i>篩選搜尋
-            </button>
-        </div>
-    </form>
-</div>
-
-<!-- Items Grid -->
-<div class="row g-4 animate-fade-in">
-    {% if not items %}
-        <div class="col-12 text-center py-5">
-            <span class="fs-1 text-muted"><i class="fa-solid fa-magnifying-glass-minus"></i></span>
-            <p class="text-muted mt-3">找不到符合篩選條件的失物招領公告。</p>
-            <a href="{{ url_for('item.list_items') }}" class="text-decoration-none text-danger font-bold">清除所有篩選條件</a>
-        </div>
-    {% else %}
-        {% for item in items %}
-            <div class="col-md-6 col-lg-4">
-                <div class="card premium-card h-100 d-flex flex-column">
-                    <!-- Image Area -->
-                    <div class="position-relative bg-light text-center d-flex align-items-center justify-content-center" style="height: 200px; overflow: hidden;">
-                        {% if item.image_url %}
-                            <img src="{{ url_for('static', filename=item.image_url) }}" alt="{{ item.title }}" class="img-fluid w-100 h-100" style="object-fit: cover;">
-                        {% else %}
-                            <div class="text-muted py-5">
-                                <i class="fa-solid fa-image fa-4x text-light-emphasis"></i>
-                                <span class="d-block small mt-2">未上傳照片</span>
-                            </div>
-                        {% endif %}
-                        
-                        <!-- Type Badge -->
-                        <span class="position-absolute top-3 start-3 badge {% if item.item_type == 'lost' %}bg-danger{% else %}bg-success{% endif %} px-3 py-2 rounded-pill font-bold shadow-sm" style="top: 15px; left: 15px;">
-                            {% if item.item_type == 'lost' %}
-                                <i class="fa-solid fa-circle-question me-1"></i>尋物
-                            {% else %}
-                                <i class="fa-solid fa-circle-check me-1"></i>拾獲
-                            {% endif %}
-                        </span>
-
-                        <!-- Status Badge -->
-                        <span class="position-absolute top-3 end-3 badge {% if item.status == 'unclaimed' %}bg-info text-dark{% else %}bg-secondary{% endif %} px-3 py-2 rounded-pill font-bold shadow-sm" style="top: 15px; right: 15px;">
-                            {% if item.status == 'unclaimed' %}
-                                協尋中
-                            {% else %}
-                                已結束
-                            {% endif %}
-                        </span>
-                    </div>
-
-                    <!-- Card Body -->
-                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                        <h5 class="card-title font-bold text-truncate mb-2">{{ item.title }}</h5>
-                        <p class="card-text text-muted small text-clamp-2 mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px;">
-                            {{ item.description }}
-                        </p>
-                        
-                        <div class="mt-auto small">
-                            <div class="d-flex align-items-center gap-2 text-secondary mb-1">
-                                <i class="fa-solid fa-location-dot text-danger"></i>
-                                <span>地點: {{ item.location }}</span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 text-secondary mb-3">
-                                <i class="fa-solid fa-user"></i>
-                                <span>發布人: {{ item.user_name }}</span>
-                            </div>
-                        </div>
-
-                        <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="btn btn-outline-premium btn-sm w-100 py-2">
-                            <i class="fa-solid fa-eye me-1"></i>查看詳情
-                        </a>
-                    </div>
+    <!-- Search & Filters Panel -->
+    <div class="glass-panel py-3.5 px-4 mb-4">
+        <form action="{{ url_for('item.list_items') }}" method="GET" class="row g-3">
+            <!-- Keyword Search -->
+            <div class="col-md-5">
+                <label for="search-input" class="form-label-custom">關鍵字搜尋</label>
+                <div class="input-group">
+                    <span class="input-group-text" style="background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.08); color: var(--text-secondary);">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="search-input" name="q" class="form-control form-control-custom" style="border-radius: 0 var(--radius-sm) var(--radius-sm) 0;" placeholder="輸入物品名稱、特徵、地點..." value="{{ current_q }}">
                 </div>
             </div>
-        {% endfor %}
+
+            <!-- Type Filter -->
+            <div class="col-6 col-md-3">
+                <label for="type-select" class="form-label-custom">公告類型</label>
+                <select id="type-select" name="type" class="form-select form-control-custom">
+                    <option value="" {% if current_type == '' %}selected{% endif %}>全部類型</option>
+                    <option value="lost" {% if current_type == 'lost' %}selected{% endif %}>遺失尋物 (Lost)</option>
+                    <option value="found" {% if current_type == 'found' %}selected{% endif %}>拾獲公告 (Found)</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-6 col-md-2">
+                <label for="status-select" class="form-label-custom">物品狀態</label>
+                <select id="status-select" name="status" class="form-select form-control-custom">
+                    <option value="" {% if current_status == '' %}selected{% endif %}>全部狀態</option>
+                    <option value="unclaimed" {% if current_status == 'unclaimed' %}selected{% endif %}>協尋中 / 未認領</option>
+                    <option value="claimed" {% if current_status == 'claimed' %}selected{% endif %}>已尋回 / 已認領</option>
+                </select>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="col-12 col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn-outline-premium w-100 py-2">
+                    篩選搜尋
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Items Grid Feed -->
+    {% if items %}
+        <div class="items-grid">
+            {% for item in items %}
+                <div class="item-card">
+                    <!-- Photo Header -->
+                    <a href="{{ url_for('item.item_detail', item_id=item.id) }}">
+                        {% if item.image_url %}
+                            <img src="{{ url_for('static', filename=item.image_url) }}" alt="{{ item.title }}" class="item-card-image">
+                        {% else %}
+                            <!-- Styled SVG Placeholder for items without photos -->
+                            <div class="item-card-image d-flex flex-column align-items-center justify-content-center" style="background: linear-gradient(135deg, #13152c 0%, #1e2247 100%); color: var(--text-secondary);">
+                                <i class="bi bi-image fs-1 opacity-25"></i>
+                                <span class="small mt-2 opacity-50">未提供相片</span>
+                            </div>
+                        {% endif %}
+                    </a>
+
+                    <!-- Body Content -->
+                    <div class="item-card-body">
+                        <!-- Badges -->
+                        <div class="item-badge-row">
+                            {% if item.item_type == 'lost' %}
+                                <span class="tag-badge tag-badge-lost">遺失尋物</span>
+                            {% else %}
+                                <span class="tag-badge tag-badge-found">撿到拾獲</span>
+                            {% endif %}
+                            
+                            {% if item.status == 'unclaimed' %}
+                                <span class="tag-badge tag-badge-unclaimed">協尋中</span>
+                            {% else %}
+                                <span class="tag-badge tag-badge-claimed">已完成</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Title -->
+                        <h4 class="item-card-title">
+                            <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="text-white">{{ item.title }}</a>
+                        </h4>
+                        
+                        <!-- Description snippet -->
+                        <p class="item-card-desc">{{ item.description }}</p>
+
+                        <!-- Footer Details -->
+                        <div class="item-card-footer mt-auto">
+                            <div>
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ item.location }}
+                            </div>
+                            <div>
+                                {{ item.created_at.split('T')[0] }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="glass-panel text-center py-5 my-5">
+            <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+            <h4 class="text-white">沒有符合條件的公告</h4>
+            <p class="text-secondary small">可以更換搜尋關鍵字，或是發布一篇新公告試試看！</p>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

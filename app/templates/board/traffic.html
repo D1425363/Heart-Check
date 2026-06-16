@@ -1,118 +1,125 @@
 {% extends "base.html" %}
 
-{% block title %}交通資訊 - Heart Check{% endblock %}
+{% block title %}校園交通與接駁車資訊 - Heart Check{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center animate-fade-in">
     <div class="col-lg-10">
-        <div class="text-center mb-5">
-            <span class="fs-1 text-primary"><i class="fa-solid fa-bus-simple text-danger"></i></span>
-            <h2 class="header-title mt-2 mb-1">校園交通時刻資訊</h2>
-            <p class="text-muted">即時掌握校車班次、捷運動態與通勤資訊</p>
+        
+        <div class="mb-4">
+            <h1 class="display-6 fw-bold" style="font-family: var(--font-heading);">🚌 校園接駁車與交通時刻表</h1>
+            <p class="text-secondary">查詢校區間巡迴接駁車之定時時刻與轉乘捷運動態。</p>
         </div>
 
-        <!-- Shuttle Bus Card -->
-        <div class="card premium-card p-4 mb-4">
-            <div class="card-body">
-                <h4 class="font-bold mb-3 text-dark"><i class="fa-solid fa-clock me-2 text-danger"></i>校區區間交通車時刻表 (Shuttle Bus)</h4>
-                <p class="text-muted small">行駛時間：週一至週五 (國定假日及寒暑假另行公告)</p>
-                <div class="table-responsive">
-                    <table class="table table-striped align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th scope="col">班次</th>
-                                <th scope="col">本部校區發車</th>
-                                <th scope="col">分部校區發車</th>
-                                <th scope="col">停靠站點</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="font-bold">第一班</td>
-                                <td class="font-monospace">08:10</td>
-                                <td class="font-monospace">08:35</td>
-                                <td>行政大樓前、學生第一宿舍、圖書館門口</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">第二班</td>
-                                <td class="font-monospace">09:30</td>
-                                <td class="font-monospace">09:55</td>
-                                <td>行政大樓前、學生第一宿舍、圖書館門口</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">第三班</td>
-                                <td class="font-monospace">12:10</td>
-                                <td class="font-monospace">12:35</td>
-                                <td>行政大樓前、學生宿舍區、體育館前</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">第四班</td>
-                                <td class="font-monospace">13:30</td>
-                                <td class="font-monospace">13:55</td>
-                                <td>行政大樓前、學生第一宿舍、圖書館門口</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">第五班</td>
-                                <td class="font-monospace">15:10</td>
-                                <td class="font-monospace">15:35</td>
-                                <td>行政大樓前、學生第一宿舍、圖書館門口</td>
-                            </tr>
-                            <tr>
-                                <td class="font-bold">第六班 (末班)</td>
-                                <td class="font-monospace">17:15</td>
-                                <td class="font-monospace">17:40</td>
-                                <td>行政大樓前、學生宿舍區、體育館前</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="alert alert-warning small rounded-3 mt-3 mb-0">
-                    <i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>提示：</strong> 上課尖峰時段人潮較多，請提早 5 分鐘至候車亭排隊。
-                </div>
-            </div>
-        </div>
-
-        <!-- Metro & Public Transit Card -->
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card premium-card p-4 h-100">
-                    <div class="card-body">
-                        <h5 class="font-bold mb-3 text-dark"><i class="fa-solid fa-train-subway me-2 text-primary"></i>聯外捷運/地鐵資訊</h5>
-                        <p class="text-secondary small">離校區最近的捷運動態與出入口指南：</p>
-                        <ul class="list-group list-group-flush small">
-                            <li class="list-group-item bg-transparent">
-                                <strong>校園站 (1 號出口)</strong>：步行約 3 分鐘即可抵達本部校區正門。
-                            </li>
-                            <li class="list-group-item bg-transparent">
-                                <strong>尖峰班距</strong>：2 - 3 分鐘一班。
-                            </li>
-                            <li class="list-group-item bg-transparent">
-                                <strong>離峰班距</strong>：5 - 7 分鐘一班。
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+        <!-- Shuttle Schedules Tabs -->
+        <div class="glass-panel">
+            <h3 class="mb-4 fs-5" style="font-family: var(--font-heading); color: var(--color-primary);">🚍 校區巡迴專車時刻表 (週一至週五)</h3>
             
-            <div class="col-md-6">
-                <div class="card premium-card p-4 h-100">
-                    <div class="card-body">
-                        <h5 class="font-bold mb-3 text-dark"><i class="fa-solid fa-square-parking me-2 text-success"></i>校內共享單車與停車</h5>
-                        <p class="text-secondary small">校園內綠色通勤與車位分布：</p>
-                        <ul class="list-group list-group-flush small">
-                            <li class="list-group-item bg-transparent">
-                                <strong>共享單車 YouBike</strong>：租借站點位於本部大門與圖書館旁。
-                            </li>
-                            <li class="list-group-item bg-transparent">
-                                <strong>機車停車場</strong>：二舍旁與體育館地下室設有學生專用停車場。
-                            </li>
-                            <li class="list-group-item bg-transparent">
-                                <strong>汽車通行</strong>：限持有本校通行證車輛進出。
-                            </li>
-                        </ul>
+            <div class="row">
+                <!-- Morning/Afternoon Campus Shuttle -->
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <div class="p-3 rounded-3 mb-3" style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2);">
+                        <strong class="text-white">📍 路線 A：校本部 ⇄ 校區分部 (直達車)</strong>
+                        <div class="small text-secondary mt-1">班距：約 15 - 20 分鐘一班</div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle small text-center" style="background: transparent;">
+                            <thead>
+                                <tr class="text-secondary" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                                    <th>班次</th>
+                                    <th>校本部發車</th>
+                                    <th>抵達分部</th>
+                                    <th>備註</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>01</td><td>08:00</td><td>08:15</td><td>首班車</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>02</td><td>08:20</td><td>08:35</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>03</td><td>08:40</td><td>08:55</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>04</td><td>09:00</td><td>09:15</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>05</td><td>09:30</td><td>09:45</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>06</td><td>10:00</td><td>10:15</td><td>離峰調整</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>07</td><td>10:30</td><td>10:45</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>08</td><td>11:00</td><td>11:15</td><td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Station Shuttle Line -->
+                <div class="col-md-6">
+                    <div class="p-3 rounded-3 mb-3" style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.2);">
+                        <strong class="text-white">📍 路線 B：校區 ⇄ 捷運站 (接駁車)</strong>
+                        <div class="small text-secondary mt-1">班距：配合捷運到站時間發車</div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle small text-center" style="background: transparent;">
+                            <thead>
+                                <tr class="text-secondary" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                                    <th>班次</th>
+                                    <th>校區發車</th>
+                                    <th>抵達捷運站</th>
+                                    <th>備註</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>01</td><td>08:10</td><td>08:20</td><td>首班車</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>02</td><td>08:30</td><td>08:40</td><td>尖峰加開</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>03</td><td>08:50</td><td>09:00</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>04</td><td>09:15</td><td>09:25</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>05</td><td>09:45</td><td>09:55</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>06</td><td>10:15</td><td>10:25</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>07</td><td>10:45</td><td>10:55</td><td>-</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td>08</td><td>11:15</td><td>11:25</td><td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Campus Traffic Alerts -->
+        <div class="glass-panel mt-4">
+            <h4 class="mb-3" style="font-family: var(--font-heading);">⚠️ 交通提醒與注意事項</h4>
+            <ul class="text-white-50 small mb-0 ps-3">
+                <li class="mb-2">接駁專車僅限本校教職員工生搭乘，上車請主動出示「學生證」或服務證件。</li>
+                <li class="mb-2">遇校內重要活動（如大專盃、校慶等），專車時刻表將彈性加開，請注意公告欄之最新通知。</li>
+                <li class="mb-0">如遇颱風、豪雨等天災致本市停班停課，接駁車將全日停駛，恕不另行公告。</li>
+            </ul>
         </div>
 
     </div>

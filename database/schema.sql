@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     heart_balance INTEGER NOT NULL DEFAULT 100,
     popularity INTEGER NOT NULL DEFAULT 0,
     qr_code_token TEXT NOT NULL UNIQUE,
+    avatar TEXT DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -54,6 +55,28 @@ CREATE TABLE IF NOT EXISTS announcements (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+-- 5. User Badges Table
+CREATE TABLE IF NOT EXISTS user_badges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    badge_type TEXT NOT NULL,
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, badge_type)
+);
+
+-- 6. Item Comments Table
+CREATE TABLE IF NOT EXISTS item_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Indexes for performance optimization
