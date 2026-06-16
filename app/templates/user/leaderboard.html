@@ -12,6 +12,22 @@
             <p class="text-secondary">感謝這些默默付出、熱心協助同學的溫暖身影！</p>
         </div>
 
+        <!-- Period Tabs -->
+        <div class="d-flex justify-content-center gap-2 mb-5 overflow-auto pb-1">
+            <a href="{{ url_for('user.leaderboard', period='total') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'total' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                🏆 總排行
+            </a>
+            <a href="{{ url_for('user.leaderboard', period='today') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'today' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                ☀️ 今日排行
+            </a>
+            <a href="{{ url_for('user.leaderboard', period='week') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'week' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                📅 本周排行
+            </a>
+            <a href="{{ url_for('user.leaderboard', period='month') }}" class="btn-secondary-custom py-2 px-4" style="{% if current_period == 'month' %}background: var(--grad-indigo-purple); color: #fff; border-color: var(--color-primary);{% endif %}">
+                🌙 本月排行
+            </a>
+        </div>
+
         {% if top_users %}
             <!-- Podium for top 3 -->
             <div class="leaderboard-podium">
@@ -26,7 +42,10 @@
                         </div>
                         <div class="podium-rank-box">
                             <span class="fs-4 fw-bold">2nd</span>
-                            <span class="small text-white-50">{{ user2.popularity }} 💖</span>
+                            <span class="small text-white-50">{{ user2.period_popularity }} 💖</span>
+                            {% if current_period != 'total' %}
+                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user2.popularity }} 💖)</span>
+                            {% endif %}
                             {% if user2.pinned_badges %}
                                 <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
                                     {% for b in user2.pinned_badges %}
@@ -49,7 +68,10 @@
                         </div>
                         <div class="podium-rank-box">
                             <span class="fs-3 fw-bold">1st</span>
-                            <span class="small text-white-50">{{ user1.popularity }} 💖</span>
+                            <span class="small text-white-50">{{ user1.period_popularity }} 💖</span>
+                            {% if current_period != 'total' %}
+                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user1.popularity }} 💖)</span>
+                            {% endif %}
                             {% if user1.pinned_badges %}
                                 <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
                                     {% for b in user1.pinned_badges %}
@@ -71,7 +93,10 @@
                         </div>
                         <div class="podium-rank-box">
                             <span class="fs-5 fw-bold">3rd</span>
-                            <span class="small text-white-50">{{ user3.popularity }} 💖</span>
+                            <span class="small text-white-50">{{ user3.period_popularity }} 💖</span>
+                            {% if current_period != 'total' %}
+                                <span class="small d-block text-white-50 mt-1" style="font-size: 0.75rem; font-weight: normal; opacity: 0.85;">(累積 {{ user3.popularity }} 💖)</span>
+                            {% endif %}
                             {% if user3.pinned_badges %}
                                 <div class="mt-2 d-flex flex-wrap justify-content-center gap-1">
                                     {% for b in user3.pinned_badges %}
@@ -117,8 +142,11 @@
                             </div>
                             
                             <!-- Score -->
-                            <div class="rank-score">
-                                💖 {{ user.popularity }} 分
+                            <div class="rank-score text-end" style="line-height: 1.2;">
+                                <div>💖 {{ user.period_popularity }} 分</div>
+                                {% if current_period != 'total' %}
+                                    <div class="text-muted" style="font-size: 0.75rem; font-weight: normal; margin-top: 2px;">總累積 {{ user.popularity }} 分</div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
@@ -127,7 +155,15 @@
         {% else %}
             <div class="glass-panel text-center py-5">
                 <i class="bi bi-trophy fs-1 text-muted mb-3 d-block"></i>
-                <p class="text-secondary">目前尚無排行榜數據，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% if current_period == 'today' %}
+                    <p class="text-secondary">今天尚無人氣資料，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% elif current_period == 'week' %}
+                    <p class="text-secondary">本周尚無人氣資料，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% elif current_period == 'month' %}
+                    <p class="text-secondary">本月尚無人氣資料，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% else %}
+                    <p class="text-secondary">目前尚無排行榜數據，快去掃描同學的 QR Code 發送第一顆愛心吧！</p>
+                {% endif %}
             </div>
         {% endif %}
 

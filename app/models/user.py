@@ -2,6 +2,18 @@ import datetime
 import secrets
 from app.models.db import get_db_connection
 
+def _get_period_start(period):
+    now = datetime.datetime.now()
+    if period == "today":
+        return now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    elif period == "week":
+        # Monday is 0, Sunday is 6
+        start_of_week = now - datetime.timedelta(days=now.weekday())
+        return start_of_week.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    elif period == "month":
+        return now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    return None
+
 class User:
     def __init__(self, id, username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at):
         self.id = id
@@ -111,6 +123,43 @@ class User:
         rows = conn.execute("SELECT * FROM users ORDER BY popularity DESC, name ASC LIMIT ?;", (limit,)).fetchall()
         conn.close()
         return [cls.from_row(row) for row in rows]
+
+    @classmethod
+    def get_top_by_period(cls, period="total", limit=10):
+        """
+        Retrieves top users sorted by popularity in a given period (today, week, month, total).
+        """
+        if period == "total":
+            users = cls.get_top_by_popularity(limit=limit)
+            for u in users:
+                u.period_popularity = u.popularity
+            return users
+            
+        start_date = _get_period_start(period)
+        if not start_date:
+            return []
+            
+        conn = get_db_connection()
+        rows = conn.execute(
+            """
+            SELECT u.*, COALESCE(SUM(t.heart_amount), 0) AS period_popularity
+            FROM users u
+            LEFT JOIN heart_transactions t ON u.id = t.receiver_id AND t.created_at >= ?
+            GROUP BY u.id
+            ORDER BY period_popularity DESC, u.name ASC
+            LIMIT ?;
+            """,
+            (start_date, limit)
+        ).fetchall()
+        conn.close()
+        
+        users = []
+        for row in rows:
+            u = cls.from_row(row)
+            if u:
+                u.period_popularity = row['period_popularity']
+                users.append(u)
+        return users
 
     def update(self):
         """

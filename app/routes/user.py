@@ -170,10 +170,14 @@ def leaderboard():
     """
     愛心與人氣排行榜。
     """
-    top_users = User.get_top_by_popularity(limit=10)
+    period = request.args.get("period", "total")
+    if period not in ("total", "today", "week", "month"):
+        period = "total"
+
+    top_users = User.get_top_by_period(period=period, limit=10)
     
     # 載入前十名使用者釘選的徽章
     for user in top_users:
         user.pinned_badges = Badge.get_pinned_by_user_id(user.id)
         
-    return render_template("user/leaderboard.html", top_users=top_users)
+    return render_template("user/leaderboard.html", top_users=top_users, current_period=period)
