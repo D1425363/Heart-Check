@@ -3,126 +3,177 @@
 {% block title %}首頁 - Heart Check 校園互助與人氣回饋平台{% endblock %}
 
 {% block content %}
-<!-- Hero Welcome Section -->
-<div class="card premium-card border-0 mb-4 animate-fade-in" style="background: linear-gradient(135deg, rgba(255, 75, 114, 0.08) 0%, rgba(112, 51, 255, 0.08) 100%);">
-    <div class="card-body p-4 p-lg-5 text-center">
-        <h1 class="font-extrabold mb-3" style="font-weight: 850; font-size: 2.5rem; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-            開啟校園的溫馨互助 💖
-        </h1>
-        <p class="text-secondary col-lg-8 mx-auto fs-5 mb-4">
-            「Heart Check」是一個專門為校園設計的互助回饋平台。當您獲得同學幫助後，只需掃描對方的專屬 QR Code，即可轉移愛心值轉換為對方的人氣值！同時提供失物招領與宿舍生活公告服務。
-        </p>
-        
-        {% if not session.get('user_id') %}
-            <div class="d-flex justify-content-center gap-3">
-                <a href="{{ url_for('auth.login') }}" class="btn btn-premium px-4 py-2">
-                    <i class="fa-solid fa-sign-in-alt me-2"></i>立即登入體驗
-                </a>
-                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-premium px-4 py-2">
-                    <i class="fa-solid fa-user-plus me-2"></i>註冊新帳號
-                </a>
-            </div>
+<!-- Hero Section -->
+<div class="glass-panel text-center py-5 mb-4 animate-fade-in" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%); border-color: rgba(99, 102, 241, 0.3);">
+    <h1 class="display-4 fw-bold text-white mb-2" style="font-family: var(--font-heading);">💖 Heart Check</h1>
+    <p class="lead text-secondary-50 mx-auto" style="max-width: 600px; font-size: 1.15rem;">
+        透過「愛心值」與「人氣累積」機制，讓校園互助與感謝被即時記錄，整合失物協尋、宿舍公告、周邊餐廳與通勤交通，打造充滿人情味的智慧校園！
+    </p>
+    <div class="d-flex justify-content-center gap-3 mt-4">
+        {% if current_user %}
+            <a href="{{ url_for('user.profile') }}" class="btn-premium">
+                <i class="bi bi-person-badge-fill"></i> 我的個人檔案
+            </a>
+            <a href="{{ url_for('item.new_item') }}" class="btn-secondary-custom">
+                <i class="bi bi-plus-circle-fill"></i> 發布尋物啟事
+            </a>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-premium">
+                <i class="bi bi-box-arrow-in-right"></i> 立即登入
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn-secondary-custom">
+                <i class="bi bi-person-plus-fill"></i> 快速註冊
+            </a>
         {% endif %}
     </div>
 </div>
 
-<!-- User Status Card if Logged In -->
-{% if current_user %}
-    <div class="card premium-card p-3 mb-4 animate-fade-in">
-        <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
-            <div>
-                <h5 class="mb-1 font-bold">哈囉，{{ current_user.name }}！👋</h5>
-                <p class="text-muted small mb-0">今天過得怎麼樣？準備好把愛心傳遞出去了嗎？</p>
+<div class="row">
+    <!-- Left Column: Live Heart Feed & Lost Items -->
+    <div class="col-lg-7 animate-fade-in">
+        
+        <!-- Live Heart Feed (愛心留言牆) -->
+        <div class="glass-panel">
+            <h3 class="mb-3" style="font-family: var(--font-heading); color: #fff; display: flex; align-items: center; gap: 8px;">
+                💌 動態愛心留言牆
+            </h3>
+            <p class="text-secondary small mb-3">看看校園中正在發生的溫暖互助故事：</p>
+            
+            <div class="heart-feed-container">
+                <div class="heart-feed-ticker">
+                    {% if recent_transactions %}
+                        {% for tx in recent_transactions %}
+                            <div class="feed-item">
+                                <div class="feed-avatar">
+                                    {{ tx.sender_name[0] | upper }}
+                                </div>
+                                <div class="feed-details">
+                                    <div class="feed-meta">
+                                        <strong class="text-white">{{ tx.sender_name }}</strong> 
+                                        送出了愛心給 
+                                        <strong class="text-white">{{ tx.receiver_name }}</strong>
+                                    </div>
+                                    <div class="feed-msg">
+                                        “{{ tx.thank_you_message }}”
+                                    </div>
+                                </div>
+                                <div class="feed-badge">
+                                    💝 {{ tx.heart_amount }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4 text-secondary">
+                            <i class="bi bi-heart-half fs-1 mb-2 d-block text-muted"></i>
+                            目前愛心牆上空空如也，快去掃描同學的 QR Code 送出第一顆愛心與留言吧！
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="d-flex gap-3">
-                <div class="heart-badge px-3 py-2">
-                    <i class="fa-solid fa-heart"></i>
-                    <span>愛心餘額: <strong>{{ current_user.heart_balance }}</strong></span>
+        </div>
+
+        <!-- Latest Lost & Found Items -->
+        <div class="glass-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0;">🔍 最新失物協尋</h3>
+                <a href="{{ url_for('item.list_items') }}" class="small fw-semibold">查看全部</a>
+            </div>
+            
+            {% if active_items %}
+                <div class="row g-3">
+                    {% for item in active_items %}
+                        <div class="col-12">
+                            <div class="p-3 rounded-3 d-flex align-items-center gap-3" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); transition: var(--transition-fast);" onmouseover="this.style.borderColor='rgba(99,102,241,0.2)';" onmouseout="this.style.borderColor='rgba(255,255,255,0.04)';">
+                                <div style="width: 60px; height: 60px; flex-shrink: 0; overflow: hidden; border-radius: var(--radius-sm);">
+                                    {% if item.image_url %}
+                                        <img src="{{ url_for('static', filename=item.image_url) }}" alt="{{ item.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div class="d-flex align-items-center justify-content-center h-100" style="background: #191b35; color: var(--text-secondary);">
+                                            <i class="bi bi-image fs-5 opacity-50"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex gap-1.5 align-items-center mb-1">
+                                        {% if item.item_type == 'lost' %}
+                                            <span class="badge bg-danger-subtle text-danger tag-badge" style="font-size: 0.65rem; background: rgba(239, 68, 68, 0.15) !important;">尋物</span>
+                                        {% else %}
+                                            <span class="badge bg-success-subtle text-success tag-badge" style="font-size: 0.65rem; background: rgba(16, 185, 129, 0.15) !important;">拾獲</span>
+                                        {% endif %}
+                                        <span class="text-muted small ms-2"><i class="bi bi-geo-alt-fill text-danger"></i> {{ item.location }}</span>
+                                    </div>
+                                    <h5 class="fs-6 mb-0">
+                                        <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="text-white">{{ item.title }}</a>
+                                    </h5>
+                                </div>
+                                <div class="text-muted small flex-shrink-0">
+                                    {{ item.created_at.split('T')[0] }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
-                <div class="popularity-badge px-3 py-2">
-                    <i class="fa-solid fa-star"></i>
-                    <span>累積人氣: <strong>{{ current_user.popularity }}</strong></span>
+            {% else %}
+                <div class="text-center py-4 text-secondary">
+                    <i class="bi bi-search fs-1 mb-2 d-block text-muted"></i>
+                    目前無協尋中的失物公告。
                 </div>
-                <a href="{{ url_for('user.profile') }}" class="btn btn-premium btn-sm d-flex align-items-center">
-                    <i class="fa-solid fa-qrcode me-1"></i>我的條碼
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Right Column: Announcements & Info Shortcuts -->
+    <div class="col-lg-5 animate-fade-in">
+        
+        <!-- Latest Announcements -->
+        <div class="glass-panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 style="font-family: var(--font-heading); color: #fff; margin-bottom: 0;">📢 最新公佈欄</h3>
+                <a href="{{ url_for('board.announcements') }}" class="small fw-semibold">查看全部</a>
+            </div>
+
+            {% if latest_announcements %}
+                <div class="d-flex flex-column gap-3">
+                    {% for ann in latest_announcements %}
+                        <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                {% if ann.category == 'dorm' %}
+                                    <span class="badge bg-warning-subtle text-warning tag-badge" style="font-size: 0.65rem; background: rgba(245, 158, 11, 0.15) !important;">宿舍公告</span>
+                                {% else %}
+                                    <span class="badge bg-info-subtle text-info tag-badge" style="font-size: 0.65rem; background: rgba(6, 182, 212, 0.15) !important;">校園公告</span>
+                                {% endif %}
+                                <span class="text-muted small">{{ ann.created_at.split('T')[0] }}</span>
+                            </div>
+                            <h5 class="fs-6 mb-1 text-white">{{ ann.title }}</h5>
+                            <p class="text-secondary small mb-0 text-truncate">{{ ann.content }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-secondary">
+                    <i class="bi bi-megaphone fs-1 mb-2 d-block text-muted"></i>
+                    目前尚無發布公告。
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Quick Info Shortcuts -->
+        <div class="glass-panel">
+            <h3 class="mb-3" style="font-family: var(--font-heading); color: #fff;">💡 校園生活小工具</h3>
+            <div class="d-flex flex-column gap-2">
+                <a href="{{ url_for('board.traffic_info') }}" class="btn-secondary-custom justify-content-start py-2.5">
+                    <span class="fs-5 me-2">🚌</span> <strong>校園通勤交通時刻表</strong> <span class="text-muted small ms-auto">點擊查詢</span>
+                </a>
+                <a href="{{ url_for('board.restaurant_info') }}" class="btn-secondary-custom justify-content-start py-2.5">
+                    <span class="fs-5 me-2">🍔</span> <strong>學生餐廳與美食評分</strong> <span class="text-muted small ms-auto">點擊查詢</span>
+                </a>
+                <a href="{{ url_for('user.leaderboard') }}" class="btn-secondary-custom justify-content-start py-2.5">
+                    <span class="fs-5 me-2">🏆</span> <strong>愛心與人氣總排行榜</strong> <span class="text-muted small ms-auto">點擊查詢</span>
                 </a>
             </div>
         </div>
-    </div>
-{% endif %}
 
-<!-- Quick Information Section -->
-<div class="row g-4 animate-fade-in">
-    <!-- Left Column: Announcements -->
-    <div class="col-lg-6">
-        <div class="card premium-card h-100 p-4">
-            <div class="card-body d-flex flex-column">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="font-bold mb-0"><i class="fa-solid fa-bullhorn text-danger me-2"></i>最新公告</h4>
-                    <a href="{{ url_for('board.announcements') }}" class="text-decoration-none text-danger font-bold small">
-                        查看全部 <i class="fa-solid fa-arrow-right-long ms-1"></i>
-                    </a>
-                </div>
-
-                {% if not announcements %}
-                    <div class="text-center py-5 my-auto">
-                        <p class="text-muted">目前沒有任何發布的公告。</p>
-                    </div>
-                {% else %}
-                    <div class="list-group list-group-flush flex-grow-1">
-                        {% for ann in announcements %}
-                            <a href="{{ url_for('board.announcements') }}" class="list-group-item list-group-item-action py-3 border-bottom px-0">
-                                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                                    <h6 class="mb-1 font-bold text-dark">{{ ann.title }}</h6>
-                                    <span class="badge {% if ann.category == 'dorm' %}bg-primary-subtle text-primary{% else %}bg-info-subtle text-info-emphasis{% endif %} rounded-pill small">
-                                        {% if ann.category == 'dorm' %}宿舍{% else %}校園{% endif %}
-                                    </span>
-                                </div>
-                                <p class="mb-1 text-muted small text-truncate">{{ ann.content }}</p>
-                                <small class="text-muted font-monospace">{{ ann.created_at[:10] }}</small>
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Column: Lost & Found -->
-    <div class="col-lg-6">
-        <div class="card premium-card h-100 p-4">
-            <div class="card-body d-flex flex-column">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="font-bold mb-0"><i class="fa-solid fa-box-open text-primary me-2"></i>最新協尋中失物</h4>
-                    <a href="{{ url_for('item.list_items') }}?status=unclaimed" class="text-decoration-none text-danger font-bold small">
-                        尋寶去 <i class="fa-solid fa-arrow-right-long ms-1"></i>
-                    </a>
-                </div>
-
-                {% if not items %}
-                    <div class="text-center py-5 my-auto">
-                        <p class="text-muted">目前沒有協尋中的遺失物品。校園一片和諧！✨</p>
-                    </div>
-                {% else %}
-                    <div class="list-group list-group-flush flex-grow-1">
-                        {% for item in items %}
-                            <a href="{{ url_for('item.item_detail', item_id=item.id) }}" class="list-group-item list-group-item-action py-3 border-bottom px-0">
-                                <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                                    <h6 class="mb-1 font-bold text-dark">
-                                        <span class="badge {% if item.item_type == 'lost' %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %} me-1 small">
-                                            {% if item.item_type == 'lost' %}遺失{% else %}拾獲{% endif %}
-                                        </span>
-                                        {{ item.title }}
-                                    </h6>
-                                    <small class="text-muted font-monospace">{{ item.created_at[:10] }}</small>
-                                </div>
-                                <p class="mb-1 text-muted small text-truncate"><i class="fa-solid fa-location-dot me-1 text-danger"></i> 地點: {{ item.location }}</p>
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}

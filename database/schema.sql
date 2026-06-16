@@ -57,6 +57,28 @@ CREATE TABLE IF NOT EXISTS announcements (
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
+-- 5. User Badges Table
+CREATE TABLE IF NOT EXISTS user_badges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    badge_type TEXT NOT NULL,
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, badge_type)
+);
+
+-- 6. Item Comments Table
+CREATE TABLE IF NOT EXISTS item_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Indexes for performance optimization
 CREATE INDEX IF NOT EXISTS idx_heart_transactions_sender ON heart_transactions(sender_id);
 CREATE INDEX IF NOT EXISTS idx_heart_transactions_receiver ON heart_transactions(receiver_id);
@@ -64,3 +86,6 @@ CREATE INDEX IF NOT EXISTS idx_items_user ON items(user_id);
 CREATE INDEX IF NOT EXISTS idx_items_type_status ON items(item_type, status);
 CREATE INDEX IF NOT EXISTS idx_announcements_category ON announcements(category);
 CREATE INDEX IF NOT EXISTS idx_announcements_author ON announcements(author_id);
+CREATE INDEX IF NOT EXISTS idx_user_badges_user ON user_badges(user_id);
+CREATE INDEX IF NOT EXISTS idx_item_comments_item ON item_comments(item_id);
+
