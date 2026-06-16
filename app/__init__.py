@@ -1,9 +1,13 @@
 import os
 from flask import Flask, session
+from dotenv import load_dotenv
 from config import Config
 from app.models.db import init_db
 
 def create_app():
+    # Load environment variables (e.g. SECRET_KEY, etc.)
+    load_dotenv()
+    
     app = Flask(__name__)
     app.config.from_object(Config)
 

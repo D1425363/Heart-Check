@@ -15,7 +15,7 @@ def _get_period_start(period):
     return None
 
 class User:
-    def __init__(self, id, username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at):
+    def __init__(self, id, username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at, avatar=''):
         self.id = id
         self.username = username
         self.password_hash = password_hash
@@ -27,11 +27,13 @@ class User:
         self.qr_code_token = qr_code_token
         self.created_at = created_at
         self.updated_at = updated_at
+        self.avatar = avatar
 
     @classmethod
     def from_row(cls, row):
         if not row:
             return None
+        avatar = row['avatar'] if 'avatar' in row.keys() else ''
         return cls(
             id=row['id'],
             username=row['username'],
@@ -43,11 +45,12 @@ class User:
             popularity=row['popularity'],
             qr_code_token=row['qr_code_token'],
             created_at=row['created_at'],
-            updated_at=row['updated_at']
+            updated_at=row['updated_at'],
+            avatar=avatar
         )
 
     @classmethod
-    def create(cls, username, password_hash, name, student_id, department=None, heart_balance=100, popularity=0, qr_code_token=None):
+    def create(cls, username, password_hash, name, student_id, department=None, heart_balance=100, popularity=0, qr_code_token=None, avatar=''):
         """
         Creates a new user in the database.
         """
@@ -60,10 +63,10 @@ class User:
         try:
             cursor.execute(
                 """
-                INSERT INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                INSERT INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, avatar, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """,
-                (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, now, now)
+                (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, avatar, now, now)
             )
             conn.commit()
             new_id = cursor.lastrowid
@@ -161,30 +164,194 @@ class User:
                 users.append(u)
         return users
 
-    def update(self):
+    @classmethod
+    def get_rank_by_id(cls, user_id):
         """
-        Updates the current user's profile and dynamic attributes in the database.
+        Calculates user rank based on popularity.
         """
-        self.updated_at = datetime.datetime.now().isoformat()
+        try:
+            conn = get_db_connection()
+            try:
+                row = conn.execute("SELECT popularity, name, id FROM users WHERE id = ?;", (user_id,)).fetchone()
+                if not row:
+                    return None
+                pop = row['popularity']
+                name = row['name']
+                uid = row['id']
+                
+                count_row = conn.execute(
+                    """
+                    SELECT COUNT(*) + 1 AS rank
+                    FROM users
+                    WHERE popularity > ? 
+                       OR (popularity = ? AND name < ?) 
+                       OR (popularity = ? AND name = ? AND id < ?);
+                    """,
+                    (pop, pop, name, pop, name, uid)
+                ).fetchone()
+                return count_row['rank'] if count_row else None
+            finally:
+                conn.close()
+        except Exception as e:
+            print(f"Error in User.get_rank_by_id: {e}")
+            return None
+
+    def get_badges(self):
+        """
+        Returns badges check for backward compatibility with D1425363.
+        """
+        badges = []
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # 1. 新手上路 (Newbie)
+            badges.append({
+                'id': 'newbie',
+                'name': '新手上路',
+                'description': '註冊並加入 Heart Check 互助平台',
+                'icon': 'fa-solid fa-baby',
+                'color': '#ffbe0b',
+                'unlocked': True,
+                'progress': '1/1'
+            })
+            
+            # 2. 慷慨大使 (Generous Ambassador) - sent hearts count >= 3
+            cursor.execute("SELECT COUNT(*) AS count FROM heart_transactions WHERE sender_id = ?;", (self.id,))
+            sent_count = cursor.fetchone()['count']
+            badges.append({
+                'id': 'ambassador',
+                'name': '慷慨大使',
+                'description': '累計送出愛心次數達到 3 次',
+                'icon': 'fa-solid fa-hand-holding-heart',
+                'color': '#ff4b72',
+                'unlocked': sent_count >= 3,
+                'progress': f"{sent_count}/3"
+            })
+            
+            # 3. 人氣焦點 (Popularity Star) - received popularity >= 50
+            badges.append({
+                'id': 'star',
+                'name': '人氣焦點',
+                'description': '累積人氣值達到 50 以上',
+                'icon': 'fa-solid fa-fire',
+                'color': '#ff9f1c',
+                'unlocked': self.popularity >= 50,
+                'progress': f"{self.popularity}/50"
+            })
+            
+            # 4. 熱心助人 (Helping Hand) - items reported >= 2
+            cursor.execute("SELECT COUNT(*) AS count FROM items WHERE user_id = ?;", (self.id,))
+            items_count = cursor.fetchone()['count']
+            badges.append({
+                'id': 'helper',
+                'name': '熱心助人',
+                'description': '累計發布失物招領達 2 次',
+                'icon': 'fa-solid fa-handshake-angle',
+                'color': '#4ea8de',
+                'unlocked': items_count >= 2,
+                'progress': f"{items_count}/2"
+            })
+            
+            # 5. 愛心富豪 (Heart Tycoon) - current heart balance >= 200
+            badges.append({
+                'id': 'tycoon',
+                'name': '愛心富豪',
+                'description': '持有愛心餘額達到 200 以上',
+                'icon': 'fa-solid fa-gem',
+                'color': '#7209b7',
+                'unlocked': self.heart_balance >= 200,
+                'progress': f"{self.heart_balance}/200"
+            })
+            
+            # 6. 宿舍之光 (Light of Dorm) - sent/received transactions with message containing 宿舍/寢室
+            cursor.execute(
+                """
+                SELECT COUNT(*) AS count 
+                FROM heart_transactions 
+                WHERE (sender_id = ? OR receiver_id = ?) 
+                  AND (thank_you_message LIKE '%宿舍%' OR thank_you_message LIKE '%寢室%');
+                """, 
+                (self.id, self.id)
+            )
+            dorm_count = cursor.fetchone()['count']
+            badges.append({
+                'id': 'dorm',
+                'name': '宿舍之光',
+                'description': '在宿舍互助中獲得或發送愛心回饋',
+                'icon': 'fa-solid fa-house-chimney-window',
+                'color': '#f72585',
+                'unlocked': dorm_count >= 1,
+                'progress': f"{dorm_count}/1"
+            })
+            
+            conn.close()
+        except Exception as e:
+            print(f"Error in User.get_badges: {e}")
+        return badges
+
+    @classmethod
+    def update(cls, id_or_self, data=None):
+        """
+        Updates user records. Supports both object-oriented updates and class-level dynamic updates.
+        """
+        now = datetime.datetime.now().isoformat()
         conn = get_db_connection()
         try:
-            conn.execute(
-                """
-                UPDATE users 
-                SET username = ?, password_hash = ?, name = ?, student_id = ?, department = ?, 
-                    heart_balance = ?, popularity = ?, qr_code_token = ?, updated_at = ?
-                WHERE id = ?;
-                """,
-                (self.username, self.password_hash, self.name, self.student_id, self.department,
-                 self.heart_balance, self.popularity, self.qr_code_token, self.updated_at, self.id)
-            )
-            conn.commit()
-            return True
+            if isinstance(id_or_self, cls):
+                # Object-oriented update
+                self = id_or_self
+                self.updated_at = now
+                conn.execute(
+                    """
+                    UPDATE users 
+                    SET username = ?, password_hash = ?, name = ?, student_id = ?, department = ?, 
+                        heart_balance = ?, popularity = ?, qr_code_token = ?, avatar = ?, updated_at = ?
+                    WHERE id = ?;
+                    """,
+                    (self.username, self.password_hash, self.name, self.student_id, self.department,
+                     self.heart_balance, self.popularity, self.qr_code_token, self.avatar, self.updated_at, self.id)
+                )
+                conn.commit()
+                return True
+            else:
+                # Class-level dynamic update
+                user_id = id_or_self
+                if not data:
+                    return False
+                
+                fields = []
+                params = []
+                for key, val in data.items():
+                    if key in ('username', 'password_hash', 'name', 'student_id', 'department', 'heart_balance', 'popularity', 'qr_code_token', 'avatar'):
+                        fields.append(f"{key} = ?")
+                        params.append(val)
+                
+                if not fields:
+                    return False
+                
+                fields.append("updated_at = ?")
+                params.append(now)
+                params.append(user_id)
+                
+                sql = f"UPDATE users SET {', '.join(fields)} WHERE id = ?;"
+                conn.execute(sql, tuple(params))
+                conn.commit()
+                return True
         except Exception as e:
             conn.rollback()
             raise e
         finally:
             conn.close()
+
+    def update_instance(self):
+        """
+        Instance method version of update.
+        """
+        return User.update(self)
+
+    def update_object(self):
+        return User.update(self)
 
     def delete(self):
         """
@@ -211,7 +378,7 @@ class HeartTransaction:
         self.thank_you_message = thank_you_message
         self.created_at = created_at
         
-        # Optional joined fields for convenience
+        # Optional joined fields
         self.sender_name = sender_name
         self.receiver_name = receiver_name
 
@@ -219,7 +386,6 @@ class HeartTransaction:
     def from_row(cls, row):
         if not row:
             return None
-        # Handle optional joined columns if they exist in the row
         sender_name = row['sender_name'] if 'sender_name' in row.keys() else None
         receiver_name = row['receiver_name'] if 'receiver_name' in row.keys() else None
         
@@ -236,10 +402,6 @@ class HeartTransaction:
 
     @classmethod
     def create(cls, sender_id, receiver_id, heart_amount, thank_you_message=None):
-        """
-        Records a transaction without transferring balance. 
-        Use transfer_hearts() for transferring hearts and recording transaction atomically.
-        """
         now = datetime.datetime.now().isoformat()
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -262,10 +424,6 @@ class HeartTransaction:
 
     @classmethod
     def transfer_hearts(cls, sender_id, receiver_id, amount, message=None):
-        """
-        Atomically transfers hearts from sender to receiver, increasing receiver popularity,
-        and logs the transaction.
-        """
         if sender_id == receiver_id:
             raise ValueError("Cannot transfer heart values to yourself.")
         if amount <= 0:
@@ -275,7 +433,6 @@ class HeartTransaction:
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
-            # 1. Fetch sender and check balance
             sender_row = cursor.execute("SELECT heart_balance FROM users WHERE id = ?;", (sender_id,)).fetchone()
             if not sender_row:
                 raise ValueError("Sender user not found.")
@@ -283,24 +440,20 @@ class HeartTransaction:
             if sender_row['heart_balance'] < amount:
                 raise ValueError("Insufficient heart balance.")
 
-            # 2. Verify receiver exists
             receiver_exists = cursor.execute("SELECT 1 FROM users WHERE id = ?;", (receiver_id,)).fetchone()
             if not receiver_exists:
                 raise ValueError("Receiver user not found.")
 
-            # 3. Deduct from sender
             cursor.execute(
                 "UPDATE users SET heart_balance = heart_balance - ?, updated_at = ? WHERE id = ?;",
                 (amount, now, sender_id)
             )
 
-            # 4. Add to receiver popularity
             cursor.execute(
                 "UPDATE users SET popularity = popularity + ?, updated_at = ? WHERE id = ?;",
                 (amount, now, receiver_id)
             )
 
-            # 5. Insert transaction log
             cursor.execute(
                 """
                 INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
@@ -319,9 +472,6 @@ class HeartTransaction:
 
     @classmethod
     def get_by_id(cls, transaction_id):
-        """
-        Retrieves a single transaction by ID.
-        """
         conn = get_db_connection()
         row = conn.execute(
             """
@@ -338,9 +488,6 @@ class HeartTransaction:
 
     @classmethod
     def get_all(cls):
-        """
-        Retrieves all transactions.
-        """
         conn = get_db_connection()
         rows = conn.execute(
             """
@@ -356,9 +503,6 @@ class HeartTransaction:
 
     @classmethod
     def get_by_user_id(cls, user_id):
-        """
-        Retrieves all transactions where user_id is sender or receiver.
-        """
         conn = get_db_connection()
         rows = conn.execute(
             """
@@ -375,9 +519,6 @@ class HeartTransaction:
         return [cls.from_row(row) for row in rows]
 
     def delete(self):
-        """
-        Deletes a transaction.
-        """
         conn = get_db_connection()
         try:
             conn.execute("DELETE FROM heart_transactions WHERE id = ?;", (self.id,))
@@ -437,10 +578,8 @@ class Badge:
         
         conn = get_db_connection()
         try:
-            # First reset all pins for this user
             conn.execute("UPDATE user_badges SET is_pinned = 0 WHERE user_id = ?;", (user_id,))
             if badge_types:
-                # Placeholders for IN clause
                 placeholders = ",".join("?" for _ in badge_types)
                 conn.execute(
                     f"UPDATE user_badges SET is_pinned = 1 WHERE user_id = ? AND badge_type IN ({placeholders});",
@@ -456,18 +595,12 @@ class Badge:
 
     @classmethod
     def check_and_award(cls, user_id):
-        """
-        Checks requirements for all 7 badges and awards any that are earned but not yet recorded.
-        Returns a list of newly awarded Badge objects.
-        """
         conn = get_db_connection()
         new_awards = []
         try:
-            # Fetch existing badge types
             existing_rows = conn.execute("SELECT badge_type FROM user_badges WHERE user_id = ?;", (user_id,)).fetchall()
             existing_badges = {row['badge_type'] for row in existing_rows}
 
-            # Helper functions to query data
             helped_count = conn.execute(
                 "SELECT COUNT(DISTINCT sender_id) FROM heart_transactions WHERE receiver_id = ?;",
                 (user_id,)
@@ -504,7 +637,6 @@ class Badge:
                 (user_id, user_id)
             ).fetchone()[0] or 0
 
-            # Map check logic
             checks = {
                 'helper': helped_count >= 5,
                 'poster': posted_count >= 10,
@@ -535,4 +667,3 @@ class Badge:
             conn.close()
 
         return new_awards
-

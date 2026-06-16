@@ -35,6 +35,14 @@ def init_db():
     conn = get_db_connection()
     try:
         conn.executescript(schema_sql)
+        
+        # Dynamic migration check: add avatar column if it does not exist
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(users);")
+        columns = [row['name'] for row in cursor.fetchall()]
+        if 'avatar' not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT '';")
+            
         conn.commit()
     finally:
         conn.close()
