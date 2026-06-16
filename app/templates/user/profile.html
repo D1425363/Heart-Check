@@ -2,6 +2,103 @@
 
 {% block title %}個人檔案 - Heart Check{% endblock %}
 
+{% block styles %}
+<style>
+    /* Badge styling */
+    .badge-card {
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid #e1e3ea;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .badge-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+    
+    .locked-badge {
+        filter: grayscale(0.9);
+        opacity: 0.65;
+    }
+    
+    .locked-badge::before {
+        content: "\f023";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        color: #a0a5b5;
+        font-size: 0.85rem;
+    }
+    
+    .unlocked-badge {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
+    
+    .style-desc {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        min-height: 34px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Avatar radio options style */
+    .avatar-option-label input:checked + .avatar-option-card {
+        border-color: #ff4b72 !important;
+        box-shadow: 0 0 0 3px rgba(255, 75, 114, 0.25) !important;
+        transform: scale(1.1);
+        background-color: #ffe3e8;
+    }
+    
+    .avatar-option-card {
+        cursor: pointer;
+        background-color: #fff;
+        border: 2px solid #e1e3ea !important;
+    }
+    
+    .avatar-option-card:hover {
+        border-color: #7033ff !important;
+        transform: scale(1.05);
+    }
+    
+    /* Medal colors */
+    .text-silver {
+        color: #b0c4de !important;
+    }
+    .text-bronze {
+        color: #cd7f32 !important;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    .animate-bounce {
+        animation: bounce 2s infinite ease-in-out;
+    }
+    
+    /* Custom styles for chart toggle buttons */
+    .btn-check:checked + label.btn-chart-toggle {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+        box-shadow: 0 4px 10px rgba(255, 75, 114, 0.25) !important;
+    }
+    .btn-check:not(:checked) + label.btn-chart-toggle {
+        background: transparent;
+        color: var(--text-secondary);
+    }
+    .btn-check:not(:checked) + label.btn-chart-toggle:hover {
+        background: rgba(112, 51, 255, 0.05);
+        color: #7033ff;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row animate-fade-in">
     <!-- Left Column: User Info & QR Code -->
@@ -215,53 +312,79 @@
             </div>
         </div>
 
-        <!-- Transactions History -->
-        <div class="glass-panel">
-            <h4 class="mb-4" style="font-family: var(--font-heading);">📜 互助歷史紀錄</h4>
-            
-            {% if transactions %}
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover align-middle" style="background: transparent; border-collapse: separate; border-spacing: 0 8px;">
-                        <thead>
-                            <tr class="text-secondary small" style="border: none;">
-                                <th style="background: transparent; border: none; padding-left: 15px;">類型</th>
-                                <th style="background: transparent; border: none;">互動對象</th>
-                                <th style="background: transparent; border: none;">愛心異動</th>
-                                <th style="background: transparent; border: none;">感謝語與留言</th>
-                                <th style="background: transparent; border: none; padding-right: 15px;">時間</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for tx in transactions %}
-                                {% set is_sender = tx.sender_id == user.id %}
-                                <tr style="background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-sm); margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.15);">
-                                    <td style="background: transparent; border: none; border-radius: var(--radius-sm) 0 0 var(--radius-sm); padding-left: 15px;">
-                                        {% if is_sender %}
-                                            <span class="badge bg-danger-subtle text-danger tag-badge" style="background: rgba(239, 68, 68, 0.15) !important;">送出愛心</span>
-                                        {% else %}
-                                            <span class="badge bg-success-subtle text-success tag-badge" style="background: rgba(16, 185, 129, 0.15) !important;">收到愛心</span>
-                                        {% endif %}
-                                    </td>
-                                    <td style="background: transparent; border: none; font-weight: 500;">
-                                        {{ tx.receiver_name if is_sender else tx.sender_name }}
-                                    </td>
-                                    <td style="background: transparent; border: none; font-family: var(--font-heading); font-weight: 700; font-size: 1.05rem;">
-                                        {% if is_sender %}
-                                            <span class="text-danger">-{{ tx.heart_amount }}</span>
-                                        {% else %}
-                                            <span class="text-success">+{{ tx.heart_amount }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td style="background: transparent; border: none; color: var(--text-secondary); font-size: 0.9rem; font-style: italic; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                        {{ tx.thank_you_message if tx.thank_you_message else '無留言' }}
-                                    </td>
-                                    <td style="background: transparent; border: none; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--text-muted); font-size: 0.8rem; padding-right: 15px;">
-                                        {{ tx.created_at.split('T')[0] }} {{ tx.created_at.split('T')[1][:5] if 'T' in tx.created_at else '' }}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+<!-- Middle Row: Heart Growth Chart Section -->
+<div class="row g-4 mt-2 animate-fade-in">
+    <div class="col-12">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <h4 class="font-bold mb-0">
+                        <i class="fa-solid fa-chart-line text-danger me-2"></i>愛心成長與統計圖表
+                    </h4>
+                    
+                    <!-- Controls -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <!-- Chart Type: Cumulative vs Periodic -->
+                        <div class="btn-group btn-group-sm shadow-sm rounded-3 overflow-hidden" role="group" style="background: rgba(255,255,255,0.5); padding: 2px; border: 1px solid #e1e3ea;">
+                            <input type="radio" class="btn-check" name="chart_type" id="type_cumulative" value="cumulative" checked>
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="type_cumulative" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">累積成長</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_type" id="type_periodic" value="periodic">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="type_periodic" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">單期變動</label>
+                        </div>
+
+                        <!-- Period Selector: Daily / Weekly / Monthly -->
+                        <div class="btn-group btn-group-sm shadow-sm rounded-3 overflow-hidden" role="group" style="background: rgba(255,255,255,0.5); padding: 2px; border: 1px solid #e1e3ea;">
+                            <input type="radio" class="btn-check" name="chart_period" id="period_daily" value="daily" checked>
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_daily" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每日</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_period" id="period_weekly" value="weekly">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_weekly" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每週</label>
+                            
+                            <input type="radio" class="btn-check" name="chart_period" id="period_monthly" value="monthly">
+                            <label class="btn btn-sm px-3 py-2 rounded-2 border-0 btn-chart-toggle" for="period_monthly" style="font-weight: 600; font-size: 0.8rem; transition: all 0.2s;">每月</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Container -->
+                <div class="position-relative" style="height: 350px;">
+                    <canvas id="heartChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row: Achievements Badges Section -->
+<div class="row g-4 mt-2 animate-fade-in">
+    <div class="col-12">
+        <div class="card premium-card p-4">
+            <div class="card-body">
+                <h4 class="font-bold mb-4">
+                    <i class="fa-solid fa-award text-warning me-2"></i>我的互助成就徽章
+                </h4>
+                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+                    {% for badge in badges %}
+                    <div class="col">
+                        <div class="card h-100 text-center border-0 rounded-4 p-3 shadow-sm badge-card {% if badge.unlocked %}unlocked-badge{% else %}locked-badge{% endif %}"
+                             style="background: {% if badge.unlocked %}rgba(255, 255, 255, 0.9){% else %}rgba(240, 242, 245, 0.5){% endif %}; border: 1px solid {% if badge.unlocked %}{{ badge.color }}33{% else %}#e1e3ea{% endif %} !important;">
+                            <div class="badge-icon-wrapper mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle shadow-sm"
+                                 style="width: 55px; height: 55px; background: {% if badge.unlocked %}{{ badge.color }}1a{% else %}#f1f3f9{% endif %}; color: {% if badge.unlocked %}{{ badge.color }}{% else %}#a0a5b5{% endif %};">
+                                <i class="{{ badge.icon }} fa-2x"></i>
+                            </div>
+                            <h6 class="font-bold mb-1 {% if not badge.unlocked %}text-muted{% endif %}">{{ badge.name }}</h6>
+                            <p class="text-muted mb-2 style-desc">{{ badge.description }}</p>
+                            <div class="mt-auto">
+                                {% if badge.unlocked %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i>已解鎖</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted border rounded-pill small px-2 py-1">{{ badge.progress }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             {% else %}
                 <div class="text-center py-4 text-secondary">
@@ -345,9 +468,12 @@
 </div>
 {% endblock %}
 
+{% endblock %}
+
 {% block scripts %}
-<!-- QR Code Library CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
     // Initialize QR Code inside container
     const qrText = "{{ qr_code_url }}";
@@ -371,10 +497,244 @@
         }
     }
 
-    // Initialize Bootstraps tooltips for badges
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
+    // Chart.js implementation
+    const currentBalance = {{ user.heart_balance }};
+    const currentPopularity = {{ user.popularity }};
+    const registrationDate = new Date("{{ user.created_at }}");
+    const transactions = [
+        {% for t in transactions %}
+        {
+            amount: {{ t.heart_amount }},
+            isSender: {{ 'true' if t.sender_id == user.id else 'false' }},
+            date: new Date("{{ t.created_at }}")
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    function generatePeriodDates(period) {
+        const dates = [];
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        
+        if (period === 'daily') {
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                dates.push(d);
+            }
+        } else if (period === 'weekly') {
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i * 7);
+                dates.push(d);
+            }
+        } else if (period === 'monthly') {
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(today);
+                d.setMonth(today.getMonth() - i);
+                dates.push(d);
+            }
+        }
+        return dates;
+    }
+
+    function formatDateLabel(d, period) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        if (period === 'daily' || period === 'weekly') {
+            return `${mm}/${dd}`;
+        } else {
+            return `${yyyy}/${mm}`;
+        }
+    }
+
+    function getChartData(period, type) {
+        const dates = generatePeriodDates(period);
+        const labels = dates.map(d => formatDateLabel(d, period));
+        
+        let dataset1 = [];
+        let dataset2 = [];
+        let label1 = '';
+        let label2 = '';
+        
+        if (type === 'cumulative') {
+            label1 = '可用愛心餘額 (Balance)';
+            label2 = '累積獲得人氣 (Popularity)';
+            
+            dates.forEach(d => {
+                const sent_after = transactions.filter(t => t.isSender && t.date > d).reduce((sum, t) => sum + t.amount, 0);
+                const received_after = transactions.filter(t => !t.isSender && t.date > d).reduce((sum, t) => sum + t.amount, 0);
+                
+                dataset1.push(currentBalance + sent_after);
+                dataset2.push(currentPopularity - received_after);
+            });
+        } else {
+            label1 = '送出愛心 (Sent)';
+            label2 = '獲得愛心 (Received)';
+            
+            dates.forEach(d => {
+                let d_end = new Date(d);
+                let d_start = new Date(d);
+                
+                if (period === 'daily') {
+                    d_start.setHours(0, 0, 0, 0);
+                } else if (period === 'weekly') {
+                    d_start.setDate(d_start.getDate() - 6);
+                    d_start.setHours(0, 0, 0, 0);
+                } else if (period === 'monthly') {
+                    d_start.setMonth(d_start.getMonth() - 1);
+                    d_start.setDate(d_start.getDate() + 1);
+                    d_start.setHours(0, 0, 0, 0);
+                }
+                
+                const sent = transactions.filter(t => t.isSender && t.date >= d_start && t.date <= d_end).reduce((sum, t) => sum + t.amount, 0);
+                const received = transactions.filter(t => !t.isSender && t.date >= d_start && t.date <= d_end).reduce((sum, t) => sum + t.amount, 0);
+                
+                dataset1.push(sent);
+                dataset2.push(received);
+            });
+        }
+        
+        return {
+            labels: labels,
+            dataset1: dataset1,
+            dataset2: dataset2,
+            label1: label1,
+            label2: label2
+        };
+    }
+
+    let heartChart = null;
+
+    function renderChart() {
+        const period = document.querySelector('input[name="chart_period"]:checked').value;
+        const type = document.querySelector('input[name="chart_type"]:checked').value;
+        
+        const data = getChartData(period, type);
+        
+        const ctx = document.getElementById('heartChart').getContext('2d');
+        
+        if (heartChart) {
+            heartChart.destroy();
+        }
+
+        // Create gradients
+        const gradientPurple = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPurple.addColorStop(0, 'rgba(112, 51, 255, 0.4)');
+        gradientPurple.addColorStop(1, 'rgba(112, 51, 255, 0.0)');
+
+        const gradientPink = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientPink.addColorStop(0, 'rgba(255, 75, 114, 0.4)');
+        gradientPink.addColorStop(1, 'rgba(255, 75, 114, 0.0)');
+        
+        heartChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: data.label1,
+                        data: data.dataset1,
+                        borderColor: '#7033ff',
+                        backgroundColor: gradientPurple,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#7033ff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: data.label2,
+                        data: data.dataset2,
+                        borderColor: '#ff4b72',
+                        backgroundColor: gradientPink,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#ff4b72',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '600'
+                            },
+                            color: '#1e1e24'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(30, 30, 36, 0.9)',
+                        titleFont: {
+                            family: "'Outfit', sans-serif",
+                            weight: '700'
+                        },
+                        bodyFont: {
+                            family: "'Outfit', sans-serif"
+                        },
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '500'
+                            },
+                            color: '#5c6270'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: '#f1f3f9'
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Outfit', sans-serif",
+                                weight: '500'
+                            },
+                            color: '#5c6270',
+                            precision: 0
+                        },
+                        min: 0
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize chart
+    document.addEventListener('DOMContentLoaded', () => {
+        renderChart();
+        
+        // Add event listeners for controls
+        document.querySelectorAll('input[name="chart_period"]').forEach(radio => {
+            radio.addEventListener('change', renderChart);
+        });
+        document.querySelectorAll('input[name="chart_type"]').forEach(radio => {
+            radio.addEventListener('change', renderChart);
+        });
     });
 </script>
 {% endblock %}
