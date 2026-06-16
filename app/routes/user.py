@@ -6,7 +6,7 @@
 import os
 import socket
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app
-from app.models.user import User, HeartTransaction, Badge
+from app.models.user import User, HeartTransaction, Badge, UserBadge
 from app.models.db import get_db_connection
 
 # 建立使用者與愛心 Blueprint
@@ -57,9 +57,10 @@ def profile():
         return redirect(url_for("auth.login"))
 
     # 1. 檢查並自動發放符合條件的新徽章
-    newly_awarded = Badge.check_and_award(user_id)
-    for badge in newly_awarded:
-        flash(f"🎉 恭喜！您達成了條件，獲得了新徽章：【{badge.icon} {badge.name}】！", "success")
+    newly_awarded = UserBadge.check_and_award(user_id)
+    if newly_awarded:
+        for badge in newly_awarded:
+            flash(f"🎉 恭喜！您達成了條件，獲得了新徽章：【{badge.icon} {badge.name}】！", "success")
 
     # 2. 獲取所有已獲得徽章與已釘選徽章
     badges = Badge.get_by_user_id(user_id)
@@ -72,12 +73,29 @@ def profile():
     rank = User.get_rank_by_id(user_id)
     legacy_badges = user.get_badges()
 
+    import datetime
+    now = datetime.datetime.now()
+    start_of_week = (now - datetime.timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+    start_of_week_iso = start_of_week.isoformat()
+
     conn = get_db_connection()
     cursor = conn.cursor()
+    
     cursor.execute("SELECT SUM(heart_amount) AS total_sent FROM heart_transactions WHERE sender_id = ?;", (user_id,))
     total_sent = cursor.fetchone()['total_sent'] or 0
+    
     cursor.execute("SELECT SUM(heart_amount) AS total_received FROM heart_transactions WHERE receiver_id = ?;", (user_id,))
     total_received = cursor.fetchone()['total_received'] or 0
+    
+    cursor.execute("SELECT COUNT(*) as count FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;", (user_id, start_of_week_iso))
+    received_this_week = cursor.fetchone()['count']
+    
+    cursor.execute("SELECT COUNT(*) as count FROM items WHERE user_id = ? AND created_at >= ?;", (user_id, start_of_week_iso))
+    posted_this_week = cursor.fetchone()['count']
+    
+    cursor.execute("SELECT SUM(heart_amount) as total FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;", (user_id, start_of_week_iso))
+    hearts_this_week = cursor.fetchone()['total'] or 0
+    
     conn.close()
 
     # 5. 生成 QR Code 的 URL，並處理區域網路 IP 轉換
@@ -100,7 +118,10 @@ def profile():
         rank=rank,
         legacy_badges=legacy_badges,
         total_sent=total_sent,
-        total_received=total_received
+        total_received=total_received,
+        received_this_week=received_this_week,
+        posted_this_week=posted_this_week,
+        hearts_this_week=hearts_this_week
     )
 
 
@@ -146,70 +167,6 @@ def update_profile():
     if not name:
         flash("真實姓名 / 暱稱不能為空！", "danger")
         return redirect(url_for('user.profile'))
-        
-        # 1. 取得當週時間並計算本週互助任務進度
-        import datetime
-        from app.models.db import get_db_connection
-        
-        now = datetime.datetime.now()
-        start_of_week = (now - datetime.timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
-        start_of_week_iso = start_of_week.isoformat()
-        
-        conn = get_db_connection()
-        try:
-            received_this_week = conn.execute(
-                "SELECT COUNT(*) as count FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;",
-                (user_id, start_of_week_iso)
-            ).fetchone()['count']
-            
-            posted_this_week = conn.execute(
-                "SELECT COUNT(*) as count FROM items WHERE user_id = ? AND created_at >= ?;",
-                (user_id, start_of_week_iso)
-            ).fetchone()['count']
-            
-            hearts_this_week = conn.execute(
-                "SELECT SUM(heart_amount) as total FROM heart_transactions WHERE receiver_id = ? AND created_at >= ?;",
-                (user_id, start_of_week_iso)
-            ).fetchone()['total'] or 0
-        finally:
-            conn.close()
-
-        # 2. 自動檢查與解鎖勳章
-        UserBadge.check_and_award_badges(user_id)
-        badges = UserBadge.get_by_user_id(user_id)
-
-        # Calculate external QR Code URL targeting the local Wi-Fi IP if loopback/localhost is used
-        import socket
-        def get_local_ip():
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            try:
-                s.connect(('10.255.255.255', 1))
-                IP = s.getsockname()[0]
-            except Exception:
-                IP = '127.0.0.1'
-            finally:
-                s.close()
-            return IP
-
-        qr_transfer_url = url_for('user.qr_transfer', token=user.qr_code_token, _external=True)
-        is_local_warning = False
-        if "localhost" in qr_transfer_url or "127.0.0.1" in qr_transfer_url:
-            local_ip = get_local_ip()
-            if local_ip != '127.0.0.1':
-                qr_transfer_url = qr_transfer_url.replace("localhost", local_ip).replace("127.0.0.1", local_ip)
-                is_local_warning = True
-
-        return render_template(
-            "user/profile.html", 
-            user=user, 
-            transactions=transactions,
-            qr_transfer_url=qr_transfer_url,
-            is_local_warning=is_local_warning,
-            received_this_week=received_this_week,
-            posted_this_week=posted_this_week,
-            hearts_this_week=hearts_this_week,
-            badges=badges
-        )
 
     update_data = {
         'name': name,
@@ -332,8 +289,8 @@ def transfer(token):
         HeartTransaction.transfer_hearts(sender_id, receiver.id, heart_amount, thank_you_message, anonymous=is_anonymous)
         
         # 轉移成功後，檢查並發放雙方的徽章 (因為發送者/接收者資料改變)
-        Badge.check_and_award(sender_id)
-        Badge.check_and_award(receiver.id)
+        UserBadge.check_and_award(sender_id)
+        UserBadge.check_and_award(receiver.id)
         
         flash(f"成功發送 {heart_amount} 顆愛心給 {receiver.name}！感謝您的熱心協助！", "success")
         return redirect(url_for("user.profile"))

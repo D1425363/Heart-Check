@@ -685,7 +685,7 @@ class UserBadge:
                         (user_id, badge_type, now)
                     )
                     new_id = cursor.lastrowid
-                    new_awards.append(cls(new_id, user_id, badge_type, 0, now))
+                    new_awards.append(Badge(new_id, user_id, badge_type, 0, now))
 
             if new_awards:
                 conn.commit()

@@ -15,10 +15,8 @@ def create_app():
     os.makedirs(os.path.dirname(app.config['DATABASE']), exist_ok=True)
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # Initialize the database if database file doesn't exist
-    if not os.path.exists(app.config['DATABASE']):
-        print("Initializing database...")
-        init_db()
+    # Initialize/Migrate the database tables and columns
+    init_db()
 
     # Register Blueprints
     from app.routes import auth_bp, user_bp, item_bp, board_bp, help_bp
