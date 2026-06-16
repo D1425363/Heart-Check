@@ -80,36 +80,53 @@ def seed():
             (title, desc, img, loc, itype, status, uid, cinfo, now_iso, now_iso)
         )
         
-    # 5. Add transactions
     # Helper to calculate relative times
     def days_ago(n):
         return (now - datetime.timedelta(days=n)).isoformat()
 
     transactions = [
-        (user_map["user"], user_map["hero"], 20, "謝謝小明同學今天幫我搬行李，非常熱心！", days_ago(0)),
+        (user_map["user"], user_map["hero"], 20, "謝謝小明同學今天幫我搬行李，非常熱心！", days_ago(0), 1), # 匿名交易
         # Change days_ago(3) to days_ago(1) to make it fall within the current week for leaderboard testing
-        (user_map["finder"], user_map["hero"], 30, "感謝在排球場幫我撿到學生證並送回，大感謝！", days_ago(1)),
-        (user_map["admin"], user_map["hero"], 50, "感謝協助宿舍消防演練的引導！", days_ago(10)),
-        (user_map["user"], user_map["hero"], 15, "感謝分享昨天的微積分筆記，太強了！", days_ago(18)),
-        (user_map["finder"], user_map["hero"], 25, "感謝在雨天借我雨傘，好人一生平安！", days_ago(35)),
-        (user_map["admin"], user_map["hero"], 40, "感謝幹部會議上的熱烈發言與建議！", days_ago(50)),
-        (user_map["user"], user_map["hero"], 60, "感謝上學期期末考前一週的宿舍夜讀指導！", days_ago(75)),
+        (user_map["finder"], user_map["hero"], 30, "感謝在排球場幫我撿到學生證並送回，大感謝！", days_ago(1), 0),
+        (user_map["admin"], user_map["hero"], 50, "感謝協助宿舍消防演練的引導！", days_ago(10), 0),
+        (user_map["user"], user_map["hero"], 15, "感謝分享昨天的微積分筆記，太強了！", days_ago(18), 0),
+        (user_map["finder"], user_map["hero"], 25, "感謝在雨天借我雨傘，好人一生平安！", days_ago(35), 0),
+        (user_map["admin"], user_map["hero"], 40, "感謝幹部會議上的熱烈發言與建議！", days_ago(50), 0),
+        (user_map["user"], user_map["hero"], 60, "感謝上學期期末考前一週的宿舍夜讀指導！", days_ago(75), 0),
         
-        (user_map["hero"], user_map["finder"], 20, "謝謝幫我帶午餐，真的超方便！", days_ago(5)),
-        (user_map["hero"], user_map["user"], 30, "感謝幫忙看照房間，我回家那幾天多虧有你！", days_ago(22)),
-        (user_map["hero"], user_map["admin"], 15, "感謝宿舍幹部協助處理熱水器漏水問題！", days_ago(60)),
+        (user_map["hero"], user_map["finder"], 20, "謝謝幫我帶午餐，真的超方便！", days_ago(5), 0),
+        (user_map["hero"], user_map["user"], 30, "感謝幫忙看照房間，我回家那幾天多虧有你！", days_ago(22), 0),
+        (user_map["hero"], user_map["admin"], 15, "感謝宿舍幹部協助處理熱水器漏水問題！", days_ago(60), 0),
         
-        (user_map["finder"], user_map["user"], 10, "感謝在走廊借我原子筆用！", days_ago(40)),
-        (user_map["admin"], user_map["finder"], 25, "感謝幫忙張貼校園健康週海報！", days_ago(12))
+        (user_map["finder"], user_map["user"], 10, "感謝在走廊借我原子筆用！", days_ago(40), 0),
+        (user_map["admin"], user_map["finder"], 25, "感謝幫忙張貼校園健康週海報！", days_ago(12), 0)
     ]
     
-    for sender, receiver, amt, msg, ttime in transactions:
+    for sender, receiver, amt, msg, ttime, anon in transactions:
         cursor.execute(
             """
-            INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
-            VALUES (?, ?, ?, ?, ?);
+            INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, is_anonymous, created_at)
+            VALUES (?, ?, ?, ?, ?, ?);
             """,
-            (sender, receiver, amt, msg, ttime)
+            (sender, receiver, amt, msg, anon, ttime)
+        )
+
+    # 6. Add Help Requests
+    help_requests = [
+        (user_map["user"], "notes", "求微積分二的期中考筆記", "我們下週三要期中考了，希望有電機或資工系修過張教授微積分二的學長姐能分享筆記，可以用 10 顆愛心作為回報！", "open"),
+        (user_map["finder"], "team", "徵求大專盃羽球賽混雙隊友", "尋找一位有羽球底子的女同學一起組隊打大專盃混雙。每週二、四晚上在體育館練習，有興趣請私訊我聯絡方式！", "open"),
+        (user_map["hero"], "lost", "在宿舍大廳遺失一把紅色雨傘", "昨天下午下大雨時，把雨傘放在一樓大廳傘架，傍晚要拿時發現不見了。雨傘是自動摺疊傘，手把上有一個小刮痕。若有同學誤拿，請放回原位，感激不盡！", "open"),
+        (user_map["user"], "textbook", "求購「計算機概論」二手書", "大一計算機概論課程需要用書：Computer Science: An Overview。希望書況良好、無過多塗鴉，價格可議。可用愛心或實體請飲料答謝！", "open"),
+        (user_map["finder"], "course", "請問有人修過陳教授的「演算法」嗎？", "想請問這門課的評分標準如何？期中跟期末考會不會很硬？是否需要先修什麼科目？感謝分享經驗的學長姐！", "resolved")
+    ]
+    
+    for uid, cat, title, desc, status in help_requests:
+        cursor.execute(
+            """
+            INSERT INTO help_requests (user_id, category, title, description, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
+            """,
+            (uid, cat, title, desc, status, now_iso, now_iso)
         )
         
     conn.commit()

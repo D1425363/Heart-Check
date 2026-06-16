@@ -104,7 +104,14 @@
                     <div class="border-top pt-3 mt-auto">
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="small">
-                                <span class="text-muted">受助者:</span> <strong class="text-dark">{{ t.sender_name }}</strong>
+                                <span class="text-muted">受助者:</span> 
+                                <strong class="text-dark">
+                                    {% if t.is_anonymous %}
+                                        某位同學
+                                    {% else %}
+                                        {{ t.sender_name }}
+                                    {% endif %}
+                                </strong>
                             </div>
                             <div class="text-end">
                                 <i class="fa-solid fa-arrow-right-long text-muted mx-2" style="font-size: 0.8rem;"></i>

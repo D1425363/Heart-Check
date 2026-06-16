@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}發布{{ meta.label }}需求 - 校園求助區{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate-fade-in">
+  <div class="col-md-8 col-lg-6">
+
+    <!-- Breadcrumb -->
+    <div class="d-flex align-items-center gap-2 mb-3 text-secondary small">
+      <a href="{{ url_for('help.index') }}" class="text-secondary text-decoration-none">🆘 校園求助區</a>
+      <span>›</span>
+      <a href="{{ url_for('help.list_requests', category=category) }}" class="text-secondary text-decoration-none">{{ meta.icon }} {{ meta.label }}</a>
+      <span>›</span>
+      <span class="text-white">發布需求</span>
+    </div>
+
+    <div class="glass-panel">
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <div style="font-size: 3rem; line-height: 1; margin-bottom: 12px;">{{ meta.icon }}</div>
+        <h3 class="fw-bold text-white mb-1" style="font-family: var(--font-heading);">發布{{ meta.label }}需求</h3>
+        <p class="text-secondary small mb-0">說明你的需求，同學看到後會主動幫助你！</p>
+      </div>
+
+      <hr style="border-color: rgba(255,255,255,0.08);">
+
+      <!-- Form -->
+      <form action="{{ url_for('help.new_request', category=category) }}" method="POST" class="mt-4">
+
+        <div class="form-group-custom">
+          <label for="title" class="form-label-custom">
+            需求標題 <span class="text-danger">*</span>
+          </label>
+          <input type="text" id="title" name="title"
+                 class="form-control form-control-custom"
+                 placeholder="例如：誰有水文學上課筆記？"
+                 value="{{ form_title }}"
+                 maxlength="100"
+                 required>
+          <div class="form-text text-secondary mt-1 text-end" id="title-counter">0 / 100</div>
+        </div>
+
+        <div class="form-group-custom">
+          <label for="description" class="form-label-custom">
+            詳細說明 <span class="text-danger">*</span>
+          </label>
+          <textarea id="description" name="description"
+                    class="form-control-custom"
+                    rows="5"
+                    placeholder="請詳細描述你的需求，例如：科系、學年、需要的格式、聯絡方式等，讓同學更容易幫助你。"
+                    maxlength="500"
+                    required>{{ form_description }}</textarea>
+          <div class="form-text text-secondary mt-1 text-end" id="desc-counter">0 / 500</div>
+        </div>
+
+        <!-- Tips box -->
+        <div class="p-3 rounded-3 mb-4" style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2);">
+          <p class="text-secondary small mb-1"><i class="bi bi-lightbulb-fill" style="color: #f59e0b;"></i> <strong class="text-white">小提示</strong></p>
+          <ul class="text-secondary small mb-0 ps-3">
+            <li>說明越清楚，得到幫助的機會越大！</li>
+            <li>可以留下 LINE ID 或其他聯絡方式。</li>
+            <li>問題解決後，記得回來標記「已解決」並送愛心給幫助你的同學！</li>
+          </ul>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6">
+            <a href="{{ url_for('help.list_requests', category=category) }}" class="btn-secondary-custom w-100 py-2 text-center">
+              取消
+            </a>
+          </div>
+          <div class="col-6">
+            <button type="submit" class="btn-premium w-100 py-2">
+              <i class="bi bi-send-fill"></i> 發布需求
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Character counters
+  const titleInput = document.getElementById('title');
+  const titleCounter = document.getElementById('title-counter');
+  const descInput = document.getElementById('description');
+  const descCounter = document.getElementById('desc-counter');
+
+  function updateCounter(input, counter, max) {
+    const len = input.value.length;
+    counter.textContent = `${len} / ${max}`;
+  }
+
+  titleInput.addEventListener('input', () => updateCounter(titleInput, titleCounter, 100));
+  descInput.addEventListener('input', () => updateCounter(descInput, descCounter, 500));
+
+  // Init counters on load
+  updateCounter(titleInput, titleCounter, 100);
+  updateCounter(descInput, descCounter, 500);
+</script>
+{% endblock %}

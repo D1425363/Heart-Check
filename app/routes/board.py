@@ -65,9 +65,9 @@ def home():
         unclaimed_items = [i for i in all_items if i.status == 'unclaimed']
         latest_items = unclaimed_items[:3]
 
-        # 3. 查詢最新 5 筆善行紀錄
+        # 3. 查詢最新 5 筆愛心交易（含匿名）
         all_transactions = HeartTransaction.get_all()
-        latest_thanks = [t for t in all_transactions if t.thank_you_message and len(t.thank_you_message.strip()) >= 5][:5]
+        recent_transactions = all_transactions[:5]
 
         # 4. 若已登入，讀取目前使用者資訊
         current_user = None
@@ -79,13 +79,14 @@ def home():
             announcements=latest_announcements,
             items=latest_items,
             current_user=current_user,
-            latest_thanks=latest_thanks
+            latest_thanks=recent_transactions,
+            recent_transactions=recent_transactions
         )
 
     except Exception as e:
         # 出現例外時，仍嘗試渲染基本頁面，避免網頁完全掛掉
         flash(f"加載首頁部分資料失敗：{str(e)}", "warning")
-        return render_template("board/home.html", announcements=[], items=[], current_user=None)
+        return render_template("board/home.html", announcements=[], items=[], current_user=None, recent_transactions=[])
 
 
 @board_bp.route("/announcements", methods=["GET"])

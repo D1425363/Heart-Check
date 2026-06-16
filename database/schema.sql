@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS heart_transactions (
     receiver_id INTEGER NOT NULL,
     heart_amount INTEGER NOT NULL CHECK(heart_amount > 0),
     thank_you_message TEXT,
+    is_anonymous INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE RESTRICT
@@ -100,3 +101,19 @@ CREATE TABLE IF NOT EXISTS user_badges (
 );
 CREATE INDEX IF NOT EXISTS idx_user_badges_user ON user_badges(user_id);
 
+-- 7. Help Requests Table (校園求助區)
+CREATE TABLE IF NOT EXISTS help_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    category TEXT NOT NULL CHECK(category IN ('notes', 'team', 'lost', 'textbook', 'course')),
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open', 'resolved')),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_help_requests_category ON help_requests(category);
+CREATE INDEX IF NOT EXISTS idx_help_requests_user ON help_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_help_requests_status ON help_requests(status);

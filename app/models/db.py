@@ -42,6 +42,12 @@ def init_db():
         columns = [row['name'] for row in cursor.fetchall()]
         if 'avatar' not in columns:
             cursor.execute("ALTER TABLE users ADD COLUMN avatar TEXT DEFAULT '';")
+
+        # Migration: add is_anonymous column to heart_transactions if missing
+        cursor.execute("PRAGMA table_info(heart_transactions);")
+        ht_columns = [row['name'] for row in cursor.fetchall()]
+        if 'is_anonymous' not in ht_columns:
+            cursor.execute("ALTER TABLE heart_transactions ADD COLUMN is_anonymous INTEGER DEFAULT 0;")
             
         conn.commit()
     finally:

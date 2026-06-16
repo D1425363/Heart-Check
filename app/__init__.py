@@ -15,17 +15,16 @@ def create_app():
     os.makedirs(os.path.dirname(app.config['DATABASE']), exist_ok=True)
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    # Initialize the database if database file doesn't exist
-    if not os.path.exists(app.config['DATABASE']):
-        print("Initializing database...")
-        init_db()
+    # Initialize/Migrate the database tables and columns
+    init_db()
 
     # Register Blueprints
-    from app.routes import auth_bp, user_bp, item_bp, board_bp
+    from app.routes import auth_bp, user_bp, item_bp, board_bp, help_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(item_bp)
     app.register_blueprint(board_bp)
+    app.register_blueprint(help_bp)
 
     # Inject current user context into templates globally
     @app.context_processor

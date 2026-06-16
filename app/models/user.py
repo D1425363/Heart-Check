@@ -370,13 +370,14 @@ class User:
 
 
 class HeartTransaction:
-    def __init__(self, id, sender_id, receiver_id, heart_amount, thank_you_message, created_at, sender_name=None, receiver_name=None):
+    def __init__(self, id, sender_id, receiver_id, heart_amount, thank_you_message, created_at, sender_name=None, receiver_name=None, is_anonymous=False):
         self.id = id
         self.sender_id = sender_id
         self.receiver_id = receiver_id
         self.heart_amount = heart_amount
         self.thank_you_message = thank_you_message
         self.created_at = created_at
+        self.is_anonymous = bool(is_anonymous)
         
         # Optional joined fields
         self.sender_name = sender_name
@@ -386,8 +387,10 @@ class HeartTransaction:
     def from_row(cls, row):
         if not row:
             return None
-        sender_name = row['sender_name'] if 'sender_name' in row.keys() else None
-        receiver_name = row['receiver_name'] if 'receiver_name' in row.keys() else None
+        keys = row.keys()
+        sender_name = row['sender_name'] if 'sender_name' in keys else None
+        receiver_name = row['receiver_name'] if 'receiver_name' in keys else None
+        is_anonymous = row['is_anonymous'] if 'is_anonymous' in keys else False
         
         return cls(
             id=row['id'],
@@ -397,21 +400,22 @@ class HeartTransaction:
             thank_you_message=row['thank_you_message'],
             created_at=row['created_at'],
             sender_name=sender_name,
-            receiver_name=receiver_name
+            receiver_name=receiver_name,
+            is_anonymous=is_anonymous
         )
 
     @classmethod
-    def create(cls, sender_id, receiver_id, heart_amount, thank_you_message=None):
+    def create(cls, sender_id, receiver_id, heart_amount, thank_you_message=None, anonymous=False):
         now = datetime.datetime.now().isoformat()
         conn = get_db_connection()
         cursor = conn.cursor()
         try:
             cursor.execute(
                 """
-                INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
-                VALUES (?, ?, ?, ?, ?);
+                INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, is_anonymous, created_at)
+                VALUES (?, ?, ?, ?, ?, ?);
                 """,
-                (sender_id, receiver_id, heart_amount, thank_you_message, now)
+                (sender_id, receiver_id, heart_amount, thank_you_message, 1 if anonymous else 0, now)
             )
             conn.commit()
             new_id = cursor.lastrowid
@@ -423,7 +427,7 @@ class HeartTransaction:
             conn.close()
 
     @classmethod
-    def transfer_hearts(cls, sender_id, receiver_id, amount, message=None):
+    def transfer_hearts(cls, sender_id, receiver_id, amount, message=None, anonymous=False):
         if sender_id == receiver_id:
             raise ValueError("Cannot transfer heart values to yourself.")
         if amount <= 0:
@@ -456,10 +460,10 @@ class HeartTransaction:
 
             cursor.execute(
                 """
-                INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, created_at)
-                VALUES (?, ?, ?, ?, ?);
+                INSERT INTO heart_transactions (sender_id, receiver_id, heart_amount, thank_you_message, is_anonymous, created_at)
+                VALUES (?, ?, ?, ?, ?, ?);
                 """,
-                (sender_id, receiver_id, amount, message, now)
+                (sender_id, receiver_id, amount, message, 1 if anonymous else 0, now)
             )
             
             conn.commit()
@@ -681,7 +685,7 @@ class UserBadge:
                         (user_id, badge_type, now)
                     )
                     new_id = cursor.lastrowid
-                    new_awards.append(cls(new_id, user_id, badge_type, 0, now))
+                    new_awards.append(Badge(new_id, user_id, badge_type, 0, now))
 
             if new_awards:
                 conn.commit()
