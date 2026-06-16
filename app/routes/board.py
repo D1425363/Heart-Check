@@ -55,46 +55,37 @@ def home():
     """
     校園互助平台首頁。
     """
-    # 1. 查詢最新 3 筆公告
-    announcements_list = Announcement.get_all()
-    latest_announcements = announcements_list[:3]
+    try:
+        # 1. 查詢最新 3 筆公告
+        all_announcements = Announcement.get_all()
+        latest_announcements = all_announcements[:3]
 
-    # 2. 查詢最新 3 筆協尋中（unclaimed）失物招領
-    conn = get_db_connection()
-    rows = conn.execute(
-        """
-        SELECT i.*, u.name AS user_name
-        FROM items i
-        JOIN users u ON i.user_id = u.id
-        WHERE i.status = 'unclaimed'
-        ORDER BY i.created_at DESC
-        LIMIT 3;
-        """
-    ).fetchall()
-    active_items = [Item.from_row(row) for row in rows]
+        # 2. 查詢最新 3 筆協尋中 (unclaimed) 的失物招領物件
+        all_items = Item.get_all()
+        unclaimed_items = [i for i in all_items if i.status == 'unclaimed']
+        latest_items = unclaimed_items[:3]
 
-    # 3. 查詢首頁動態愛心牆：最新 5 筆有留言的愛心交易
-    tx_rows = conn.execute(
-        """
-        SELECT t.*, u1.name AS sender_name, u2.name AS receiver_name
-        FROM heart_transactions t
-        JOIN users u1 ON t.sender_id = u1.id
-        JOIN users u2 ON t.receiver_id = u2.id
-        WHERE t.thank_you_message IS NOT NULL AND t.thank_you_message != ''
-        ORDER BY t.created_at DESC
-        LIMIT 5;
-        """
-    ).fetchall()
-    conn.close()
-    
-    recent_transactions = [HeartTransaction.from_row(row) for row in tx_rows]
+        # 3. 查詢最新 5 筆善行紀錄
+        all_transactions = HeartTransaction.get_all()
+        latest_thanks = [t for t in all_transactions if t.thank_you_message and len(t.thank_you_message.strip()) >= 5][:5]
 
-    return render_template(
-        "board/home.html",
-        latest_announcements=latest_announcements,
-        active_items=active_items,
-        recent_transactions=recent_transactions
-    )
+        # 4. 若已登入，讀取目前使用者資訊
+        current_user = None
+        if 'user_id' in session:
+            current_user = User.get_by_id(session['user_id'])
+
+        return render_template(
+            "board/home.html",
+            announcements=latest_announcements,
+            items=latest_items,
+            current_user=current_user,
+            latest_thanks=latest_thanks
+        )
+
+    except Exception as e:
+        # 出現例外時，仍嘗試渲染基本頁面，避免網頁完全掛掉
+        flash(f"加載首頁部分資料失敗：{str(e)}", "warning")
+        return render_template("board/home.html", announcements=[], items=[], current_user=None)
 
 
 @board_bp.route("/announcements", methods=["GET"])

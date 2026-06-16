@@ -86,6 +86,17 @@ CREATE INDEX IF NOT EXISTS idx_items_user ON items(user_id);
 CREATE INDEX IF NOT EXISTS idx_items_type_status ON items(item_type, status);
 CREATE INDEX IF NOT EXISTS idx_announcements_category ON announcements(category);
 CREATE INDEX IF NOT EXISTS idx_announcements_author ON announcements(author_id);
+
+-- 5. User Badges Table
+CREATE TABLE IF NOT EXISTS user_badges (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    badge_name TEXT NOT NULL,
+    badge_icon TEXT NOT NULL,
+    badge_description TEXT NOT NULL,
+    unlocked_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE(user_id, badge_name)
+);
 CREATE INDEX IF NOT EXISTS idx_user_badges_user ON user_badges(user_id);
-CREATE INDEX IF NOT EXISTS idx_item_comments_item ON item_comments(item_id);
 

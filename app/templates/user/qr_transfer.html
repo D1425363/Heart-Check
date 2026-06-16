@@ -50,9 +50,13 @@
                     <div class="form-text text-secondary mt-1 text-end" id="char-counter">0 / 200</div>
                 </div>
 
-                <div class="row g-3 mt-4">
-                    <div class="col-6">
-                        <a href="{{ url_for('user.profile') }}" class="btn-secondary-custom w-100 py-2.5 text-center">取消</a>
+                    <div class="mb-4">
+                        <label for="thank_you_message" class="form-label font-semibold">留言感謝對方 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-comment-dots text-primary"></i></span>
+                            <textarea class="form-control" id="thank_you_message" name="thank_you_message" rows="3" placeholder="請填寫感謝原因（至少 5 個字），例如：謝謝你今天借我計算機！" minlength="5" required></textarea>
+                        </div>
+                        <div class="form-text small">根據平台規範，發送愛心必須填寫具體的感謝原因喔！</div>
                     </div>
                     <div class="col-6">
                         <button type="submit" class="btn-premium w-100 py-2.5">

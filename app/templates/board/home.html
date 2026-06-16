@@ -176,4 +176,58 @@
 
     </div>
 </div>
+
+<!-- Public Gratitude Feed (最新善行紀錄) -->
+<div class="row mt-4 animate-fade-in">
+    <div class="col-12">
+        <div class="card premium-card p-4" style="background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 75, 114, 0.15);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="font-bold mb-0">
+                        <i class="fa-solid fa-heart-pulse text-danger me-2"></i>最新善行紀錄 💖
+                    </h4>
+                    <a href="{{ url_for('user.thanks') }}" class="text-decoration-none text-danger font-bold small">
+                        前往感謝牆 <i class="fa-solid fa-arrow-right-long ms-1"></i>
+                    </a>
+                </div>
+
+                {% if not latest_thanks %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0 small">目前還沒有感謝留言。快去掃描同學的條碼表達感謝吧！✨</p>
+                    </div>
+                {% else %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                        {% for t in latest_thanks %}
+                            <div class="col">
+                                <div class="p-3 rounded-4 border bg-white h-100 d-flex flex-column justify-content-between position-relative shadow-sm transition-all hover-shadow" style="border-left: 4px solid #ff4b72 !important;">
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge bg-danger-subtle text-danger font-bold small">
+                                                <i class="fa-solid fa-heart me-1"></i>愛心 +{{ t.heart_amount }}
+                                            </span>
+                                            <small class="text-muted small font-monospace" style="font-size: 0.75rem;">{{ t.created_at[:10] }}</small>
+                                        </div>
+                                        <p class="text-dark small font-medium mb-0 italic" style="font-size: 0.9rem; line-height: 1.4;">
+                                            「{{ t.thank_you_message }}」
+                                        </p>
+                                    </div>
+                                    <div class="border-top pt-2 mt-auto">
+                                        <div class="d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+                                            <div>
+                                                <span class="text-muted">受助者:</span> <strong class="text-dark">{{ t.sender_name }}</strong>
+                                            </div>
+                                            <div>
+                                                <span class="text-muted">幫助者:</span> <strong class="text-primary">{{ t.receiver_name }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
