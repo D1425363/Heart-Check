@@ -1,58 +1,96 @@
 # 流程圖文件 (Flowchart)
 
-> **說明**：由於專案中目前尚未建立 `docs/PRD.md` 與 `docs/ARCHITECTURE.md`，以下流程圖與架構是基於「Heart-Check（心臟健康管理系統）」的標準情境進行設計。系統主要提供使用者記錄心跳、血壓等健康數據，並支援完整的 CRUD（新增、讀取、更新、刪除）操作。
+本文件描述「Heart Check 校園互助與人氣回饋平台」的使用者操作流程、系統序列圖與核心功能對照。
 
 ## 1. 使用者流程圖（User Flow）
 
-描述使用者進入網站後，與系統互動的主要操作路徑。
+描述使用者進入平台後，進行註冊/登入、展示個人專屬二維碼、掃描他人二維碼進行愛心轉移，以及瀏覽佈告欄與排行榜的流程。
 
 ```mermaid
-flowchart LR
-  A([使用者開啟網頁]) --> B[首頁 - 健康紀錄列表]
-  B --> C{要執行什麼操作？}
-  C -->|新增| D[填寫新增紀錄表單]
-  C -->|查看| E[查看單筆紀錄詳細資訊]
-  C -->|編輯| F[填寫編輯紀錄表單]
-  C -->|刪除| G[確認刪除對話框]
+flowchart TD
+  Start([開啟首頁]) --> A{是否已登入？}
+  A -->|否| B[註冊 / 登入頁面]
+  A -->|是| C[首頁 / 資訊大廳]
   
-  D -->|送出表單| H([儲存成功，返回首頁])
-  F -->|送出表單| H
-  G -->|確認| I([刪除成功，返回首頁])
-  E -->|返回| B
+  B -->|登入成功| C
+  
+  C --> D{選擇功能模組}
+  
+  %% 使用者與愛心互動
+  D -->|個人檔案| E[個人主頁]
+  E --> E1[展示專屬二維碼]
+  E --> E2[管理/釘選個人徽章]
+  E --> E3[查看歷史交易紀錄]
+  E --> E4[掃描他人二維碼]
+  E4 --> F[填寫愛心回饋表單]
+  F -->|扣除愛心/增加人氣| G([交易成功，更新餘額])
+  G --> E
+  
+  %% 失物招領
+  D -->|失物招領| H[失物清單與篩選]
+  H --> H1[發布尋物/拾獲公告]
+  H --> H2[查看公告詳情與聯絡]
+  H --> H3[編輯/刪除/完成認領]
+  
+  %% 其他功能
+  D -->|公告欄| I[查看宿舍/校園公告]
+  D -->|求助區| J[發布與解決校園求助項目]
+  D -->|排行榜| K[人氣與愛心排名 (今日/本週/本月/總榜)]
+  D -->|生活資訊| L[交通時刻表與學餐餐廳評價]
 ```
 
 ## 2. 系統序列圖（Sequence Diagram）
 
-描述「使用者點擊新增」到「資料存入資料庫」的完整技術流程。
+描述「受助者掃描幫助者的 QR Code」並「發送愛心與感謝語」的系統技術交互流程。
 
 ```mermaid
 sequenceDiagram
-  actor User as 使用者
-  participant Browser as 使用者瀏覽器
-  participant Flask as Flask Route
-  participant Model as Model (資料模型)
+  actor Sender as 受助者 (發送方)
+  actor Receiver as 幫助者 (接收方)
+  participant Browser as 發送方瀏覽器
+  participant Flask as Flask Controller (Routes)
+  participant Model as Model (User & Transaction)
   participant DB as SQLite 資料庫
   
-  User->>Browser: 填寫心臟健康紀錄表單並點擊送出
-  Browser->>Flask: POST /records (包含表單資料)
-  Flask->>Model: 驗證資料並建立 Record 實例
-  Model->>DB: INSERT INTO records (心跳、收縮壓、舒張壓等)
-  DB-->>Model: 回傳成功狀態與新紀錄 ID
-  Model-->>Flask: 回傳建立成功
-  Flask-->>Browser: HTTP 302 重導向到列表頁 (GET /)
-  Browser-->>User: 顯示新增成功訊息與最新紀錄列表
+  Receiver->>Sender: 出示專屬 QR Code (含 Token)
+  Sender->>Browser: 掃描 QR Code
+  Browser->>Flask: GET /qr/<token>
+  Flask->>Model: User.get_by_qr_code_token(token)
+  Model->>DB: 查詢接收者資料
+  DB-->>Model: 回傳接收者資訊
+  Model-->>Flask: 封裝 User 對象
+  Flask-->>Browser: 渲染 qr_transfer.html (確認幫助者身份)
+  
+  Sender->>Browser: 輸入愛心數量與感謝語並提交
+  Browser->>Flask: POST /qr/<token>/transfer (帶入表單資料)
+  
+  critical 啟動資料庫交易 (Transaction)
+    Flask->>Model: HeartTransaction.transfer_hearts(sender_id, receiver_id, amount, msg)
+    Model->>DB: 扣除發送者愛心餘額 (heart_balance)
+    Model->>DB: 增加接收者人氣值 (popularity)
+    Model->>DB: 寫入交易紀錄至 heart_transactions
+    DB-->>Model: 交易提交成功
+  end
+  
+  Flask->>Model: UserBadge.check_and_award(sender_id / receiver_id)
+  Note over Flask, Model: 檢查是否符合獲取徽章條件並發放
+  
+  Flask-->>Browser: 重導向到個人主頁 (302 Redirect /profile)
+  Browser-->>Sender: 顯示「發送成功」與更新後的愛心餘額
 ```
 
 ## 3. 功能清單對照表
 
-列出系統主要功能、對應的 URL 路徑與 HTTP 方法。
-
-| 功能名稱 | URL 路徑 | HTTP 方法 | 說明 |
+| 功能模組 | URL 路徑 | HTTP 方法 | 說明 |
 | :--- | :--- | :--- | :--- |
-| **首頁 / 紀錄列表** | `/` 或 `/records` | `GET` | 顯示所有心臟健康紀錄的列表 |
-| **顯示新增表單** | `/records/new` | `GET` | 顯示用於新增紀錄的 HTML 表單頁面 |
-| **處理新增紀錄** | `/records` | `POST` | 接收表單資料，寫入資料庫並重導向至列表頁 |
-| **查看單筆紀錄** | `/records/<id>` | `GET` | 顯示特定 ID 的紀錄詳細資訊 |
-| **顯示編輯表單** | `/records/<id>/edit` | `GET` | 顯示用於編輯紀錄的 HTML 表單頁面，並帶入現有資料 |
-| **處理編輯紀錄** | `/records/<id>/edit` | `POST` | 接收編輯後的表單資料，更新資料庫並重導向至列表頁 |
-| **處理刪除紀錄** | `/records/<id>/delete`| `POST` | 刪除特定 ID 的紀錄，並重導向至列表頁 |
+| **首頁大廳** | `/` | `GET` | 整合顯示最新公告、協尋物品與最新善行紀錄 |
+| **會員認證** | `/register`, `/login`, `/logout` | `GET / POST` | 處理使用者註冊、登入與登出 |
+| **個人檔案** | `/profile` | `GET` | 顯示個人資訊、QR Code、釘選徽章與歷史紀錄 |
+| **愛心轉移** | `/qr/<token>` | `GET` | 顯示向指定幫助者發送愛心值的回饋頁面 |
+| **執行交易** | `/qr/<token>/transfer` | `POST` | 扣除發送方愛心，增加接收方人氣，寫入交易紀錄 |
+| **感謝牆** | `/thanks` | `GET` | 公開展示所有受助者的溫馨感謝留言 |
+| **排行榜** | `/leaderboard` | `GET` | 顯示人氣值最高的前 10 名使用者，支援時間篩選 |
+| **失物招領** | `/items`, `/items/new`, `/items/<id>` | `GET / POST` | 瀏覽、搜尋、新增與編輯尋物/拾獲公告 |
+| **求助區** | `/help`, `/help/new`, `/help/list` | `GET / POST` | 發起與回覆校園互助請求（找筆記、找組員等） |
+| **生活資訊** | `/info/traffic`, `/info/restaurants` | `GET` | 提供校車時刻表與學餐餐廳評分 |
+

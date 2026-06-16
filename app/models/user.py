@@ -64,7 +64,7 @@ class User:
             cursor.execute(
                 """
                 INSERT INTO users (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, avatar, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """,
                 (username, password_hash, name, student_id, department, heart_balance, popularity, qr_code_token, avatar, now, now)
             )

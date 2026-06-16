@@ -305,8 +305,17 @@ def leaderboard():
     愛心與人氣排行榜。
     """
     try:
-        top_users = User.get_top_by_popularity(limit=10)
-        return render_template("user/leaderboard.html", top_users=top_users)
+        period = request.args.get("period", "total")
+        if period not in ("total", "today", "week", "month"):
+            period = "total"
+
+        top_users = User.get_top_by_period(period=period, limit=10)
+        
+        # 載入前十名使用者釘選的徽章
+        for user in top_users:
+            user.pinned_badges = Badge.get_pinned_by_user_id(user.id)
+            
+        return render_template("user/leaderboard.html", top_users=top_users, current_period=period)
     except Exception as e:
         flash(f"載入排行榜失敗：{str(e)}", "danger")
         return redirect(url_for('board.home'))
@@ -329,15 +338,3 @@ def thanks():
     except Exception as e:
         flash(f"載入感謝牆失敗：{str(e)}", "danger")
         return redirect(url_for('board.home'))
-
-    period = request.args.get("period", "total")
-    if period not in ("total", "today", "week", "month"):
-        period = "total"
-
-    top_users = User.get_top_by_period(period=period, limit=10)
-    
-    # 載入前十名使用者釘選的徽章
-    for user in top_users:
-        user.pinned_badges = Badge.get_pinned_by_user_id(user.id)
-        
-    return render_template("user/leaderboard.html", top_users=top_users, current_period=period)
