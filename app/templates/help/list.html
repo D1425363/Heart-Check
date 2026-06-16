@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta.icon }} {{ meta.label }} - 校園求助區{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+
+  <!-- Breadcrumb + Header -->
+  <div class="d-flex align-items-center gap-2 mb-3 text-secondary small">
+    <a href="{{ url_for('help.index') }}" class="text-secondary text-decoration-none">🆘 校園求助區</a>
+    <span>›</span>
+    <span class="text-white">{{ meta.icon }} {{ meta.label }}</span>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h2 class="fw-bold text-white mb-1" style="font-family: var(--font-heading);">
+        {{ meta.icon }} {{ meta.label }}
+      </h2>
+      <p class="text-secondary mb-0 small">共有 {{ requests|length }} 筆
+        {% if status_filter == 'resolved' %}已解決{% else %}待解決{% endif %}需求</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <!-- Status toggle -->
+      <div class="d-flex gap-1">
+        <a href="{{ url_for('help.list_requests', category=category, status='open') }}"
+           class="{% if status_filter != 'resolved' %}btn-premium{% else %}btn-secondary-custom{% endif %} py-1 px-3"
+           style="font-size: 0.85rem;">待解決</a>
+        <a href="{{ url_for('help.list_requests', category=category, status='resolved') }}"
+           class="{% if status_filter == 'resolved' %}btn-premium{% else %}btn-secondary-custom{% endif %} py-1 px-3"
+           style="font-size: 0.85rem;">已解決</a>
+      </div>
+      {% if current_user %}
+      <a href="{{ url_for('help.new_request', category=category) }}" class="btn-premium py-1 px-3" style="font-size: 0.85rem;">
+        <i class="bi bi-plus-circle-fill"></i> 發布新需求
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Request List -->
+  {% if requests %}
+    <div class="d-flex flex-column gap-3">
+      {% for req in requests %}
+      <div class="glass-panel p-4"
+           style="border-color: rgba(255,255,255,0.07); transition: var(--transition-fast);"
+           onmouseover="this.style.borderColor='{{ meta.color }}50';"
+           onmouseout="this.style.borderColor='rgba(255,255,255,0.07)';">
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+          <div class="flex-grow-1">
+            <!-- Status badge -->
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+              {% if req.status == 'open' %}
+                <span class="badge px-2 py-1 rounded-pill" style="background: rgba(16,185,129,0.15); color: #10b981; font-size: 0.72rem;">● 待解決</span>
+              {% else %}
+                <span class="badge px-2 py-1 rounded-pill" style="background: rgba(156,163,175,0.15); color: #9ca3af; font-size: 0.72rem;">✔ 已解決</span>
+              {% endif %}
+              <span class="text-secondary small">
+                <i class="bi bi-person-fill"></i>
+                {{ req.author_name }}
+                {% if req.author_department %} • {{ req.author_department }}{% endif %}
+              </span>
+              <span class="text-secondary small">
+                <i class="bi bi-clock"></i>
+                {{ req.created_at[:10] }}
+              </span>
+            </div>
+
+            <h5 class="text-white fw-semibold mb-2">{{ req.title }}</h5>
+            <p class="text-secondary mb-0" style="font-size: 0.92rem; white-space: pre-wrap;">{{ req.description }}</p>
+          </div>
+
+          <!-- Actions -->
+          {% if current_user and current_user.id == req.user_id %}
+          <div class="d-flex flex-column gap-2 flex-shrink-0">
+            {% if req.status == 'open' %}
+            <form action="{{ url_for('help.resolve_request', category=category, request_id=req.id) }}" method="POST">
+              <button type="submit" class="btn-premium py-1 px-3 w-100" style="font-size: 0.8rem;" title="標記為已解決">
+                ✔ 已解決
+              </button>
+            </form>
+            {% endif %}
+            <form action="{{ url_for('help.delete_request', category=category, request_id=req.id) }}" method="POST"
+                  onsubmit="return confirm('確定要刪除此求助紀錄嗎？')">
+              <button type="submit" class="btn-secondary-custom py-1 px-3 w-100" style="font-size: 0.8rem; color: #f87171;">
+                <i class="bi bi-trash3-fill"></i> 刪除
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="glass-panel text-center py-5">
+      <div class="fs-1 mb-3">{{ meta.icon }}</div>
+      <h5 class="text-white mb-2">目前沒有{% if status_filter == 'resolved' %}已解決{% else %}待解決{% endif %}的需求</h5>
+      <p class="text-secondary mb-4">
+        {% if status_filter != 'resolved' %}有需要幫忙的地方嗎？立刻發布你的需求！{% else %}還沒有已解決的紀錄。{% endif %}
+      </p>
+      {% if current_user and status_filter != 'resolved' %}
+      <a href="{{ url_for('help.new_request', category=category) }}" class="btn-premium">
+        <i class="bi bi-plus-circle-fill"></i> 發布新需求
+      </a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

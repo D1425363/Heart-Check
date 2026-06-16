@@ -21,11 +21,12 @@ def create_app():
         init_db()
 
     # Register Blueprints
-    from app.routes import auth_bp, user_bp, item_bp, board_bp
+    from app.routes import auth_bp, user_bp, item_bp, board_bp, help_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(item_bp)
     app.register_blueprint(board_bp)
+    app.register_blueprint(help_bp)
 
     # Inject current user context into templates globally
     @app.context_processor

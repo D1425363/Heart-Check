@@ -45,18 +45,33 @@
                 </div>
 
                 <div class="form-group-custom">
-                    <label for="thank_you_message" class="form-label-custom">寫下您的感謝與留言</label>
-                    <textarea id="thank_you_message" name="thank_you_message" class="form-control-custom" rows="4" placeholder="例如：謝謝你在宿舍樓下幫我搬行李！、謝謝你在微積分期末考前借我精美筆記！" maxlength="200"></textarea>
-                    <div class="form-text text-secondary mt-1 text-end" id="char-counter">0 / 200</div>
+                    <label for="thank_you_message" class="form-label-custom">寫下您的感謝與留言 <span class="text-danger">*</span></label>
+                    <textarea id="thank_you_message" name="thank_you_message" class="form-control-custom" rows="4" placeholder="請填寫感謝原因（至少 5 個字），例如：謝謝你在宿舍樓下幫我搬行李！、謝謝你在微積分期末考前借我精美筆記！" minlength="5" maxlength="200" required></textarea>
+                    <div class="form-text text-secondary mt-1 d-flex justify-content-between">
+                        <span>根據平台規範，發送愛心必須填寫具體的感謝原因喔！</span>
+                        <span id="char-counter">0 / 200</span>
+                    </div>
                 </div>
 
-                    <div class="mb-4">
-                        <label for="thank_you_message" class="form-label font-semibold">留言感謝對方 <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fa-solid fa-comment-dots text-primary"></i></span>
-                            <textarea class="form-control" id="thank_you_message" name="thank_you_message" rows="3" placeholder="請填寫感謝原因（至少 5 個字），例如：謝謝你今天借我計算機！" minlength="5" required></textarea>
-                        </div>
-                        <div class="form-text small">根據平台規範，發送愛心必須填寫具體的感謝原因喔！</div>
+                <!-- 匿名送出選項 -->
+                <div class="p-3 rounded-3 mb-4 d-flex align-items-center gap-3"
+                     style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);">
+                    <div class="flex-grow-1">
+                        <label for="is_anonymous" class="text-white fw-semibold mb-0" style="cursor: pointer; user-select: none;">
+                            <i class="bi bi-incognito" style="color: #a78bfa;"></i> 匿名送出愛心
+                        </label>
+                        <div class="text-secondary small mt-1">勾選後，愛心牆上將顯示「某位同學送出愛心」，不會顯示你的名字。</div>
+                    </div>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                               id="is_anonymous" name="is_anonymous" value="1"
+                               style="width: 2.4em; height: 1.3em; cursor: pointer;">
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-4">
+                    <div class="col-6">
+                        <a href="{{ url_for('user.profile') }}" class="btn-secondary-custom w-100 py-2.5 text-center">取消</a>
                     </div>
                     <div class="col-6">
                         <button type="submit" class="btn-premium w-100 py-2.5">

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}校園求助區 - Heart Check{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+
+  <!-- Header -->
+  <div class="glass-panel text-center py-4 mb-4" style="background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(168,85,247,0.15) 100%); border-color: rgba(99,102,241,0.3);">
+    <h1 class="fw-bold mb-2" style="font-family: var(--font-heading); font-size: 2rem;">
+      🆘 校園求助區
+    </h1>
+    <p class="text-secondary mb-0" style="max-width: 560px; margin: 0 auto;">
+      找筆記、找組員、找失物、找課本、問課程——只要你需要幫忙，就發布出來！<br>
+      同學幫忙後即可送出愛心，形成真正的互助平台。
+    </p>
+  </div>
+
+  <!-- Category Cards Grid -->
+  <div class="row g-4 mb-4">
+    {% for key, cat in category_stats.items() %}
+    <div class="col-sm-6 col-lg-4">
+      <a href="{{ url_for('help.list_requests', category=key) }}" class="text-decoration-none">
+        <div class="glass-panel h-100 text-center py-4 category-card"
+             style="border-color: rgba(255,255,255,0.07); transition: var(--transition-fast); cursor: pointer;"
+             onmouseover="this.style.borderColor='{{ cat.color }}60'; this.style.transform='translateY(-4px)';"
+             onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'; this.style.transform='translateY(0)';">
+          <div class="mb-3" style="font-size: 3rem; line-height: 1;">{{ cat.icon }}</div>
+          <h4 class="fw-bold text-white mb-2" style="font-family: var(--font-heading);">{{ cat.label }}</h4>
+          <div class="mb-3">
+            {% if cat.count > 0 %}
+              <span class="badge px-3 py-1 rounded-pill fw-semibold"
+                    style="background: {{ cat.color }}25; color: {{ cat.color }}; border: 1px solid {{ cat.color }}50; font-size: 0.85rem;">
+                {{ cat.count }} 個待解決
+              </span>
+            {% else %}
+              <span class="badge px-3 py-1 rounded-pill text-secondary"
+                    style="background: rgba(255,255,255,0.05); font-size: 0.85rem;">
+                目前無待解需求
+              </span>
+            {% endif %}
+          </div>
+          <div class="text-secondary small">點擊瀏覽 →</div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- How it works -->
+  <div class="glass-panel py-4">
+    <h4 class="fw-bold text-white mb-4 text-center" style="font-family: var(--font-heading);">💡 如何使用求助區？</h4>
+    <div class="row g-3 text-center">
+      <div class="col-md-4">
+        <div class="fs-2 mb-2">1️⃣</div>
+        <h6 class="text-white fw-semibold">發布需求</h6>
+        <p class="text-secondary small mb-0">選擇分類，說明你需要什麼，例如「誰有水文學上課筆記？」</p>
+      </div>
+      <div class="col-md-4">
+        <div class="fs-2 mb-2">2️⃣</div>
+        <h6 class="text-white fw-semibold">等待同學幫忙</h6>
+        <p class="text-secondary small mb-0">熱心的同學看到後主動聯絡你，提供幫助。</p>
+      </div>
+      <div class="col-md-4">
+        <div class="fs-2 mb-2">3️⃣</div>
+        <h6 class="text-white fw-semibold">送出愛心感謝</h6>
+        <p class="text-secondary small mb-0">問題解決後，掃描對方的 QR Code 送出愛心，表達誠摯的感謝！</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -316,6 +316,7 @@ def transfer(token):
         return redirect(url_for("user.qr_transfer", token=token))
         
     thank_you_message = request.form.get("thank_you_message", "").strip()
+    is_anonymous = request.form.get("is_anonymous") == "1"
 
     if heart_amount <= 0:
         flash("發送數量必須大於 0 顆愛心！", "warning")
@@ -328,7 +329,7 @@ def transfer(token):
 
     # 執行轉移
     try:
-        HeartTransaction.transfer_hearts(sender_id, receiver.id, heart_amount, thank_you_message)
+        HeartTransaction.transfer_hearts(sender_id, receiver.id, heart_amount, thank_you_message, anonymous=is_anonymous)
         
         # 轉移成功後，檢查並發放雙方的徽章 (因為發送者/接收者資料改變)
         Badge.check_and_award(sender_id)
