@@ -43,6 +43,46 @@
     
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Dynamic Theme Variables (Defaults for Dark Mode) */
+    --bg-nav: rgba(11, 12, 21, 0.75);
+    --border-nav: rgba(255, 255, 255, 0.05);
+    --bg-hover: rgba(255, 255, 255, 0.05);
+    --bg-input: rgba(255, 255, 255, 0.03);
+    --border-input: rgba(255, 255, 255, 0.08);
+    --bg-btn-sec: rgba(255, 255, 255, 0.08);
+    --border-btn-sec: rgba(255, 255, 255, 0.1);
+    --bg-btn-sec-hover: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme="light"] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.75);
+    --border-glass: rgba(99, 102, 241, 0.2);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    --grad-dark-overlay: linear-gradient(180deg, rgba(248, 250, 252, 0.8) 0%, #f8fafc 100%);
+    --bg-nav: rgba(255, 255, 255, 0.8);
+    --border-nav: rgba(0, 0, 0, 0.05);
+    --bg-hover: rgba(0, 0, 0, 0.05);
+    --bg-input: rgba(0, 0, 0, 0.02);
+    --border-input: rgba(0, 0, 0, 0.1);
+    --bg-btn-sec: rgba(0, 0, 0, 0.06);
+    --border-btn-sec: rgba(0, 0, 0, 0.08);
+    --bg-btn-sec-hover: rgba(0, 0, 0, 0.12);
+}
+
+#theme-toggle {
+    transition: var(--transition-fast);
+}
+
+#theme-toggle:hover {
+    color: var(--color-primary) !important;
+    transform: scale(1.15);
 }
 
 /* Base resets & styles */
@@ -132,10 +172,10 @@ a:hover {
 
 /* Header & Navigation Bar */
 .navbar-custom {
-    background: rgba(11, 12, 21, 0.75);
+    background: var(--bg-nav);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-nav);
     padding: 15px 0;
     position: sticky;
     top: 0;
@@ -165,7 +205,7 @@ a:hover {
 
 .nav-link-custom:hover, .nav-link-custom.active {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover);
 }
 
 /* Buttons */
@@ -222,9 +262,8 @@ a:hover {
 }
 
 .btn-secondary-custom {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-sm);
+    background: var(--bg-btn-sec);
+    border: 1px solid var(--border-btn-sec);
     color: var(--text-primary);
     font-family: var(--font-heading);
     font-weight: 600;
@@ -238,7 +277,7 @@ a:hover {
 }
 
 .btn-secondary-custom:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--bg-btn-sec-hover);
     transform: translateY(-2px);
 }
 
@@ -476,8 +515,8 @@ a:hover {
 }
 
 .form-control-custom {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
     font-family: inherit;
@@ -490,7 +529,7 @@ a:hover {
 .form-control-custom:focus {
     outline: none;
     border-color: var(--color-primary);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
